@@ -1,0 +1,6 @@
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\bin\Debug\Movies.exe.config
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\bin\Debug\Movies.exe
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\bin\Debug\Movies.pdb
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\obj\Debug\Movies.exe
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\obj\Debug\Movies.pdb
