@@ -12,11 +12,11 @@ namespace TVConvert
             string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Log Directory from app.config
             string tempDir = ConfigurationSettings.AppSettings["tempDir"].ToString(); // Temp Directory from app.cpnfig
             string outputDir = ConfigurationSettings.AppSettings["outputDir"].ToString(); //Output Directory from app.config
-            string handBrakeLocation = ConfigurationSettings.AppSettings["handBrake"].ToString(); //HandBrake location from app.config
-            string atomicParsleyLocation = ConfigurationSettings.AppSettings["atomicParsley"].ToString(); //Atomic Parsley from app.config
+            string handBrakeLocation = ConfigurationSettings.AppSettings["handBrakeLocation"].ToString(); //HandBrake location from app.config
+            string atomicParsleyLocation = ConfigurationSettings.AppSettings["atomicParsleyLocation"].ToString(); //Atomic Parsley from app.config
             string episodeNameFormat =  ConfigurationSettings.AppSettings["episodeNameFormat"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
 
-            string[] filesToConvert = Directory.GetFiles(tempDir); //Get all files from tempDir
+            string[] filesToConvert = Directory.GetFiles(tempDir, "*.avi"); //Get all files from tempDir
             
             foreach (string fileToConvert in filesToConvert)
             {
