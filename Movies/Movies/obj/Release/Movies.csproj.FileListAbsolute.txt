@@ -10,3 +10,6 @@ C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\Movies\M
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\bin\Release\Movies.exe
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\bin\Release\Movies.pdb
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\Movies\Movies\obj\Release\ResolveAssemblyReference.cache
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Movies\Movies\bin\Release\Movies.exe.config
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Movies\Movies\obj\Release\Movies.exe
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Movies\Movies\obj\Release\Movies.pdb
