@@ -4,3 +4,9 @@ C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscrip
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\TVConvert\TVConvert\obj\Debug\ResolveAssemblyReference.cache
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\TVConvert\TVConvert\obj\Debug\TVConvert.exe
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\TVConvert\TVConvert\obj\Debug\TVConvert.pdb
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVConvert\TVConvert\bin\Debug\TVConvert.exe.config
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVConvert\TVConvert\obj\Debug\TVConvert.exe
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVConvert\TVConvert\obj\Debug\TVConvert.pdb
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVConvert\TVConvert\bin\Debug\TVConvert.exe
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVConvert\TVConvert\bin\Debug\TVConvert.pdb
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVConvert\TVConvert\obj\Debug\ResolveAssemblyReference.cache
