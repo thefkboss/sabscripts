@@ -16,7 +16,7 @@ namespace TVConvert
             string atomicParsleyLocation = ConfigurationSettings.AppSettings["atomicParsleyLocation"].ToString(); //Atomic Parsley from app.config
             string episodeNameFormat =  ConfigurationSettings.AppSettings["episodeNameFormat"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
 
-            string[] filesToConvert = Directory.GetFiles(tempDir); //Get all files from tempDir
+            string[] filesToConvert = Directory.GetFiles(tempDir, "*.avi"); //Get all files from tempDir
             
             foreach (string fileToConvert in filesToConvert) //Foreach file found, run HandBrake + Atomic Parsley
             {
