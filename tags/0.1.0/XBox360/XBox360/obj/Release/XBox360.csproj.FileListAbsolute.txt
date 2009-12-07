@@ -1,0 +1,12 @@
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\bin\Release\XBox360.exe.config
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\bin\Release\XBox360.exe
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\bin\Release\XBox360.pdb
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\obj\Release\XBox360.exe
+C:\Users\Markus\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\obj\Release\XBox360.pdb
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\bin\Release\XBox360.exe.config
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\obj\Release\XBox360.exe
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\obj\Release\XBox360.pdb
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\bin\Release\XBox360.exe
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\bin\Release\XBox360.pdb
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\XBox360\XBox360\obj\Release\ResolveAssemblyReference.cache
