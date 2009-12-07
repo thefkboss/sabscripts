@@ -4,3 +4,6 @@ C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\Downloader\Down
 C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\Downloader\Downloader\obj\Debug\Downloader.exe
 C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\Downloader\Downloader\obj\Debug\Downloader.pdb
 C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\Downloader\Downloader\bin\Debug\Downloader.exe.config
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\bin\Debug\Downloader.exe.config
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\obj\Debug\Downloader.exe
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\obj\Debug\Downloader.pdb

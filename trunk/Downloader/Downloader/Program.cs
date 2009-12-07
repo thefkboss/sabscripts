@@ -8,20 +8,35 @@ using System.Diagnostics;
 using System.Xml;
 using System.Net;
 
+
 namespace Downloader
 {
     class Program
     {
+
+
+
+        private static string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Get logDir from app.config
+        private static string tvDir = ConfigurationSettings.AppSettings["tvDir"].ToString(); //Get tvDir from app.config
+        private static string nzbDir = ConfigurationSettings.AppSettings["nzbDir"].ToString(); //Get nzbDir from app.config
+        private static string sabnzbdInfo = ConfigurationSettings.AppSettings["sabnzbdInfo"].ToString(); //Get sabnzbdInfo from app.config
+        private static string apiKey = ConfigurationSettings.AppSettings["apiKey"].ToString(); //Get apiKey from app.config
+        private static string rssUrl = ConfigurationSettings.AppSettings["rssUrl"].ToString(); //Get rssUrl from app.config
+        private static string ignoreSeasons = ConfigurationSettings.AppSettings["ignoreSeasons"].ToString(); //Get rssUrl from app.config
+        private static string priority = ConfigurationSettings.AppSettings["priority"].ToString(); //Get rssUrl from app.config
+
+
+
         static void Main(string[] args)
         {
-            string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Get logDir from app.config
-            string tvDir = ConfigurationSettings.AppSettings["tvDir"].ToString(); //Get tvDir from app.config
-            string nzbDir = ConfigurationSettings.AppSettings["nzbDir"].ToString(); //Get nzbDir from app.config
-            string sabnzbdInfo = ConfigurationSettings.AppSettings["sabnzbdInfo"].ToString(); //Get sabnzbdInfo from app.config
-            string apiKey = ConfigurationSettings.AppSettings["apiKey"].ToString(); //Get apiKey from app.config
-            string rssUrl = ConfigurationSettings.AppSettings["rssUrl"].ToString(); //Get rssUrl from app.config
-            string ignoreSeasons = ConfigurationSettings.AppSettings["ignoreSeasons"].ToString(); //Get rssUrl from app.config
-            string priority = ConfigurationSettings.AppSettings["priority"].ToString(); //Get rssUrl from app.config
+            //string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Get logDir from app.config
+            //string tvDir = ConfigurationSettings.AppSettings["tvDir"].ToString(); //Get tvDir from app.config
+            //string nzbDir = ConfigurationSettings.AppSettings["nzbDir"].ToString(); //Get nzbDir from app.config
+            //string sabnzbdInfo = ConfigurationSettings.AppSettings["sabnzbdInfo"].ToString(); //Get sabnzbdInfo from app.config
+            //string apiKey = ConfigurationSettings.AppSettings["apiKey"].ToString(); //Get apiKey from app.config
+            //string rssUrl = ConfigurationSettings.AppSettings["rssUrl"].ToString(); //Get rssUrl from app.config
+            //string ignoreSeasons = ConfigurationSettings.AppSettings["ignoreSeasons"].ToString(); //Get rssUrl from app.config
+            //string priority = ConfigurationSettings.AppSettings["priority"].ToString(); //Get rssUrl from app.config
 
             string queueRssUrl = "http://" + sabnzbdInfo + "/api?mode=queue&output=xml&apikey=" + apiKey;
 
@@ -32,9 +47,10 @@ namespace Downloader
             XmlNode nodeItem = null;
 
             bool wantedSeason = true;
-            bool wantedEpisode = false;
-            bool notInQueue = true;
-            bool notInNzbArchive = false;
+            bool neededEpisode = false;
+            bool isQueued = false;
+            bool nzbInArchive = false;
+            bool addedToQueue = false;
 
             string reportId = null;
             string nzbFileDownload = null;
@@ -105,178 +121,221 @@ namespace Downloader
                         }
                     }
 
-                    //Is Show Wanted?
+                    //Is this Show + Season + Episode Needed?
                     foreach (string wantedShowNamePath in wantedShowNames)
                     {
-                        string wantedShowName = Path.GetFileName(wantedShowNamePath);
-                        if (showName == wantedShowName)
-                        {
-                            Console.WriteLine("WANTED: " + showName);
-                            //Console.ReadKey();
 
-                            //Ignoring These Seasons for this show
-
-                            if (ignoreSeasons.Contains(showName))
-                            {
-                                Console.WriteLine("Checking for Ignore");
-                                string[] showsSeasonIgnore = ignoreSeasons.Split(';');
-                                foreach (string showSeasonIgnore in showsSeasonIgnore)
-                                {
-                                    string[] showNameIgnoreSplit = showSeasonIgnore.Split('=');
-                                    string showNameIgnore = showNameIgnoreSplit[0];
-                                    if (showNameIgnore == showName)
-                                    {
-                                        string ignoreSeasonsCount = showNameIgnoreSplit[1];
-                                        string[] ignoreSeasonsCountSplit = ignoreSeasonsCount.Split(',');
-                                        string seasonNumberShort = Convert.ToString(seasonNumberInt);
-
-                                        foreach (string ignoreSeasonNumber in ignoreSeasonsCountSplit)
-                                        {
-                                            if (seasonNumberShort == ignoreSeasonNumber)
-                                            {
-                                                Console.WriteLine("Ignoring Season");
-                                                wantedSeason = false;
-                                            }
-                                            else
-                                            {
-                                                Console.WriteLine("Not Ignoring Season");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
 
                             //Is Episode Needed?
                             if (wantedSeason == true)
                             {
-                                string showNameSeasonDir = wantedShowNamePath + "\\Season " + seasonNumber;
-                                string nameOnDisk = showName + " - S" + seasonNumber + "E" + episodeNumber;
-                                Console.WriteLine(showNameSeasonDir);
-                                if (Directory.Exists(showNameSeasonDir)) //Determine if Season XX Folder exists
-                                {
-                                    Console.WriteLine("Season folder found");
-                                    string[] episodesOnDisk = Directory.GetFiles(showNameSeasonDir);
-
-                                    if (episodesOnDisk.Length == 0) //If Season folder contains no files
-                                    {
-                                        wantedEpisode = true; //Set wantedEpisode to true
-                                    }
-
-                                    else //If Season folder has files
-                                    {
-                                        foreach (string episodeOnDiskPath in episodesOnDisk) //Loop through Files in Folder
-                                        {
-                                            string episodeOnDisk = Path.GetFileNameWithoutExtension(episodeOnDiskPath);
-                                            Console.WriteLine(episodeOnDisk);
-
-                                            if (!episodeOnDisk.Contains(nameOnDisk)) //If Filename is NOT found then download
-                                            {
-                                                wantedEpisode = true; //Set wantedEpisode to true
-                                            }
-                                        }
-                                    }
-                                }
-
-
-                                else //If Season XX folder does not exist - Possibly a New Season
-                                {
-                                    wantedEpisode = true; //Set wantedEpisode to true
-                                }
+                                neededEpisode = IsEpisodeNeeded(rssTitle);
                             }
 
                             //Check Queue for pending download
-                            if (wantedEpisode == true)
+                            if (neededEpisode == true)
                             {
-                                XmlTextReader queueRssReader;
-                                XmlDocument queueRssDoc = null;
-                                XmlNode nodeQueue = null;
-                                XmlNode nodeSlots = null;
-                                XmlNode nodeSlot = null;
-
-                                queueRssReader = new XmlTextReader(queueRssUrl);
-                                queueRssDoc = new XmlDocument();
-                                queueRssDoc.Load(queueRssReader);
-
-                                //Loop for the <queue> tag
-                                for (int i2 = 0; i2 < queueRssDoc.ChildNodes.Count; i2++)
-                                {
-                                    //If it is the queue tag
-                                    if (queueRssDoc.ChildNodes[i2].Name == "queue")
-                                    {
-                                        //queue tag found
-                                        nodeQueue = queueRssDoc.ChildNodes[i2];
-                                        //Console.WriteLine("Queue FOUND");
-                                    }
-                                }
-
-                                //Loop for the <slots> tag
-                                for (int i2 = 0; i2 < nodeQueue.ChildNodes.Count; i2++)
-                                {
-                                    //If is it the slots tag
-                                    if (nodeQueue.ChildNodes[i2].Name == "slots")
-                                    {
-                                        //Slots tag found
-                                        nodeSlots = nodeQueue.ChildNodes[i2];
-                                        //Console.WriteLine("Slots FOUND");
-                                    }
-                                }
-
-                                //Loop for filename
-                                for (int i2 = 0; i2 < nodeSlots.ChildNodes.Count; i2++)
-                                {
-                                    if (nodeSlots.ChildNodes[i2].Name == "slot")
-                                    {
-                                        nodeSlot = nodeSlots.ChildNodes[i2];
-                                        string queueFilename = nodeSlot["filename"].InnerText;
-                                        //Console.WriteLine(queueFilename);
-
-                                        if (queueFilename == rssTitle)
-                                        {
-                                            Console.WriteLine("Already in queue!");
-                                            notInQueue = false;
-                                        }
-                                    }
-                                }
+                                isQueued = IsInQueue(rssTitle);
                             }
 
-                            Console.WriteLine("Not in queue = " + notInQueue);
                             //Check NZB Imported dir (Possible failed extraction)
-                            if (notInQueue == true)
+                            if (isQueued == false)
                             {
-                                Console.WriteLine("Checking for Imported NZB");
-                                string[] nzbsOnDisk = Directory.GetFiles(nzbDir,"*.nzb.gz");
-
-                                foreach (string nzbOnDiskPath in nzbsOnDisk) //Loop through NZBs in Folder
-                                {
-                                    string nzbOnDisk = Path.GetFileNameWithoutExtension(nzbOnDiskPath);
-                                    //Console.WriteLine(nzbOnDisk);
-                                    //string rssTitleNzb = rssTitle + ".nzb";
-                                    if (!nzbOnDisk.Contains(rssTitle)) //If Filename is NOT found then download
-                                    {
-                                        notInNzbArchive = true; //Set notInNzbArchive to true
-                                        Console.WriteLine("NZB File Not Found");
-                                    }
-                                }
+                                nzbInArchive = InNzbArchive(rssTitle);
                             }
 
 
-                            if (wantedSeason == true && wantedEpisode == true && notInQueue == true && notInNzbArchive == true)
+                            if (wantedSeason == true && wantedEpisode == true && isQueued == false && notInNzbArchive == true)
                             {
                                 reportId = nodeItem["report:id"].InnerText; //Get ReportID
-                                Console.WriteLine("No Files found: download");
-                                nzbFileDownload = "http://" + sabnzbdInfo + "/api?mode=addid&name=" + reportId + "&priority=" + priority + "&apikey=" + apiKey; //Create URL String
-                                Console.WriteLine(nzbFileDownload);
-                                //Send Newzbin Report to SABnzbd
-                                HttpWebRequest addNzbRequest = (HttpWebRequest)WebRequest.Create(nzbFileDownload); //Create Request
-                                HttpWebResponse addNzbResponse = (HttpWebResponse)addNzbRequest.GetResponse(); //Execute Request
-                                addNzbResponse.Close();
+                                addedToQueue = AddToQueue(reportId);
                             }
 
-                        } //Ends if show is wanted
+                        
                     } //Ends foreach wantedShowName in wantedShowNames
                 }
             } //Ends Loop for title
             Console.ReadKey(); //Wait for User Input before Exit (Testing Only)
         } //Ends Public Static Void Main
+
+        private static bool IsShowWanted(string showName, string wantedShowNamePath)
+        {
+            string wantedShowName = Path.GetFileName(wantedShowNamePath);
+            if (showName == wantedShowName)
+            {
+                Console.WriteLine("WANTED: " + showName);
+                return true;
+            } //Ends if show is wanted
+            return false;
+        } //Ends IsShowWanted
+
+        private static bool IsShowIgnored(string showName)
+        {
+            if (ignoreSeasons.Contains(showName))
+            {
+                Console.WriteLine("Checking for Ignore");
+                string[] showsSeasonIgnore = ignoreSeasons.Split(';');
+                foreach (string showSeasonIgnore in showsSeasonIgnore)
+                {
+                    string[] showNameIgnoreSplit = showSeasonIgnore.Split('=');
+                    string showNameIgnore = showNameIgnoreSplit[0];
+                    if (showNameIgnore == showName)
+                    {
+                        string ignoreSeasonsCount = showNameIgnoreSplit[1];
+                        string[] ignoreSeasonsCountSplit = ignoreSeasonsCount.Split(',');
+                        string seasonNumberShort = Convert.ToString(seasonNumberInt);
+
+                        foreach (string ignoreSeasonNumber in ignoreSeasonsCountSplit)
+                        {
+
+                        } //Ends forech ignoreSeasonNumber in ignoreSeasonsCountSplit
+                    } //Ends if showNameIgnore equals showName
+                } //Ends foreach loop for showsSeasonIgnore
+            } //Ends if ignoreSeasons contains showName
+        }
+
+        private static bool IsSeasonIgnored(string showName, int seasonNumber)
+        {
+            if (seasonNumberShort == ignoreSeasonNumber)
+            {
+                Console.WriteLine("Ignoring Season");
+                return false;
+            } //Ends if seasonNumberShort == ignoreSeasonNumber
+            else
+            {
+                Console.WriteLine("Not Ignoring Season");
+                return true;
+            } //Ends else for if seasonNumberShort == ignoreSeasonNumber
+            //return true;
+        }
+
+        private static bool IsEpisodeNeeded(string rssTitle)
+        {
+            string showNameSeasonDir = wantedShowNamePath + "\\Season " + seasonNumber;
+            string nameOnDisk = showName + " - S" + seasonNumber + "E" + episodeNumber;
+            Console.WriteLine(showNameSeasonDir);
+            if (Directory.Exists(showNameSeasonDir)) //Determine if Season XX Folder exists
+            {
+                Console.WriteLine("Season folder found");
+                string[] episodesOnDisk = Directory.GetFiles(showNameSeasonDir);
+
+                if (episodesOnDisk.Length == 0) //If Season folder contains no files
+                {
+                    return true; //Set wantedEpisode to true
+                }
+
+                else //If Season folder has files
+                {
+                    foreach (string episodeOnDiskPath in episodesOnDisk) //Loop through Files in Folder
+                    {
+                        string episodeOnDisk = Path.GetFileNameWithoutExtension(episodeOnDiskPath);
+                        Console.WriteLine(episodeOnDisk);
+
+                        if (!episodeOnDisk.Contains(nameOnDisk)) //If Filename is NOT found then download
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+
+            else //If Season XX folder does not exist - Possibly a New Season
+            {
+                wantedEpisode = true; //Set wantedEpisode to true
+            }
+        }
+
+        private static bool IsInQueue(string rssTitle)
+        {
+            string queueRssUrl = "http://" + sabnzbdInfo + "/api?mode=queue&output=xml&apikey=" + apiKey;
+
+            //Check Queue for pending download
+
+            XmlTextReader queueRssReader;
+            XmlDocument queueRssDoc = null;
+            XmlNode nodeQueue = null;
+            XmlNode nodeSlots = null;
+            XmlNode nodeSlot = null;
+
+            queueRssReader = new XmlTextReader(queueRssUrl);
+            queueRssDoc = new XmlDocument();
+            queueRssDoc.Load(queueRssReader);
+
+            //Loop for the <queue> tag
+            for (int i = 0; i < queueRssDoc.ChildNodes.Count; i++)
+            {
+                //If it is the queue tag
+                if (queueRssDoc.ChildNodes[i].Name == "queue")
+                {
+                    //queue tag found
+                    nodeQueue = queueRssDoc.ChildNodes[i];
+                    //Console.WriteLine("Queue FOUND");
+                }
+            }
+
+            //Loop for the <slots> tag
+            for (int i = 0; i < nodeQueue.ChildNodes.Count; i++)
+            {
+                //If is it the slots tag
+                if (nodeQueue.ChildNodes[i].Name == "slots")
+                {
+                    //Slots tag found
+                    nodeSlots = nodeQueue.ChildNodes[i];
+                    //Console.WriteLine("Slots FOUND");
+                }
+            }
+
+            //Loop for filename
+            for (int i = 0; i < nodeSlots.ChildNodes.Count; i++)
+            {
+                if (nodeSlots.ChildNodes[i].Name == "slot")
+                {
+                    nodeSlot = nodeSlots.ChildNodes[i];
+                    string queueFilename = nodeSlot["filename"].InnerText;
+                    //Console.WriteLine(queueFilename);
+
+                    if (queueFilename == rssTitle)
+                    {
+                        Console.WriteLine("Already in queue!");
+                        return true;
+                    }
+                }
+            }
+
+            return true;
+        } //Ends IsInQueue
+
+        private static bool InNzbArchive(string rssTitle)
+        {
+            Console.WriteLine("Checking for Imported NZB");
+            string[] nzbsOnDisk = Directory.GetFiles(nzbDir, "*.nzb.gz");
+
+            foreach (string nzbOnDiskPath in nzbsOnDisk) //Loop through NZBs in Folder
+            {
+                string nzbOnDisk = Path.GetFileNameWithoutExtension(nzbOnDiskPath);
+                //Console.WriteLine(nzbOnDisk);
+                //string rssTitleNzb = rssTitle + ".nzb";
+                if (!nzbOnDisk.Contains(rssTitle)) //If Filename is NOT found then download
+                {
+                    Console.WriteLine("NZB File Not Found");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool AddToQueue(string reportId)
+        {
+            Console.WriteLine("No Files found: download");
+            string nzbFileDownload = "http://" + sabnzbdInfo + "/api?mode=addid&name=" + reportId + "&priority=" + priority + "&apikey=" + apiKey; //Create URL String
+            Console.WriteLine(nzbFileDownload);
+            //Send Newzbin Report to SABnzbd
+            HttpWebRequest addNzbRequest = (HttpWebRequest)WebRequest.Create(nzbFileDownload); //Create Request
+            HttpWebResponse addNzbResponse = (HttpWebResponse)addNzbRequest.GetResponse(); //Execute Request
+            addNzbResponse.Close();
+            return true;
+        } // Ends AddToQueue
+
     } //Ends Class
 } //Ends Namespace
