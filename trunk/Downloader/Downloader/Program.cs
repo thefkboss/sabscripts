@@ -21,6 +21,8 @@ namespace TestNamingScheme
         private static string ignoreSeasons = ConfigurationSettings.AppSettings["ignoreSeasons"].ToString(); //Get rssUrl from app.config
         private static string priority = ConfigurationSettings.AppSettings["priority"].ToString(); //Get rssUrl from app.config
         private static string tvSorting = ConfigurationSettings.AppSettings["tvSorting"].ToString(); //Get tvSorting from app.config
+        private static string username = ConfigurationSettings.AppSettings["username"].ToString(); //Get rssUrl from app.config
+        private static string password = ConfigurationSettings.AppSettings["password"].ToString(); //Get tvSorting from app.config
 
         static void Main(string[] args)
         {
@@ -35,6 +37,8 @@ namespace TestNamingScheme
             string[] wantedShowNames = Directory.GetDirectories(tvDir);
             int numberOfShows = wantedShowNames.Length;
             Console.WriteLine("Watching " + numberOfShows + " shows");
+
+            Console.WriteLine(ignoreSeasons);
 
             rssReader = new XmlTextReader(rssUrl);
             rssDoc = new XmlDocument();
@@ -163,7 +167,8 @@ namespace TestNamingScheme
                 }//Ends if ChildNodes == item
             } //Ends Loop for Title, ReportID
 
-            Console.ReadKey();
+            Thread.Sleep(10000);
+            //Console.ReadKey();
         } //Ends Main Method
 
         private static string GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber)
@@ -263,12 +268,12 @@ namespace TestNamingScheme
                         if (!episodeOnDisk.Contains(nameOnDisk)) //If Filename is NOT found then download
                         {
                             Console.WriteLine("Episode is missing");
-                            return true;
                         }
 
                         else
                         {
                             Console.WriteLine("Episode Found: " + episodeOnDisk);
+                            return false;
                         }
                     }
                 }
@@ -280,12 +285,12 @@ namespace TestNamingScheme
                 Console.WriteLine("Season Folder Does Not Exist");
                 return true; //Set wantedEpisode to true
             }
-            return false;
+            return true;
         }
 
         private static bool IsInQueue(string rssTitle)
         {
-            string queueRssUrl = "http://" + sabnzbdInfo + "/api?mode=queue&output=xml&apikey=" + apiKey;
+            string queueRssUrl = "http://" + sabnzbdInfo + "/api?mode=queue&output=xml&apikey=" + apiKey + "&ma_username=" + username + "&ma_password=" + password;
 
             //Check Queue for pending download
 
@@ -349,14 +354,16 @@ namespace TestNamingScheme
             Console.WriteLine("Checking for Imported NZB for [{0}]", rssTitle);
             //return !File.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz");
 
-            if (!File.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz"))
+            string nzbFileName = rssTitle.TrimEnd('.');
+
+            if (!File.Exists(nzbDir + "\\" + nzbFileName + ".nzb.gz"))
             {
                 Console.WriteLine("Not found in NZB Dir");
                 return true;
             }
             else
             {
-                Console.WriteLine("Found: " + rssTitle + ".nzb.gz");
+                Console.WriteLine("Found: " + nzbFileName + ".nzb.gz");
                 return false;
             }
 
@@ -364,7 +371,7 @@ namespace TestNamingScheme
 
         private static bool AddToQueue(string reportId)
         {
-            string nzbFileDownload = "http://" + sabnzbdInfo + "/api?mode=addid&name=" + reportId + "&priority=" + priority + "&apikey=" + apiKey; //Create URL String
+            string nzbFileDownload = "http://" + sabnzbdInfo + "/api?mode=addid&name=" + reportId + "&priority=" + priority + "&apikey=" + apiKey + "&ma_username=" + username + "&ma_password=" + password; //Create URL String
             Console.WriteLine(nzbFileDownload);
             //Send Newzbin Report to SABnzbd
             HttpWebRequest addNzbRequest = (HttpWebRequest)WebRequest.Create(nzbFileDownload); //Create Request
