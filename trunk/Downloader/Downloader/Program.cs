@@ -127,25 +127,25 @@ namespace TestNamingScheme
                         showWanted = IsShowWanted(tvShowFolder, wantedShowName);
 
                         //Is Season Wanted?
-                        if (showWanted == true)
+                        if (showWanted)
                         {
                             seasonWanted = IsSeasonIgnored(showName, seasonNumber);
                         }
 
                         //Is Episode Needed?
-                        if (showWanted == true && seasonWanted == true)
+                        if (showWanted && seasonWanted)
                         {
                             neededEpisode = IsEpisodeNeeded(tvDir, tvShowFolder, tvSeasonFolder, tvFilename);
                         }
 
                         //Check Queue for pending download
-                        if (showWanted == true && neededEpisode == true)
+                        if (showWanted && neededEpisode)
                         {
                             isNotQueued = IsInQueue(rssTitle);
                         }
 
                         //Check NZB Imported dir (Possible failed extraction)
-                        if (showWanted == true && isNotQueued == true)
+                        if (showWanted && isNotQueued)
                         {
                             nzbNotInArchive = InNzbArchive(rssTitle);
                         }
@@ -226,26 +226,21 @@ namespace TestNamingScheme
                     {
                         if (seasonNumber <= seasonIgnore)
                         {
-                            Console.WriteLine("Ignoring this Season!");
+                            Console.WriteLine("Ignoring Season " + seasonNumber + "!");
                             return false;
                         } //End if seasonNumber Less than or Equal to seasonIgnore
                     } //Ends if showNameIgnore equals showName
                 } //Ends foreach loop for showsSeasonIgnore
             } //Ends if ignoreSeasons contains showName
-            Console.WriteLine("Not Ignoring this Season");
+            Console.WriteLine("Not Ignoring Season " + seasonNumber);
             return true; //If Show Name is not being ignored or that season is not ignored return false
         } //Ends IsSeasonIgnored
 
         private static bool IsEpisodeNeeded(string tvDir, string tvShowFolder, string tvSeasonFolder, string tvFilename)
         {
-            //string showNameSeasonDir = tvDir + "\\" + tvSeasonFolder + "\\" + tvSeasonFolder;
-            //string showNameSeasonDir = tvDir + "\\" + showName + "\\Season 0" + seasonNumber;
             string showNameSeasonDir = tvDir + "\\" + tvShowFolder + "\\" + tvSeasonFolder;
             string nameOnDisk = tvFilename;
-            Console.WriteLine(showNameSeasonDir);
-
-            //string nameOnDisk = showName + " - S" + seasonNumber + "E" + episodeNumber;
-            //string nameOnDisk = tvFilename;
+            Console.WriteLine("Looking for this episode in: " + showNameSeasonDir);
 
             if (Directory.Exists(showNameSeasonDir)) //Determine if Season XX Folder exists
             {
@@ -269,6 +264,11 @@ namespace TestNamingScheme
                         {
                             Console.WriteLine("Episode is missing");
                             return true;
+                        }
+
+                        else
+                        {
+                            Console.WriteLine("Episode Found: " + episodeOnDisk);
                         }
                     }
                 }
@@ -335,7 +335,7 @@ namespace TestNamingScheme
                     if (queueFilename == rssTitle)
                     {
                         Console.WriteLine("Already in queue!");
-                        return true;
+                        return false;
                     }
                 }
             }
@@ -347,12 +347,19 @@ namespace TestNamingScheme
         private static bool InNzbArchive(string rssTitle)
         {
             Console.WriteLine("Checking for Imported NZB for [{0}]", rssTitle);
-            //if (Directory.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz"))
-            //{
-            //    return false;
-            //}
-            //return true;
-            return !File.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz");
+            //return !File.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz");
+
+            if (!File.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz"))
+            {
+                Console.WriteLine("Not found in NZB Dir");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Found: " + rssTitle + ".nzb.gz");
+                return false;
+            }
+
         }
 
         private static bool AddToQueue(string reportId)

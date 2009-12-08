@@ -9,6 +9,4 @@ C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscrip
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\obj\Debug\Downloader.pdb
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\bin\Debug\Downloader.exe
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\bin\Debug\Downloader.pdb
-C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\bin\Debug\RSS.NET.dll
-C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\bin\Debug\RSS.NET.xml
 C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\Downloader\Downloader\obj\Debug\ResolveAssemblyReference.cache
