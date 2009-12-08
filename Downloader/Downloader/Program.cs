@@ -8,14 +8,10 @@ using System.Diagnostics;
 using System.Xml;
 using System.Net;
 
-
-namespace Downloader
+namespace TestNamingScheme
 {
     class Program
     {
-
-
-
         private static string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Get logDir from app.config
         private static string tvDir = ConfigurationSettings.AppSettings["tvDir"].ToString(); //Get tvDir from app.config
         private static string nzbDir = ConfigurationSettings.AppSettings["nzbDir"].ToString(); //Get nzbDir from app.config
@@ -36,15 +32,6 @@ namespace Downloader
             XmlNode nodeChannel = null;
             XmlNode nodeItem = null;
 
-            bool showWanted = false;
-            bool seasonWanted = false;
-            bool neededEpisode = false;
-            bool isQueued = true;
-            bool nzbInArchive = true;
-            bool addedToQueue = false;
-
-            string reportId = null;
-        
             string[] wantedShowNames = Directory.GetDirectories(tvDir);
             int numberOfShows = wantedShowNames.Length;
             Console.WriteLine("Watching " + numberOfShows + " shows");
@@ -53,6 +40,12 @@ namespace Downloader
             rssDoc = new XmlDocument();
 
             rssDoc.Load(rssReader);
+
+            bool showWanted = false;
+            bool seasonWanted = false;
+            bool neededEpisode = false;
+            bool isNotQueued = false;
+            bool nzbNotInArchive = false;
 
             //Loop for the <rss> tag
             for (int i = 0; i < rssDoc.ChildNodes.Count; i++)
@@ -82,20 +75,28 @@ namespace Downloader
             for (int i = 0; i < nodeChannel.ChildNodes.Count; i++)
             {
                 string showName = null;
-                string showNameReplace = null;
                 string seasonEpisode = null;
                 int seasonNumber = 0;
                 int episodeNumber = 0;
+
+                string tvShowFolder = null;
+                string tvSeasonFolder = null;
+                string tvFilename = null;
+                string tvSortingArray = null;
+
+                string reportId = null;
 
                 if (nodeChannel.ChildNodes[i].Name == "item")
                 {
                     nodeItem = nodeChannel.ChildNodes[i];
                     string rssTitle = nodeItem["title"].InnerText;
                     string[] titleArray = rssTitle.Split('-');
+
+
                     if (titleArray.Length == 3)
                     {
                         showName = titleArray[0].Trim();
-                        showNameReplace = showName.Replace(':', '-');
+
                         seasonEpisode = titleArray[1].Trim();
                         string[] seasonEpisodeSplit = seasonEpisode.Split('x');
                         seasonNumber = Convert.ToInt32(seasonEpisodeSplit[0]);
@@ -104,70 +105,69 @@ namespace Downloader
 
                     else
                     {
-                        showName = "Garbage";
+                        showName = "Garbage Show";
                         seasonNumber = 0;
                         episodeNumber = 0;
                     }
 
-                    string[] tvSortingArray = GetShowNamingScheme(showName, seasonNumber, episodeNumber);
-                    string tvShowFolder = tvSortingArray[0];
-                    string tvSeasonFolder = tvSortingArray[1];
-                    string tvFilename = tvSortingArray[2];
+                    tvSortingArray = GetShowNamingScheme(showName, seasonNumber, episodeNumber);
+                    string[] tvSortingArraySplit = tvSortingArray.Split('\\');
+                    tvShowFolder = tvSortingArraySplit[0];
+                    tvSeasonFolder = tvSortingArraySplit[1];
+                    tvFilename = tvSortingArraySplit[2];
+                    tvShowFolder = tvShowFolder.Replace(':', '-');
 
+                    //Console.WriteLine(tvShowFolder);
 
-                    //Is this Show + Season + Episode Needed?
                     foreach (string wantedShowNamePath in wantedShowNames)
                     {
                         string wantedShowName = Path.GetFileName(wantedShowNamePath);
 
                         //Is Show Wanted?
-                        showWanted = IsShowWanted(showName, wantedShowName);
+                        showWanted = IsShowWanted(tvShowFolder, wantedShowName);
 
-                        ////Is Season Wanted?
-                        //if (showWanted == true)
-                        //{
-                        //    seasonWanted = IsSeasonIgnored(showName, seasonNumber);
-                        //}
-
-                        //Is Episode Needed?
+                        //Is Season Wanted?
                         if (showWanted == true)
                         {
-                            //neededEpisode = IsEpisodeNeeded(tvDir, tvShowFolder, tvSeasonFolder, tvFilename);
-                            //neededEpisode = IsEpisodeNeeded(tvDir, showName, seasonNumber, episodeNumber);
-                            neededEpisode = IsEpisodeNeeded(wantedShowNamePath, showName, seasonNumber, episodeNumber);
+                            seasonWanted = IsSeasonIgnored(showName, seasonNumber);
                         }
 
-                        ////Check Queue for pending download
-                        //if (neededEpisode == true)
-                        //{
-                        //    isQueued = IsInQueue(rssTitle);
-                        //}
+                        //Is Episode Needed?
+                        if (showWanted == true && seasonWanted == true)
+                        {
+                            neededEpisode = IsEpisodeNeeded(tvDir, tvShowFolder, tvSeasonFolder, tvFilename);
+                        }
 
-                        ////Check NZB Imported dir (Possible failed extraction)
-                        //if (isQueued == false)
-                        //{
-                        //    nzbInArchive = InNzbArchive(rssTitle);
-                        //}
-
-
+                        //Check Queue for pending download
                         if (showWanted == true && neededEpisode == true)
                         {
-                            reportId = nodeItem["report:id"].InnerText; //Get ReportID
-                            addedToQueue = AddToQueue(reportId);
+                            isNotQueued = IsInQueue(rssTitle);
                         }
 
-                    } //Ends foreach wantedShowName in wantedShowNames
-                } //Ends Node Channel
-            } //Ends Loop for title
-            Console.ReadKey(); //Wait for User Input before Exit (Testing Only)
-        } //Ends Public Static Void Main
+                        //Check NZB Imported dir (Possible failed extraction)
+                        if (showWanted == true && isNotQueued == true)
+                        {
+                            nzbNotInArchive = InNzbArchive(rssTitle);
+                        }
 
-        private static string[] GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber)
+                        if (showWanted && seasonWanted && neededEpisode && isNotQueued && nzbNotInArchive)
+                        {
+                            reportId = nodeItem["report:id"].InnerText; //Get ReportID
+                            AddToQueue(reportId);
+                        }
+
+
+                    } //Ends foreach wantedShowNamePath in wantedShowNames
+
+
+                }//Ends if ChildNodes == item
+            } //Ends Loop for Title, ReportID
+
+            Console.ReadKey();
+        } //Ends Main Method
+
+        private static string GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber)
         {
-            string tvShowFolder = null;
-            string tvSeasonFolder = null;
-            string tvFilename = null;
-
             string snReplace = showName;
             string sDotNReplace = showName.Replace(' ', '.');
             string sUnderNReplace = showName.Replace(' ', '_');
@@ -184,59 +184,34 @@ namespace Downloader
             //Console.WriteLine("0 Episode: " + zeroEReplace);
             //Console.WriteLine("Episode: " + eReplace);
 
-            tvSorting = tvSorting.Replace(".%ext", "");
-            tvSorting = tvSorting.Replace("%en", "");
-            tvSorting = tvSorting.Replace("%e.n", "");
-            tvSorting = tvSorting.Replace("%e_n", "");
-            tvSorting = tvSorting.Replace("%sn", snReplace);
-            tvSorting = tvSorting.Replace("%s.n", sDotNReplace);
-            tvSorting = tvSorting.Replace("%s_n", sUnderNReplace);
-            tvSorting = tvSorting.Replace("%0s", zeroSReplace);
-            tvSorting = tvSorting.Replace("%s", sReplace);
-            tvSorting = tvSorting.Replace("%0e", zeroEReplace);
-            tvSorting = tvSorting.Replace("%e", eReplace);
+            string tvSortingRename = tvSorting;
 
-            if (tvSorting.Contains("/"))
-            {
-                string[] tvSortingSplit = tvSorting.Split('/');
+            tvSortingRename = tvSortingRename.Replace(".%ext", "");
+            tvSortingRename = tvSortingRename.Replace("%en", "");
+            tvSortingRename = tvSortingRename.Replace("%e.n", "");
+            tvSortingRename = tvSortingRename.Replace("%e_n", "");
+            tvSortingRename = tvSortingRename.Replace("%sn", snReplace);
+            tvSortingRename = tvSortingRename.Replace("%s.n", sDotNReplace);
+            tvSortingRename = tvSortingRename.Replace("%s_n", sUnderNReplace);
+            tvSortingRename = tvSortingRename.Replace("%0s", zeroSReplace);
+            tvSortingRename = tvSortingRename.Replace("%s", sReplace);
+            tvSortingRename = tvSortingRename.Replace("%0e", zeroEReplace);
+            tvSortingRename = tvSortingRename.Replace("%e", eReplace);
 
-                if (tvSortingSplit.Length == 3)
-                {
-                    tvShowFolder = tvSortingSplit[0];
-                    tvSeasonFolder = tvSortingSplit[1];
-                    tvFilename = tvSortingSplit[2];
-                }
-            }
+            return tvSortingRename;
+        } //Ends GetShowNamingScheme method
 
-            else
-            {
-                string[] tvSortingSplit = tvSorting.Split('\\');
-
-                if (tvSortingSplit.Length == 3)
-                {
-                    tvShowFolder = tvSortingSplit[0];
-                    tvSeasonFolder = tvSortingSplit[1];
-                    tvFilename = tvSortingSplit[2];
-                }
-            }
-
-            //Console.WriteLine(tvShowFolder);
-            string[] returnValues = new string[] {tvShowFolder, tvSeasonFolder, tvFilename};
-
-            return returnValues;
-        }
-
-        private static bool IsShowWanted(string showName, string wantedShowName)
+        private static bool IsShowWanted(string tvShowFolder, string wantedShowName)
         {
-            if (showName == wantedShowName)
+            if (tvShowFolder == wantedShowName)
             {
-                Console.WriteLine("WANTED: " + showName);
+                Console.WriteLine("WANTED: " + tvShowFolder);
                 return true;
             } //Ends if show is wanted
             return false;
         } //Ends IsShowWanted
 
-        private static bool IsSeasonIgnored(string showName, string seasonNumber)
+        private static bool IsSeasonIgnored(string showName, int seasonNumber)
         {
             if (ignoreSeasons.Contains(showName))
             {
@@ -245,12 +220,11 @@ namespace Downloader
                 {
                     string[] showNameIgnoreSplit = showSeasonIgnore.Split('=');
                     string showNameIgnore = showNameIgnoreSplit[0];
-                    //int seasonIgnore = Convert.ToInt32(showNameIgnoreSplit[1]);
-                    string seasonIgnore = null;
-                    
+                    int seasonIgnore = Convert.ToInt32(showNameIgnoreSplit[1]);
+
                     if (showNameIgnore == showName)
                     {
-                        if (seasonNumber == seasonIgnore)
+                        if (seasonNumber <= seasonIgnore)
                         {
                             Console.WriteLine("Ignoring this Season!");
                             return false;
@@ -262,14 +236,13 @@ namespace Downloader
             return true; //If Show Name is not being ignored or that season is not ignored return false
         } //Ends IsSeasonIgnored
 
-        private static bool IsEpisodeNeeded(string wantedShowNamePath, string showName, string seasonNumber, string episodeNumber)
+        private static bool IsEpisodeNeeded(string tvDir, string tvShowFolder, string tvSeasonFolder, string tvFilename)
         {
             //string showNameSeasonDir = tvDir + "\\" + tvSeasonFolder + "\\" + tvSeasonFolder;
             //string showNameSeasonDir = tvDir + "\\" + showName + "\\Season 0" + seasonNumber;
-            string showNameSeasonDir = wantedShowNamePath + "\\Season " + seasonNumber;
-            string nameOnDisk = showName + " - S0" + seasonNumber + "E" + episodeNumber;
+            string showNameSeasonDir = tvDir + "\\" + tvShowFolder + "\\" + tvSeasonFolder;
+            string nameOnDisk = tvFilename;
             Console.WriteLine(showNameSeasonDir);
-
 
             //string nameOnDisk = showName + " - S" + seasonNumber + "E" + episodeNumber;
             //string nameOnDisk = tvFilename;
@@ -373,26 +346,17 @@ namespace Downloader
 
         private static bool InNzbArchive(string rssTitle)
         {
-            Console.WriteLine("Checking for Imported NZB");
-            string[] nzbsOnDisk = Directory.GetFiles(nzbDir, "*.nzb.gz");
-
-            foreach (string nzbOnDiskPath in nzbsOnDisk) //Loop through NZBs in Folder
-            {
-                string nzbOnDisk = Path.GetFileNameWithoutExtension(nzbOnDiskPath);
-                //Console.WriteLine(nzbOnDisk);
-                //string rssTitleNzb = rssTitle + ".nzb";
-                if (!nzbOnDisk.Contains(rssTitle)) //If Filename is NOT found then download
-                {
-                    Console.WriteLine("NZB File Not Found");
-                    return false;
-                }
-            }
-            return true;
+            Console.WriteLine("Checking for Imported NZB for [{0}]", rssTitle);
+            //if (Directory.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz"))
+            //{
+            //    return false;
+            //}
+            //return true;
+            return !File.Exists(nzbDir + "\\" + rssTitle + ".nzb.gz");
         }
 
         private static bool AddToQueue(string reportId)
         {
-            Console.WriteLine("No Files found: download");
             string nzbFileDownload = "http://" + sabnzbdInfo + "/api?mode=addid&name=" + reportId + "&priority=" + priority + "&apikey=" + apiKey; //Create URL String
             Console.WriteLine(nzbFileDownload);
             //Send Newzbin Report to SABnzbd
@@ -402,6 +366,7 @@ namespace Downloader
             Console.WriteLine("Adding to Queue!");
             return true;
         } // Ends AddToQueue
+
 
     } //Ends Class
 } //Ends Namespace
