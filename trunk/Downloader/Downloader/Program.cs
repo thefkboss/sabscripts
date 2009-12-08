@@ -24,8 +24,7 @@ namespace Downloader
         private static string rssUrl = ConfigurationSettings.AppSettings["rssUrl"].ToString(); //Get rssUrl from app.config
         private static string ignoreSeasons = ConfigurationSettings.AppSettings["ignoreSeasons"].ToString(); //Get rssUrl from app.config
         private static string priority = ConfigurationSettings.AppSettings["priority"].ToString(); //Get rssUrl from app.config
-
-
+        private static string tvSorting = ConfigurationSettings.AppSettings["tvSorting"].ToString(); //Get tvSorting from app.config
 
         static void Main(string[] args)
         {
@@ -46,17 +45,24 @@ namespace Downloader
             XmlNode nodeChannel = null;
             XmlNode nodeItem = null;
 
-            bool wantedSeason = true;
+            bool showWanted = false;
+            bool wantedSeason = false;
             bool neededEpisode = false;
-            bool isQueued = false;
-            bool nzbInArchive = false;
+            bool isQueued = true;
+            bool nzbInArchive = true;
             bool addedToQueue = false;
 
+            string showName = null;
+            string showNameReplace = null;
+            string showFolderReplace = null;
+            string seasonEpisode = null;
+            int seasonNumber = 0;
+            int episodeNumber = 0;
             string reportId = null;
             string nzbFileDownload = null;
+            string[] showNamingScheme = null;
 
             string[] wantedShowNames = Directory.GetDirectories(tvDir);
-
             int numberOfShows = wantedShowNames.Length;
             Console.WriteLine("Watching " + numberOfShows + " shows");
 
@@ -92,12 +98,6 @@ namespace Downloader
             //Loop for Title, ReportID
             for (int i = 0; i < nodeChannel.ChildNodes.Count; i++)
             {
-
-                string showName = null;
-                string seasonEpisode = null;
-                int seasonNumberInt = 0;
-                string seasonNumber = null;
-                string episodeNumber = null;
                 if (nodeChannel.ChildNodes[i].Name == "item")
                 {
                     nodeItem = nodeChannel.ChildNodes[i];
@@ -106,50 +106,55 @@ namespace Downloader
                     if (titleArray.Length == 3)
                     {
                         showName = titleArray[0].Trim();
-                        showName = showName.Replace(':', '-');
                         seasonEpisode = titleArray[1].Trim();
                         string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                        seasonNumberInt = Convert.ToInt32(seasonEpisodeSplit[0]);
-                        episodeNumber = seasonEpisodeSplit[1];
-                        if (seasonNumberInt < 10)
-                        {
-                            seasonNumber = "0" + seasonNumberInt;
-                        }
-                        else
-                        {
-                            seasonNumber = Convert.ToString(seasonNumberInt);
-                        }
+                        seasonNumber = Convert.ToInt32(seasonEpisodeSplit[0]);
+                        episodeNumber = Convert.ToInt32(seasonEpisodeSplit[1]);
                     }
 
                     //Is this Show + Season + Episode Needed?
                     foreach (string wantedShowNamePath in wantedShowNames)
                     {
+                        //Get TV Show Folder Name
+                        showNamingScheme = GetShowNamingScheme(showName, seasonNumber, episodeNumber);
+                        string tvShowFolder = showNamingScheme[0];
+                        string tvSeasonFolder = showNamingScheme[1];
+                        string tvFilename = showNamingScheme[2];
+                        showFolderReplace = tvShowFolder.Replace(':', '-');
+
+                        //Is Show Wanted?
+                        showWanted = IsShowWanted(showNameReplace, wantedShowNamePath);
+
+                        //Is Season Wanted?
+                        if (showWanted == true)
+                        {
+                            //Season wanted here! Redo Season Ignore Check First
+                        }
+
+                        //Is Episode Needed?
+                        if (wantedSeason == true)
+                        {
+                            neededEpisode = IsEpisodeNeeded(tvDir, tvShowFolder, tvSeasonFolder, tvFilename);
+                        }
+
+                        //Check Queue for pending download
+                        if (neededEpisode == true)
+                        {
+                            isQueued = IsInQueue(rssTitle);
+                        }
+
+                        //Check NZB Imported dir (Possible failed extraction)
+                        if (isQueued == false)
+                        {
+                            nzbInArchive = InNzbArchive(rssTitle);
+                        }
 
 
-                            //Is Episode Needed?
-                            if (wantedSeason == true)
-                            {
-                                neededEpisode = IsEpisodeNeeded(rssTitle);
-                            }
-
-                            //Check Queue for pending download
-                            if (neededEpisode == true)
-                            {
-                                isQueued = IsInQueue(rssTitle);
-                            }
-
-                            //Check NZB Imported dir (Possible failed extraction)
-                            if (isQueued == false)
-                            {
-                                nzbInArchive = InNzbArchive(rssTitle);
-                            }
-
-
-                            if (wantedSeason == true && wantedEpisode == true && isQueued == false && notInNzbArchive == true)
-                            {
-                                reportId = nodeItem["report:id"].InnerText; //Get ReportID
-                                addedToQueue = AddToQueue(reportId);
-                            }
+                        if (wantedSeason == true && neededEpisode == true && isQueued == false && nzbInArchive == false)
+                        {
+                            reportId = nodeItem["report:id"].InnerText; //Get ReportID
+                            addedToQueue = AddToQueue(reportId);
+                        }
 
                         
                     } //Ends foreach wantedShowName in wantedShowNames
@@ -158,61 +163,110 @@ namespace Downloader
             Console.ReadKey(); //Wait for User Input before Exit (Testing Only)
         } //Ends Public Static Void Main
 
-        private static bool IsShowWanted(string showName, string wantedShowNamePath)
+        private static string[] GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber)
+        {
+            string tvShowFolder = null;
+            string tvSeasonFolder = null;
+            string tvFilename = null;
+
+            string snReplace = showName;
+            string sDotNReplace = showName.Replace(' ', '.');
+            string sUnderNReplace = showName.Replace(' ', '_');
+            string zeroSReplace = String.Format("{0:00}", seasonNumber);
+            string sReplace = Convert.ToString(seasonNumber);
+            string zeroEReplace = String.Format("{0:00}", episodeNumber);
+            string eReplace = Convert.ToString(episodeNumber);
+
+            //Console.WriteLine("Show Name: " + snReplace);
+            //Console.WriteLine("Show.Name: " + sDotNReplace);
+            //Console.WriteLine("Show_Name: " + sUnderNReplace);
+            //Console.WriteLine("0 Season: " + zeroSReplace);
+            //Console.WriteLine("Season: " + sReplace);
+            //Console.WriteLine("0 Episode: " + zeroEReplace);
+            //Console.WriteLine("Episode: " + eReplace);
+
+            tvSorting = tvSorting.Replace(".%ext", "");
+            tvSorting = tvSorting.Replace("%en", "");
+            tvSorting = tvSorting.Replace("%e.n", "");
+            tvSorting = tvSorting.Replace("%e_n", "");
+            tvSorting = tvSorting.Replace("%sn", snReplace);
+            tvSorting = tvSorting.Replace("%s.n", sDotNReplace);
+            tvSorting = tvSorting.Replace("%s_n", sUnderNReplace);
+            tvSorting = tvSorting.Replace("%0s", zeroSReplace);
+            tvSorting = tvSorting.Replace("%s", sReplace);
+            tvSorting = tvSorting.Replace("%0e", zeroEReplace);
+            tvSorting = tvSorting.Replace("%e", eReplace);
+
+            if (tvSorting.Contains("/"))
+            {
+                string[] tvSortingSplit = tvSorting.Split('/');
+
+                if (tvSortingSplit.Length == 3)
+                {
+                    tvShowFolder = tvSortingSplit[0];
+                    tvSeasonFolder = tvSortingSplit[1];
+                    tvFilename = tvSortingSplit[2];
+                }
+            }
+
+            else
+            {
+                string[] tvSortingSplit = tvSorting.Split('\\');
+
+                if (tvSortingSplit.Length == 3)
+                {
+                    tvShowFolder = tvSortingSplit[0];
+                    tvSeasonFolder = tvSortingSplit[1];
+                    tvFilename = tvSortingSplit[2];
+                }
+            }
+            string[] returnValues = new string[] {tvShowFolder, tvSeasonFolder, tvFilename};
+
+            return returnValues;
+        }
+
+        private static bool IsShowWanted(string showFolderReplace, string wantedShowNamePath)
         {
             string wantedShowName = Path.GetFileName(wantedShowNamePath);
-            if (showName == wantedShowName)
+            if (showFolderReplace == wantedShowName)
             {
-                Console.WriteLine("WANTED: " + showName);
+                Console.WriteLine("WANTED: " + showFolderReplace);
                 return true;
             } //Ends if show is wanted
             return false;
         } //Ends IsShowWanted
 
-        private static bool IsShowIgnored(string showName)
+        private static bool IsSeasonIgnored(string showName, int seasonNumber)
         {
             if (ignoreSeasons.Contains(showName))
             {
-                Console.WriteLine("Checking for Ignore");
                 string[] showsSeasonIgnore = ignoreSeasons.Split(';');
                 foreach (string showSeasonIgnore in showsSeasonIgnore)
                 {
                     string[] showNameIgnoreSplit = showSeasonIgnore.Split('=');
                     string showNameIgnore = showNameIgnoreSplit[0];
+                    int seasonIgnore = Convert.ToInt32(showNameIgnoreSplit[1]);
+
                     if (showNameIgnore == showName)
                     {
-                        string ignoreSeasonsCount = showNameIgnoreSplit[1];
-                        string[] ignoreSeasonsCountSplit = ignoreSeasonsCount.Split(',');
-                        string seasonNumberShort = Convert.ToString(seasonNumberInt);
-
-                        foreach (string ignoreSeasonNumber in ignoreSeasonsCountSplit)
+                        if (seasonNumber <= seasonIgnore)
                         {
-
-                        } //Ends forech ignoreSeasonNumber in ignoreSeasonsCountSplit
+                            Console.WriteLine("Ignoring this Season!");
+                            return true;
+                        } //End if seasonNumber Less than or Equal to seasonIgnore
                     } //Ends if showNameIgnore equals showName
                 } //Ends foreach loop for showsSeasonIgnore
             } //Ends if ignoreSeasons contains showName
-        }
+            return false; //If Show Name is not being ignored or that season is not ignored return false
+        } //Ends IsSeasonIgnored
 
-        private static bool IsSeasonIgnored(string showName, int seasonNumber)
+        private static bool IsEpisodeNeeded(string tvDir, string tvShowFolder, string tvSeasonFolder, string tvFilename)
         {
-            if (seasonNumberShort == ignoreSeasonNumber)
-            {
-                Console.WriteLine("Ignoring Season");
-                return false;
-            } //Ends if seasonNumberShort == ignoreSeasonNumber
-            else
-            {
-                Console.WriteLine("Not Ignoring Season");
-                return true;
-            } //Ends else for if seasonNumberShort == ignoreSeasonNumber
-            //return true;
-        }
+            string showNameSeasonDir = tvDir + "\\" + tvSeasonFolder + "\\" + tvSeasonFolder;
 
-        private static bool IsEpisodeNeeded(string rssTitle)
-        {
-            string showNameSeasonDir = wantedShowNamePath + "\\Season " + seasonNumber;
-            string nameOnDisk = showName + " - S" + seasonNumber + "E" + episodeNumber;
+            //string nameOnDisk = showName + " - S" + seasonNumber + "E" + episodeNumber;
+            string nameOnDisk = tvFilename;
+
             Console.WriteLine(showNameSeasonDir);
             if (Directory.Exists(showNameSeasonDir)) //Determine if Season XX Folder exists
             {
@@ -221,6 +275,7 @@ namespace Downloader
 
                 if (episodesOnDisk.Length == 0) //If Season folder contains no files
                 {
+                    Console.WriteLine("Episode is missing");
                     return true; //Set wantedEpisode to true
                 }
 
@@ -233,6 +288,7 @@ namespace Downloader
 
                         if (!episodeOnDisk.Contains(nameOnDisk)) //If Filename is NOT found then download
                         {
+                            Console.WriteLine("Episode is missing");
                             return true;
                         }
                     }
@@ -242,8 +298,10 @@ namespace Downloader
 
             else //If Season XX folder does not exist - Possibly a New Season
             {
-                wantedEpisode = true; //Set wantedEpisode to true
+                Console.WriteLine("Episode is missing");
+                return true; //Set wantedEpisode to true
             }
+            return false;
         }
 
         private static bool IsInQueue(string rssTitle)
@@ -302,7 +360,7 @@ namespace Downloader
                     }
                 }
             }
-
+            Console.WriteLine("Episode not in Queue");
             return true;
         } //Ends IsInQueue
 
@@ -334,6 +392,7 @@ namespace Downloader
             HttpWebRequest addNzbRequest = (HttpWebRequest)WebRequest.Create(nzbFileDownload); //Create Request
             HttpWebResponse addNzbResponse = (HttpWebResponse)addNzbRequest.GetResponse(); //Execute Request
             addNzbResponse.Close();
+            Console.WriteLine("Adding to Queue!");
             return true;
         } // Ends AddToQueue
 
