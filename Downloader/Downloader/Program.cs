@@ -27,10 +27,12 @@ namespace Downloader
         private static string ignoreSeasons = ConfigurationSettings.AppSettings["ignoreSeasons"].ToString(); //Get rssUrl from app.config
         private static string priority = ConfigurationSettings.AppSettings["priority"].ToString(); //Get rssUrl from app.config
         private static string tvSorting = ConfigurationSettings.AppSettings["tvSorting"].ToString(); //Get tvSorting from app.config
+        private static string tvDailySorting = ConfigurationSettings.AppSettings["tvDailySorting"].ToString(); //Get tvDailySorting from app.config
+        private static string videoExtConfig = ConfigurationSettings.AppSettings["videoExt"].ToString(); //Get videoExt from app.config
         private static string username = ConfigurationSettings.AppSettings["username"].ToString(); //Get rssUrl from app.config
         private static string password = ConfigurationSettings.AppSettings["password"].ToString(); //Get tvSorting from app.config
 
-        private static string[] videoExt = new string[] { ".mkv", ".avi", ".wmv" };
+        private static string[] videoExt = videoExtConfig.Split(';');
 
         private static List<Report> GetReports()
         {
@@ -121,6 +123,51 @@ namespace Downloader
             return tvSortingRename;
         } //Ends GetShowNamingScheme method
 
+        private static string GetDailyShowNamingScheme(string showName, int year, int month, int day, string episodeName)
+        {
+
+
+            string tReplace = showName;
+            string dotTReplace = showName.Replace(' ', '.');
+            string underTReplace = showName.Replace(' ', '_');
+            string yearReplace = Convert.ToString(year);
+            string zeroMReplace = String.Format("{0:00}", month);
+            string mReplace = Convert.ToString(month);
+            string zeroDReplace = String.Format("{0:00}", day);
+            string dReplace = Convert.ToString(day);
+            string descReplace = episodeName;
+            string dotDescReplace = episodeName.Replace(' ', '.');
+            string underDescReplace = episodeName.Replace(' ', '_');
+            //string decadeReplace = 
+            //string decaseZeroReplace =
+
+            //Console.WriteLine("Show Name: " + snReplace);
+            //Console.WriteLine("Show.Name: " + sDotNReplace);
+            //Console.WriteLine("Show_Name: " + sUnderNReplace);
+            //Console.WriteLine("0 Season: " + zeroSReplace);
+            //Console.WriteLine("Season: " + sReplace);
+            //Console.WriteLine("0 Episode: " + zeroEReplace);
+            //Console.WriteLine("Episode: " + eReplace);
+
+            string tvDailySortingRename = tvDailySorting;
+
+            tvDailySortingRename = tvDailySortingRename.Replace(".%ext", "");
+            tvDailySortingRename = tvDailySortingRename.Replace("%desc", "");
+            tvDailySortingRename = tvDailySortingRename.Replace("%.desc", "");
+            tvDailySortingRename = tvDailySortingRename.Replace("%_desc", "");
+            tvDailySortingRename = tvDailySortingRename.Replace("%y", yearReplace);
+            tvDailySortingRename = tvDailySortingRename.Replace("%t", tReplace);
+            tvDailySortingRename = tvDailySortingRename.Replace("%.t", dotTReplace);
+            tvDailySortingRename = tvDailySortingRename.Replace("%_t", underTReplace);
+            tvDailySortingRename = tvDailySortingRename.Replace("%0s", zeroMReplace);
+            tvDailySortingRename = tvDailySortingRename.Replace("%s", mReplace);
+            tvDailySortingRename = tvDailySortingRename.Replace("%0e", zeroDReplace);
+            tvDailySortingRename = tvDailySortingRename.Replace("%e", dReplace);
+
+            return tvDailySortingRename;
+        } //Ends GetDailyShowNamingScheme
+
+
         private static bool IsShowWanted(string wantedShowName)
         {
 
@@ -160,7 +207,6 @@ namespace Downloader
                 Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
                 Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
 
-
                 string path = GetShowNamingScheme(showName, seasonNumber, episodeNumber, episodeName);
 
                 foreach (var s in videoExt)
@@ -172,7 +218,6 @@ namespace Downloader
                     }
 
                 }
-
 
                 if (IsSeasonIgnored(showName, seasonNumber))
                     return false;
@@ -190,7 +235,38 @@ namespace Downloader
 
             }
 
+            if (titleArray.Length == 5)
+            {
+                string showName = titleArray[0].Trim();
+                int year = Convert.ToInt32(titleArray[1].Trim());
+                int month = Convert.ToInt32(titleArray[2].Trim());
+                int day = Convert.ToInt32(titleArray[3].Trim());
+                string episodeName = titleArray[4].Trim();
 
+                string path = GetDailyShowNamingScheme(showName, year, month, day, episodeName);
+
+                foreach (var s in videoExt)
+                {
+                    if (File.Exists(path + s))
+                    {
+                        Console.WriteLine("Episode is in disk. '{0}'", path + s);
+                        return false;
+                    }
+
+                }
+
+                if (!IsShowWanted(showName))
+                    return false;
+
+                if (IsInQueue(title, reportId))
+                    return false;
+
+                if (InNzbArchive(title))
+                    return false;
+
+                return true;
+
+            }
 
             Console.WriteLine("Unsupported Title: {0}", title);
             return false;
