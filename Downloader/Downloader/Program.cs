@@ -208,6 +208,7 @@ namespace Downloader
                 Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
 
                 string path = GetShowNamingScheme(showName, seasonNumber, episodeNumber, episodeName);
+                path = tvDir + "\\" + path;
 
                 foreach (var s in videoExt)
                 {
@@ -270,6 +271,7 @@ namespace Downloader
                 Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
 
                 string path = GetShowNamingScheme(showName, seasonNumber, episodeNumber, episodeName);
+                path = tvDir + "\\" + path;
 
                 foreach (var s in videoExt)
                 {
@@ -311,6 +313,7 @@ namespace Downloader
                 string episodeName = titleArray[4].Trim();
 
                 string path = GetDailyShowNamingScheme(showName, year, month, day, episodeName);
+                path = tvDir + "\\" + path;
 
                 foreach (var s in videoExt)
                 {
@@ -382,7 +385,7 @@ namespace Downloader
                     XmlElement queueElement = (XmlElement)s;
 
                     //Queue is empty
-                    if (!String.IsNullOrEmpty(queueElement.InnerText))
+                    if (String.IsNullOrEmpty(queueElement.InnerText))
                         return false;
 
                     string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
