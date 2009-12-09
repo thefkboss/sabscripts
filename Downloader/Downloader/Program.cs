@@ -235,12 +235,79 @@ namespace Downloader
 
             }
 
+            if (titleArray.Length == 4)
+            {
+                string showName;
+
+                string seasonEpisode;
+                string episodeName;
+
+                if (titleArray[1].Contains("x"))
+                {
+                    showName = titleArray[0].Trim();
+                    seasonEpisode = titleArray[1].Trim();
+                    episodeName = titleArray[2].Trim() + titleArray[3].Trim();
+                }
+
+                else if (titleArray[2].Contains("x"))
+                {
+                    showName = titleArray[0].Trim() + titleArray[1].Trim();
+                    seasonEpisode = titleArray[2].Trim();
+                    episodeName = titleArray[3].Trim();
+                }
+
+                else
+                {
+                    Console.WriteLine("Unsupported Title: {0}", title);
+                    return false;
+                }
+
+                string[] seasonEpisodeSplit = seasonEpisode.Split('x');
+                int seasonNumber = 0;
+                int episodeNumber;
+
+                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
+                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
+
+                string path = GetShowNamingScheme(showName, seasonNumber, episodeNumber, episodeName);
+
+                foreach (var s in videoExt)
+                {
+                    if (File.Exists(path + s))
+                    {
+                        Console.WriteLine("Episode is in disk. '{0}'", path + s);
+                        return false;
+                    }
+
+                }
+
+                if (IsSeasonIgnored(showName, seasonNumber))
+                    return false;
+
+                if (!IsShowWanted(showName))
+                    return false;
+
+                if (IsInQueue(title, reportId))
+                    return false;
+
+                if (InNzbArchive(title))
+                    return false;
+
+                return true;
+
+            }
+
             if (titleArray.Length == 5)
             {
                 string showName = titleArray[0].Trim();
-                int year = Convert.ToInt32(titleArray[1].Trim());
-                int month = Convert.ToInt32(titleArray[2].Trim());
-                int day = Convert.ToInt32(titleArray[3].Trim());
+                int year = 2000;
+                int month = 12;
+                int day = 24;
+
+                Int32.TryParse(titleArray[1], out year);
+                Int32.TryParse(titleArray[2], out month);
+                Int32.TryParse(titleArray[3], out day);
+                
                 string episodeName = titleArray[4].Trim();
 
                 string path = GetDailyShowNamingScheme(showName, year, month, day, episodeName);
