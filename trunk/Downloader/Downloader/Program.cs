@@ -79,12 +79,13 @@ namespace Downloader
                 }
             }
 
-            //Thread.Sleep(10000);
-            Console.ReadKey();
+            Thread.Sleep(10000);
+            //Console.ReadKey();
         } //Ends Main Method
 
         private static string GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber, string episodeName)
         {
+            showName = showName.Replace(':', '-');
             string snReplace = showName;
             string sDotNReplace = showName.Replace(' ', '.');
             string sUnderNReplace = showName.Replace(' ', '_');
@@ -167,7 +168,6 @@ namespace Downloader
             return tvDailySortingRename;
         } //Ends GetDailyShowNamingScheme
 
-
         private static bool IsShowWanted(string wantedShowName)
         {
 
@@ -178,7 +178,7 @@ namespace Downloader
             {
                 DirectoryInfo di = new DirectoryInfo(item);
 
-                if (di.Name.ToLower() == wantedShowName.ToLower())
+                if (di.Name.Replace(':', '-').ToLower() == wantedShowName.ToLower())
                 {
                     return true;
                 }
@@ -378,9 +378,9 @@ namespace Downloader
                 queueRssDoc.Load(queueRssReader);
 
                 var queue = (XmlElement)queueRssDoc.GetElementsByTagName(@"queue")[0];
-                var slots = queue.GetElementsByTagName("slots");
+                var slot = queue.GetElementsByTagName("slot");
 
-                foreach (var s in slots)
+                foreach (var s in slot)
                 {
                     XmlElement queueElement = (XmlElement)s;
 
