@@ -226,33 +226,21 @@ namespace Downloader
         {
             string result = name;
 
-            if (_sabReplaceChars)
-            {
+            string[] badCharacters = { "\\", "/", "<", ">", "?", "*", ":", "|", "\"" };
+            string[] goodCharacters = { "+", "+", "{", "}", "!", "@", "-", "#", "`" };
 
-                result = result.Replace('\\', '+');
-                result = result.Replace('/', '+');
-                result = result.Replace('<', '{');
-                result = result.Replace('>', '}');
-                result = result.Replace('?', '!');
-                result = result.Replace('*', '@');
-                result = result.Replace(':', '-');
-                result = result.Replace('|', '#');
-                result = result.Replace('\"', '`');
+            for (int i = 0; i < badCharacters.Length; i++)
+            {
+                if (_sabReplaceChars)
+                {
+                    result = result.Replace(badCharacters[i], goodCharacters[i]);
+                }
+                else
+                {
+                    result = result.Replace(badCharacters[i], "");
+                }
             }
 
-            else
-            {
-
-                result = result.Replace("\\", "");
-                result = result.Replace("/", "");
-                result = result.Replace("<", "");
-                result = result.Replace(">", "");
-                result = result.Replace("?", "");
-                result = result.Replace("*", "");
-                result = result.Replace(":", "");
-                result = result.Replace("|", "");
-                result = result.Replace("\"", "");
-            }
             return result.Trim();
         }
 
