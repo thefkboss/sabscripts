@@ -31,6 +31,7 @@ namespace Downloader
         private static string videoExtConfig = ConfigurationSettings.AppSettings["videoExt"].ToString(); //Get videoExt from app.config
         private static string username = ConfigurationSettings.AppSettings["username"].ToString(); //Get rssUrl from app.config
         private static string password = ConfigurationSettings.AppSettings["password"].ToString(); //Get tvSorting from app.config
+        private static string sabReplaceChars = ConfigurationSettings.AppSettings["sabReplaceChars"].ToString(); //Get logDir from app.config
 
         private static string[] videoExt = videoExtConfig.Split(';');
 
@@ -85,7 +86,52 @@ namespace Downloader
 
         private static string GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber, string episodeName)
         {
-            showName = showName.Replace(':', '-');
+            if (sabReplaceChars == "true")
+            {
+                showName = showName.Replace('\\', '+');
+                showName = showName.Replace('/', '+');
+                showName = showName.Replace('<', '{');
+                showName = showName.Replace('>', '}');
+                showName = showName.Replace('?', '!');
+                showName = showName.Replace('*', '@');
+                showName = showName.Replace(':', '-');
+                showName = showName.Replace('|', '#');
+                showName = showName.Replace('\"', '`');
+
+                episodeName = episodeName.Replace('\\', '+');
+                episodeName = episodeName.Replace('/', '+');
+                episodeName = episodeName.Replace('<', '{');
+                episodeName = episodeName.Replace('>', '}');
+                episodeName = episodeName.Replace('?', '!');
+                episodeName = episodeName.Replace('*', '@');
+                episodeName = episodeName.Replace(':', '-');
+                episodeName = episodeName.Replace('|', '#');
+                episodeName = episodeName.Replace('\"', '`');
+            }
+
+            else
+            {
+                showName = showName.Replace("\\", "");
+                showName = showName.Replace("/", "");
+                showName = showName.Replace("<", "");
+                showName = showName.Replace(">", "");
+                showName = showName.Replace("?", "");
+                showName = showName.Replace("*", "");
+                showName = showName.Replace(":", "");
+                showName = showName.Replace("|", "");
+                showName = showName.Replace("\"", "");
+
+                episodeName = episodeName.Replace("\\", "");
+                episodeName = episodeName.Replace("/", "");
+                episodeName = episodeName.Replace("<", "");
+                episodeName = episodeName.Replace(">", "");
+                episodeName = episodeName.Replace("?", "");
+                episodeName = episodeName.Replace("*", "");
+                episodeName = episodeName.Replace(":", "");
+                episodeName = episodeName.Replace("|", "");
+                episodeName = episodeName.Replace("\"", "");
+            }
+
             string snReplace = showName;
             string sDotNReplace = showName.Replace(' ', '.');
             string sUnderNReplace = showName.Replace(' ', '_');
@@ -178,7 +224,34 @@ namespace Downloader
             {
                 DirectoryInfo di = new DirectoryInfo(item);
 
-                if (di.Name.Replace(':', '-').ToLower() == wantedShowName.ToLower())
+                string diName = di.Name;
+                if (sabReplaceChars == "true")
+                {
+                    diName = diName.Replace('\\', '+');
+                    diName = diName.Replace('/', '+');
+                    diName = diName.Replace('<', '{');
+                    diName = diName.Replace('>', '}');
+                    diName = diName.Replace('?', '!');
+                    diName = diName.Replace('*', '@');
+                    diName = diName.Replace(':', '-');
+                    diName = diName.Replace('|', '#');
+                    diName = diName.Replace('\"', '`');
+                }
+
+                else
+                {
+                    diName = diName.Replace("\\", "");
+                    diName = diName.Replace("/", "");
+                    diName = diName.Replace("<", "");
+                    diName = diName.Replace(">", "");
+                    diName = diName.Replace("?", "");
+                    diName = diName.Replace("*", "");
+                    diName = diName.Replace(":", "");
+                    diName = diName.Replace("|", "");
+                    diName = diName.Replace("\"", "");
+                }
+
+                if (di.Name.ToLower() == wantedShowName.ToLower())
                 {
                     return true;
                 }
