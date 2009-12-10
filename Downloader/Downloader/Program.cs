@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Configuration;
-using System.IO;
 using System.Xml;
-using System.Net;
 using Rss;
 
 namespace Downloader
@@ -17,7 +17,7 @@ namespace Downloader
         public string Title;
     }
 
-    class Program
+    internal class Program
     {
         private static DirectoryInfo _tvRoot;
         private static DirectoryInfo _nzbDir;
@@ -29,10 +29,58 @@ namespace Downloader
         private static DirectoryInfo[] _wantedShowNames;
         private static bool _sabReplaceChars;
         private static string _sabRequest;
+        private static readonly List<string> Queued = new List<string>();
+        private static readonly List<string> Summary = new List<string>();
+
+        private static void Main()
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+
+            try
+            {
+                LoadConfig();
+                List<Report> reports = GetReports();
+
+                Log("Watching {0} shows", _wantedShowNames.Length);
+                Log("_ignoreSeasons: {0}", _ignoreSeasons);
+
+                foreach (var report in reports)
+                {
+                    if (IsEpisodeWannted(report.Title, report.ReportId))
+                    {
+                        string queueResponse = AddToQueue(report.ReportId);
+                        Queued.Add(report.Title + ": " + queueResponse);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log(ex.Message, true);
+                Log(ex.ToString(), true);
+            }
+
+
+            sw.Stop();
+            Log(Environment.NewLine + "=============================================================");
+            Log("Process successfully completed. Duration {0:##.#}s", sw.Elapsed.TotalSeconds);
+
+            foreach (var item in Queued)
+            {
+                Log("Queued for download: " + item);
+            }
+            Log("Number of reports added to the queue: " + Queued.Count);
+
+            foreach (var logItem in Summary)
+            {
+                Log(logItem);
+            }
+
+            Thread.Sleep(10000);
+        }
 
         private static void LoadConfig()
         {
-            Console.WriteLine("Loading configuration...");
+            Log("Loading configuration...");
 
             _tvRoot = new DirectoryInfo(ConfigurationManager.AppSettings["tvRoot"]); //Get _tvRoot from app.config
             if (!_tvRoot.Exists)
@@ -50,7 +98,8 @@ namespace Downloader
                 throw new ApplicationException("Undefined tvTemplate");
 
 
-            _tvDailyTemplate = ConfigurationManager.AppSettings["tvDailyTemplate"]; //Get _tvDailyTemplate from app.config
+            _tvDailyTemplate = ConfigurationManager.AppSettings["tvDailyTemplate"];
+                //Get _tvDailyTemplate from app.config
             if (String.IsNullOrEmpty(_tvTemplate))
                 throw new ApplicationException("tvDailyTemplate");
 
@@ -63,7 +112,10 @@ namespace Downloader
             string apiKey = ConfigurationManager.AppSettings["apiKey"];
             string username = ConfigurationManager.AppSettings["username"]; //Get _rssUrl from app.config
             string password = ConfigurationManager.AppSettings["password"]; //Get _tvTemplate from app.config
-            _sabRequest = string.Format("http://{0}/api?$Action&priority={1}&apikey={2}&ma_username={3}&ma_password={4}", sabnzbdInfo, priority, apiKey, username, password).Replace("$Action", "{0}"); //Create URL String
+            _sabRequest =
+                string.Format("http://{0}/api?$Action&priority={1}&apikey={2}&ma_username={3}&ma_password={4}",
+                              sabnzbdInfo, priority, apiKey, username, password).Replace("$Action", "{0}");
+                //Create URL String
 
             _nzbDir = new DirectoryInfo(ConfigurationManager.AppSettings["nzbDir"]); //Get _nzbDir from app.config
         }
@@ -71,7 +123,7 @@ namespace Downloader
 
         private static List<Report> GetReports()
         {
-            Console.WriteLine("Downloading feed from {0}", _rssUrl);
+            Log("Downloading feed from {0}", _rssUrl);
 
             RssFeed feed = RssFeed.Read(_rssUrl);
             RssChannel channel = feed.Channels[0];
@@ -85,56 +137,22 @@ namespace Downloader
                     currentReport.Title = item.Title;
                     currentReport.ReportId = Convert.ToInt64(Regex.Match(item.Link.AbsolutePath, @"\d{7,10}").Value);
                     reports.Add(currentReport);
-                    Console.WriteLine("{0}:{1}", currentReport.ReportId, currentReport.Title);
+                    Log("{0}:{1}", currentReport.ReportId, currentReport.Title);
                 }
                 else
                 {
-                    Console.WriteLine("Skipping {0}", item.Title);
+                    Log("Skipping {0}", item.Title);
                 }
             }
 
-            Console.WriteLine(Environment.NewLine + "Download Completed. Total of {0} reports found", reports.Count);
+            Log(Environment.NewLine + "Download Completed. Total of {0} reports found", reports.Count);
             return reports;
         }
 
 
-        static void Main()
+        private static string GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber,
+                                                  string episodeName)
         {
-            Stopwatch sw = Stopwatch.StartNew();
-
-            try
-            {
-
-                LoadConfig();
-                List<Report> reports = GetReports();
-
-                Console.WriteLine("Watching {0} shows", _wantedShowNames.Length);
-                Console.WriteLine("_ignoreSeasons: {0}", _ignoreSeasons);
-
-                foreach (var report in reports)
-                {
-                    if (IsEpisodeWannted(report.Title, report.ReportId))
-                    {
-                        AddToQueue(report.ReportId);
-                    }
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex);
-            }
-
-
-            sw.Stop();
-            Console.WriteLine(Environment.NewLine + "=============================================================");
-            Console.WriteLine("Process successfully completed. Duration {0:00.00}s", sw.Elapsed.TotalSeconds);
-            Thread.Sleep(10000);
-        }
-
-        private static string GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber, string episodeName)
-        {
-
             showName = CleanString(showName);
             episodeName = CleanString(episodeName);
 
@@ -151,14 +169,6 @@ namespace Downloader
             string zeroEReplace = String.Format("{0:00}", episodeNumber);
             string eReplace = Convert.ToString(episodeNumber);
 
-            //Console.WriteLine("Show Name: " + snReplace);
-            //Console.WriteLine("Show.Name: " + sDotNReplace);
-            //Console.WriteLine("Show_Name: " + sUnderNReplace);
-            //Console.WriteLine("0 Season: " + zeroSReplace);
-            //Console.WriteLine("Season: " + sReplace);
-            //Console.WriteLine("0 Episode: " + zeroEReplace);
-            //Console.WriteLine("Episode: " + eReplace);
-
             string tvSortingRename = _tvTemplate;
 
             tvSortingRename = tvSortingRename.Replace(".%ext", "");
@@ -174,11 +184,10 @@ namespace Downloader
             tvSortingRename = tvSortingRename.Replace("%e", eReplace);
 
             return tvSortingRename;
-        } //Ends GetShowNamingScheme method
+        }
 
         private static string GetDailyShowNamingScheme(string showName, int year, int month, int day, string episodeName)
         {
-
             showName = CleanString(showName);
             episodeName = CleanString(episodeName);
 
@@ -193,16 +202,6 @@ namespace Downloader
             string descReplace = episodeName;
             string dotDescReplace = episodeName.Replace(' ', '.');
             string underDescReplace = episodeName.Replace(' ', '_');
-            //string decadeReplace = 
-            //string decaseZeroReplace =
-
-            //Console.WriteLine("Show Name: " + snReplace);
-            //Console.WriteLine("Show.Name: " + sDotNReplace);
-            //Console.WriteLine("Show_Name: " + sUnderNReplace);
-            //Console.WriteLine("0 Season: " + zeroSReplace);
-            //Console.WriteLine("Season: " + sReplace);
-            //Console.WriteLine("0 Episode: " + zeroEReplace);
-            //Console.WriteLine("Episode: " + eReplace);
 
             string tvDailySortingR = _tvDailyTemplate;
 
@@ -225,9 +224,9 @@ namespace Downloader
         private static string CleanString(string name)
         {
             string result = name;
+            string[] badCharacters = {"\\", "/", "<", ">", "?", "*", ":", "|", "\""};
+            string[] goodCharacters = {"+", "+", "{", "}", "!", "@", "-", "#", "`"};
 
-            string[] badCharacters = { "\\", "/", "<", ">", "?", "*", ":", "|", "\"" };
-            string[] goodCharacters = { "+", "+", "{", "}", "!", "@", "-", "#", "`" };
 
             for (int i = 0; i < badCharacters.Length; i++)
             {
@@ -253,14 +252,14 @@ namespace Downloader
                     return true;
                 }
             }
-            Console.WriteLine("'{0}' is not being watched.", wantedShowName);
+            Log("'{0}' is not being watched.", wantedShowName);
             return false;
         } //Ends IsShowWanted
 
         private static bool IsEpisodeWannted(string title, Int64 reportId)
         {
-            Console.WriteLine("----------------------------------------------------------------");
-            Console.WriteLine("Verifying '{0}'", title);
+            Log("----------------------------------------------------------------");
+            Log("Verifying '{0}'", title);
             string[] titleArray = title.Split('-');
 
             if (titleArray.Length == 3)
@@ -271,7 +270,7 @@ namespace Downloader
                 string episodeName = titleArray[2].Trim();
 
                 string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                int seasonNumber = 0;
+                int seasonNumber;
                 int episodeNumber;
 
                 Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
@@ -298,7 +297,6 @@ namespace Downloader
                     return false;
 
                 return true;
-
             }
 
             if (titleArray.Length == 4)
@@ -324,12 +322,12 @@ namespace Downloader
 
                 else
                 {
-                    Console.WriteLine("Unsupported Title: {0}", title);
+                    Log("Unsupported Title: {0}", title);
                     return false;
                 }
 
                 string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                int seasonNumber = 0;
+                int seasonNumber;
                 int episodeNumber;
 
                 Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
@@ -354,15 +352,14 @@ namespace Downloader
                     return false;
 
                 return true;
-
             }
 
             if (titleArray.Length == 5)
             {
                 string showName = titleArray[0].Trim();
-                int year = 2000;
-                int month = 12;
-                int day = 24;
+                int year;
+                int month;
+                int day;
 
                 Int32.TryParse(titleArray[1], out year);
                 Int32.TryParse(titleArray[2], out month);
@@ -376,7 +373,7 @@ namespace Downloader
 
                 if (!IsShowWanted(showName))
                     return false;
-                
+
                 if (IsOnDisk(path))
                     return false;
 
@@ -389,7 +386,7 @@ namespace Downloader
                 return true;
             }
 
-            Console.WriteLine("Unsupported Title: {0}", title);
+            Log("Unsupported Title: {0}", title);
             return false;
         }
 
@@ -399,10 +396,9 @@ namespace Downloader
             {
                 if (File.Exists(path + s))
                 {
-                    Console.WriteLine("Episode is in disk. '{0}'", path + s);
+                    Log("Episode is in disk. '{0}'", true, path + s);
                     return true;
                 }
-
             }
             return false;
         }
@@ -422,7 +418,7 @@ namespace Downloader
                     {
                         if (seasonNumber <= seasonIgnore)
                         {
-                            Console.WriteLine("Ignoring '{0}' Season '{1}'  ", showName, seasonNumber);
+                            Log("Ignoring '{0}' Season '{1}'  ", showName, seasonNumber);
                             return true;
                         } //End if seasonNumber Less than or Equal to seasonIgnore
                     } //Ends if showNameIgnore equals showName
@@ -447,16 +443,16 @@ namespace Downloader
                 var error = queueRssDoc.GetElementsByTagName(@"error");
                 if (error.Count != 0)
                 {
-                    Console.WriteLine("Sab Error: {0}", error[0].InnerText);
+                    Log("Sab Queue Error: {0}", true, error[0].InnerText);
                 }
 
-                else if (queue != null)
+                else if (queue.Count != 0)
                 {
-                    var slot = ((XmlDocument)queue[0]).GetElementsByTagName("slot");
+                    var slot = ((XmlElement) queue[0]).GetElementsByTagName("slot");
 
                     foreach (var s in slot)
                     {
-                        XmlElement queueElement = (XmlElement)s;
+                        XmlElement queueElement = (XmlElement) s;
 
                         //Queue is empty
                         if (String.IsNullOrEmpty(queueElement.InnerText))
@@ -464,53 +460,68 @@ namespace Downloader
 
                         string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
 
-                        if (fileName == rssTitle.ToLower() || fileName == fetchName)
+                        if (fileName == CleanString(rssTitle).ToLower() || fileName == fetchName)
                         {
-                            Console.WriteLine("Already in queue - '{0}'", rssTitle);
+                            Log("Already in queue - '{0}'", true, rssTitle);
                             return true;
                         }
                     }
                 }
-                //Check for errors
-                else
-                {
-
-                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("An Error has occurred while checking the queue. {0}", ex);
+                Log("An Error has occurred while checking the queue. {0}", true, ex);
             }
 
             return false;
-
         } //Ends IsInQueue
 
         private static bool InNzbArchive(string rssTitle)
         {
-            Console.WriteLine("Checking for Imported NZB for [{0}]", rssTitle);
+            Log("Checking for Imported NZB for [{0}]", rssTitle);
             //return !File.Exists(_nzbDir + "\\" + rssTitle + ".nzb.gz");
 
             string nzbFileName = rssTitle.TrimEnd('.');
 
             if (File.Exists(_nzbDir + "\\" + nzbFileName + ".nzb.gz"))
             {
-                Console.WriteLine("NZB in already in archive: " + nzbFileName + ".nzb.gz");
+                Log("NZB in already in archive: " + nzbFileName + ".nzb.gz", true);
                 return true;
             }
 
             return false;
         }
 
-        private static void AddToQueue(Int64 reportId)
+        private static string AddToQueue(Int64 reportId)
         {
             string nzbFileDownload = String.Format(_sabRequest, "mode=addid&name=" + reportId);
-            Console.WriteLine("Adding report [{0}] to the queue.", reportId);
+            Log("Adding report [{0}] to the queue.", reportId);
             WebClient client = new WebClient();
             string response = client.DownloadString(nzbFileDownload).Replace("\n", String.Empty);
-            Console.WriteLine("Queue Response: [{0}]", response);
+            Log("Queue Response: [{0}]", response);
+            return response;
         } // Ends AddToQueue
+
+
+        private static void Log(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        private static void Log(string message, params object[] para)
+        {
+            Log(String.Format(message, para));
+        }
+
+        private static void Log(string message, bool showInSummary)
+        {
+            if (showInSummary) Summary.Add(message);
+            Log(message);
+        }
+
+        private static void Log(string message, bool showInSummary, params object[] para)
+        {
+            Log(String.Format(message, para), showInSummary);
+        }
     }
 }
-
-//Ends Namespace
