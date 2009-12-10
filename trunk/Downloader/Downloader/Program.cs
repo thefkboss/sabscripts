@@ -358,7 +358,7 @@ namespace Downloader
                         if (seasonNumber <= seasonIgnore)
                         {
                             Console.WriteLine("Ignoring '{0}' Season '{1}'  ", showName, seasonNumber);
-                            return false;
+                            return true;
                         } //End if seasonNumber Less than or Equal to seasonIgnore
                     } //Ends if showNameIgnore equals showName
                 } //Ends foreach loop for showsSeasonIgnore
