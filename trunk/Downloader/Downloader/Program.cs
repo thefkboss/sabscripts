@@ -31,8 +31,9 @@ namespace Downloader
         private static string videoExtConfig = ConfigurationSettings.AppSettings["videoExt"].ToString(); //Get videoExt from app.config
         private static string username = ConfigurationSettings.AppSettings["username"].ToString(); //Get rssUrl from app.config
         private static string password = ConfigurationSettings.AppSettings["password"].ToString(); //Get tvSorting from app.config
-        private static string sabReplaceChars = ConfigurationSettings.AppSettings["sabReplaceChars"].ToString(); //Get logDir from app.config
+        private static string sabReplaceCharsConfig = ConfigurationSettings.AppSettings["sabReplaceChars"].ToString(); //Get sabReplaceChars from app.config
 
+        private static bool sabReplaceChars = Convert.ToBoolean(sabReplaceCharsConfig);
         private static string[] videoExt = videoExtConfig.Split(';');
 
         private static List<Report> GetReports()
@@ -86,7 +87,7 @@ namespace Downloader
 
         private static string GetShowNamingScheme(string showName, int seasonNumber, int episodeNumber, string episodeName)
         {
-            if (sabReplaceChars == "true")
+            if (sabReplaceChars)
             {
                 showName = showName.Replace('\\', '+');
                 showName = showName.Replace('/', '+');
@@ -172,7 +173,51 @@ namespace Downloader
 
         private static string GetDailyShowNamingScheme(string showName, int year, int month, int day, string episodeName)
         {
+            if (sabReplaceChars)
+            {
+                showName = showName.Replace('\\', '+');
+                showName = showName.Replace('/', '+');
+                showName = showName.Replace('<', '{');
+                showName = showName.Replace('>', '}');
+                showName = showName.Replace('?', '!');
+                showName = showName.Replace('*', '@');
+                showName = showName.Replace(':', '-');
+                showName = showName.Replace('|', '#');
+                showName = showName.Replace('\"', '`');
 
+                episodeName = episodeName.Replace('\\', '+');
+                episodeName = episodeName.Replace('/', '+');
+                episodeName = episodeName.Replace('<', '{');
+                episodeName = episodeName.Replace('>', '}');
+                episodeName = episodeName.Replace('?', '!');
+                episodeName = episodeName.Replace('*', '@');
+                episodeName = episodeName.Replace(':', '-');
+                episodeName = episodeName.Replace('|', '#');
+                episodeName = episodeName.Replace('\"', '`');
+            }
+
+            else
+            {
+                showName = showName.Replace("\\", "");
+                showName = showName.Replace("/", "");
+                showName = showName.Replace("<", "");
+                showName = showName.Replace(">", "");
+                showName = showName.Replace("?", "");
+                showName = showName.Replace("*", "");
+                showName = showName.Replace(":", "");
+                showName = showName.Replace("|", "");
+                showName = showName.Replace("\"", "");
+
+                episodeName = episodeName.Replace("\\", "");
+                episodeName = episodeName.Replace("/", "");
+                episodeName = episodeName.Replace("<", "");
+                episodeName = episodeName.Replace(">", "");
+                episodeName = episodeName.Replace("?", "");
+                episodeName = episodeName.Replace("*", "");
+                episodeName = episodeName.Replace(":", "");
+                episodeName = episodeName.Replace("|", "");
+                episodeName = episodeName.Replace("\"", "");
+            }
 
             string tReplace = showName;
             string dotTReplace = showName.Replace(' ', '.');
@@ -214,6 +259,11 @@ namespace Downloader
             return tvDailySortingRename;
         } //Ends GetDailyShowNamingScheme
 
+        private static string CleanFileName(string fixName)
+        {
+            string[] badCharacters = { "\\", "/", "<", ">", "?", "*", ":", "|", "\"" };
+        }
+
         private static bool IsShowWanted(string wantedShowName)
         {
 
@@ -225,7 +275,7 @@ namespace Downloader
                 DirectoryInfo di = new DirectoryInfo(item);
 
                 string diName = di.Name;
-                if (sabReplaceChars == "true")
+                if (sabReplaceChars)
                 {
                     diName = diName.Replace('\\', '+');
                     diName = diName.Replace('/', '+');
