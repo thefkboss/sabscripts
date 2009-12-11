@@ -40,7 +40,7 @@ namespace Downloader
 
                 foreach (var report in reports)
                 {
-                    if (IsEpisodeWannted(report.Value, report.Key))
+                    if (IsEpisodeWanted(report.Value, report.Key))
                     {
                         string queueResponse = AddToQueue(report.Key);
                         Queued.Add(report.Value + ": " + queueResponse);
@@ -71,6 +71,7 @@ namespace Downloader
             Log("Process successfully completed. Duration {0:##.#}s", sw.Elapsed.TotalSeconds);
 
             Thread.Sleep(10000);
+            //Console.ReadKey();
         }
 
         private static void LoadConfig()
@@ -83,11 +84,11 @@ namespace Downloader
 
 
             _wantedShowNames = _tvRoot.GetDirectories();
-            _rss = new FileInfo(ConfigurationManager.AppSettings["rss"]); //Get _rssUrl from app.config
+            _rss = new FileInfo(ConfigurationManager.AppSettings["rss"]); //Get rss config file from app.config
             if (!_rss.Exists)
-                throw new ApplicationException("Invalid RSS file path. " + _tvRoot);
+                throw new ApplicationException("Invalid RSS file path. " + _rss);
 
-            _ignoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"]; //Get _rssUrl from app.config
+            _ignoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"]; //Get _ignoreSeasons from app.config
 
             _videoExt = ConfigurationManager.AppSettings["videoExt"].Split(';'); //Get _videoExt from app.config
 
@@ -106,10 +107,10 @@ namespace Downloader
 
             //Generate template for a sab request.
             string sabnzbdInfo = ConfigurationManager.AppSettings["sabnzbdInfo"]; //Get sabnzbdInfo from app.config
-            string priority = ConfigurationManager.AppSettings["priority"]; //Get _rssUrl from app.config
+            string priority = ConfigurationManager.AppSettings["priority"]; //Get priority from app.config
             string apiKey = ConfigurationManager.AppSettings["apiKey"];
-            string username = ConfigurationManager.AppSettings["username"]; //Get _rssUrl from app.config
-            string password = ConfigurationManager.AppSettings["password"]; //Get _tvTemplate from app.config
+            string username = ConfigurationManager.AppSettings["username"]; //Get username from app.config
+            string password = ConfigurationManager.AppSettings["password"]; //Get password from app.config
             _sabRequest =
                 string.Format("http://{0}/api?$Action&priority={1}&apikey={2}&ma_username={3}&ma_password={4}",
                               sabnzbdInfo, priority, apiKey, username, password).Replace("$Action", "{0}");
@@ -117,7 +118,6 @@ namespace Downloader
 
             _nzbDir = new DirectoryInfo(ConfigurationManager.AppSettings["nzbDir"]); //Get _nzbDir from app.config
         }
-
 
         private static Dictionary<Int64, string> GetReports()
         {
@@ -172,7 +172,6 @@ namespace Downloader
             return reports;
         }
 
-
         private static string GetEpisodeDir(string showName, int seasonNumber, int episodeNumber)
         {
             showName = CleanString(showName);
@@ -200,7 +199,6 @@ namespace Downloader
 
             return path;
         }
-
 
         private static string GetEpisodeFileMask(int seasonNumber, int episodeNumber)
         {
@@ -280,7 +278,6 @@ namespace Downloader
             return fileMask;
         } //Ends GetDailyShowNamingScheme
 
-
         private static string CleanString(string name)
         {
             string result = name;
@@ -316,7 +313,7 @@ namespace Downloader
             return false;
         } //Ends IsShowWanted
 
-        private static bool IsEpisodeWannted(string title, Int64 reportId)
+        private static bool IsEpisodeWanted(string title, Int64 reportId)
         {
             Log("----------------------------------------------------------------");
             Log("Verifying '{0}'", title);
@@ -564,7 +561,6 @@ namespace Downloader
             Log("Queue Response: [{0}]", response);
             return response;
         } // Ends AddToQueue
-
 
         private static void Log(string message)
         {
