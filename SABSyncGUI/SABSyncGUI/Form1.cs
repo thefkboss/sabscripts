@@ -13,6 +13,11 @@ namespace SABSyncGUI
         public SABSyncGUI()
         {
             InitializeComponent();
+
+            string tvRootTextConfig = Program.TestMethod();
+            tvRootText.Text = tvRootTextConfig;
+
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -36,9 +41,14 @@ namespace SABSyncGUI
 
             if(fdlg.ShowDialog() == DialogResult.OK)
             {
-                textBox1.Text = fdlg.FileName ;
+                tvRootText.Text = fdlg.FileName ;
             }
 
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            
         }
     }
 }
