@@ -19,3 +19,6 @@ C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVMove\TVMove\o
 C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVMove\TVMove\bin\Release\TVMove.exe
 C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVMove\TVMove\bin\Release\TVMove.pdb
 C:\Users\Markus\Documents\Visual Studio 2008\Projects\sabscripts\TVMove\TVMove\obj\Release\ResolveAssemblyReference.cache
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\TVMove\TVMove\bin\Release\TVMove.exe
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\TVMove\TVMove\bin\Release\TVMove.pdb
+C:\Users\mark.mcdowall\Documents\Visual Studio 2008\Projects\HomeServer\sabscripts\TVMove\TVMove\obj\Release\ResolveAssemblyReference.cache
