@@ -7,56 +7,118 @@ namespace TVMove
 {
     class Program
     {
+        private static string _filenameTemplate = ConfigurationManager.AppSettings["filenameTemplate"]; //Get _tvTemplate from app.config
+        private static string _videoExt = ConfigurationManager.AppSettings["videoExt"]; //Get _tvTemplate from app.config
+
         static void Main(string[] args)
         {
             string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Log Directory  from Config File
             string tempDir = ConfigurationSettings.AppSettings["tempDir"].ToString(); //Temp Directory from Config File
             string shows = ConfigurationSettings.AppSettings["shows"].ToString(); // TV Shows from Config File
             shows = shows.ToLower(); //Convert Shows from user to Lower-Case (SABnzbd may have odd Case structure)
+
             string showPath = args[0]; //Get showPath from first CMD Line Argument
             string showInfo = args[2]; //Get showName from third CMD Line Argument
             string[] fileNameArray = showInfo.Split('-'); //Split showInfo into sections
-            string showName = fileNameArray[0].Trim(); //Show Name is first string in fileNameArray
-            string showNumber = fileNameArray[1].Trim(); //Show Number (Season + Episode) is the second string  in fileNameArray
-            string episodeTitle = fileNameArray[2].Trim(); //Episode Title is the third string in fileNameArray
-            string[] showNumberArray = showNumber.Split('x'); //Split showNumber
-            int seasonNumber = Convert.ToInt32(showNumberArray[0].Trim()); //Create int with seasonNumber
-            int episodeNumber = Convert.ToInt32(showNumberArray[1].Trim()); //Create int with episodeNumber
-            string seasonNum; //Invoke here for use later
-            string episodeNum; //Invoke here for use later
+
+            string showName = null;
+            string seasonEpisode = null;
+            string episodeName = null;
+            int seasonNumber = 0;
+            int episodeNumber = 0;
+
             string logFile = logDir + @"\TVMove.txt"; // Log File
+
             File.AppendAllText(logFile, "\n");
             File.AppendAllText(logFile, "#######################################################################\n");
             File.AppendAllText(logFile, "Show Name is: " + showName + "\n");
             File.AppendAllText(logFile, "Show Path is: " + showPath + "\n");
 
-            if (seasonNumber < 10) //Convert seasonNumber to seasonNum with leading zero if required
+            if (fileNameArray.Length == 3)
             {
-                seasonNum = "0" + Convert.ToString(seasonNumber);
-            }
-            else
-            {
-                seasonNum = Convert.ToString(seasonNumber);
-            }
-
-            if (episodeNumber < 10)//Convert episodeNumber to episodeNum with leading zero if required
-            {
-                episodeNum = "0" + Convert.ToString(episodeNumber);
-            }
-            else
-            {
-                episodeNum = Convert.ToString(episodeNumber);
+                showName = fileNameArray[0].Trim(); //Show Name is first string in fileNameArray
+                seasonEpisode = fileNameArray[1].Trim(); //Show Number (Season + Episode) is the second string  in fileNameArray
+                episodeName = fileNameArray[2].Trim(); //Episode Title is the third string in fileNameArray
+                string[] seasonEpisodeSplit = seasonEpisode.Split('x'); //Split showNumber
+                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
+                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
             }
 
-            string fileName = showName + " - S" + seasonNum + "E" + episodeNum + " - " + episodeTitle + ".avi"; //Create string for file name (only supports "Show Name - S01E01 - Episode Name.avi" at thsi time)
-            string fileFullPath = showPath + "\\" + fileName; //Path to downloaded file as based on path (from SAB) + fileName
-            string fileTempPath = tempDir + "\\" + fileName; //Path to temp file as supplied by user + fileName
+            if (fileNameArray.Length == 4)
+            {
+                if (fileNameArray[1].Contains("x"))
+                {
+                    showName = fileNameArray[0].Trim();
+                    seasonEpisode = fileNameArray[1].Trim();
+                }
+
+                else if (fileNameArray[2].Contains("x"))
+                {
+                    showName = fileNameArray[0].Trim() + fileNameArray[1].Trim();
+                    seasonEpisode = fileNameArray[2].Trim();
+                }
+
+                else
+                {
+                    File.AppendAllText(logFile, "Un-supported Episode \n"); //Log Un-Supported Episode
+                }
+
+                string[] seasonEpisodeSplit = seasonEpisode.Split('x');
+
+                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
+                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
+            }
+            string fileNameNoExt = GetFilename(showName, seasonNumber, episodeNumber, episodeName);
 
             if (shows.Contains(showName.ToLower()))
             {
-                File.AppendAllText(logFile, "Show is wanted, copying to: " + tempDir + "\n");
-                File.Copy(fileFullPath, fileTempPath); //Copy file to tempDir
+                File.AppendAllText(logFile, "Show is Wanted: " + showName + "\n");
+                Console.WriteLine("Show is Wanted");
+                string[] videoExtLoop = _videoExt.Split(';');
+                foreach (string e in videoExtLoop)
+                {
+                    string testFilePath = showPath + "\\" + fileNameNoExt + e;
+                    if (File.Exists(testFilePath))
+                    {
+                        string fileFullPath = showPath + "\\" + fileNameNoExt + e; //Path to downloaded file as based on path (from SAB) + fileName
+                        string fileTempPath = tempDir + "\\" + fileNameNoExt + e; //Path to temp file as supplied by user + fileName
+                        File.Copy(fileFullPath, fileTempPath, true); //Copy file to tempDir
+                        File.AppendAllText(logFile, "Show was Copied to: " + tempDir + fileNameNoExt + e + "\n");
+                    }
+                }
             }
+        }
+
+        private static string GetFilename(string showName, int seasonNumber, int episodeNumber, string episodeName)
+        {
+            string snReplace = showName;
+            string sDotNReplace = showName.Replace(' ', '.');
+            string sUnderNReplace = showName.Replace(' ', '_');
+
+            string enReplace = episodeName;
+            string eDotNReplace = episodeName.Replace(' ', '.');
+            string eUnderNReplace = episodeName.Replace(' ', '_');
+
+            string zeroSReplace = String.Format("{0:00}", seasonNumber);
+            string sReplace = Convert.ToString(seasonNumber);
+            string zeroEReplace = String.Format("{0:00}", episodeNumber);
+            string eReplace = Convert.ToString(episodeNumber);
+
+            string path = _filenameTemplate;
+
+            path = path.Replace(".%ext", "");
+            path = path.Replace("%sn", snReplace);
+            path = path.Replace("%s.n", sDotNReplace);
+            path = path.Replace("%s_n", sUnderNReplace);
+            path = path.Replace("%en", enReplace);
+            path = path.Replace("%e.n", eDotNReplace);
+            path = path.Replace("%e_n", eUnderNReplace);
+            path = path.Replace("%0s", zeroSReplace);
+            path = path.Replace("%s", sReplace);
+            path = path.Replace("%0e", zeroEReplace);
+            path = path.Replace("%e", eReplace);
+
+            return path;
         }
     }
 }
