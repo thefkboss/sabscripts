@@ -6,7 +6,7 @@ Movies is a Post-Processing script designed to be used to process Movies after b
 
 Movies will sort your movies based on Extension, treating AVI Files as SD, MP4 files as iPod and WMV/MKV files as HD. 
 
-It will also join 2 AVI movies together to create single AVI file. The Movie file will be renamed & moved to contain the name and the year of the Movie (if the NZB contained that information in the title) - Newzbin downloads work great with this script.
+Movies will also join 2 AVI movies together to create single AVI file. The Movie file will be renamed & moved to contain the name and the year of the Movie (if the NZB contained that information in the title) - Newzbin downloads work great with this script.
 
 
 == Config File ==
