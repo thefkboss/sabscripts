@@ -1,4 +1,5 @@
 #summary Automatically verify XBox 360 games with abgx360
+#labels Featured
 
 = Introduction =
 
@@ -14,3 +15,4 @@ XBox360 can be used to automatically verify XBox 360 downloads to ensure they pr
   * abgxOptions - Options to pass to abgx360 (the defaults should be fine for most users)
 
 == Required Applications ==
+abgx360 is required to check all games, available here: http://abgx360.net/
