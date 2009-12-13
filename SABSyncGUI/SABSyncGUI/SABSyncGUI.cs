@@ -117,12 +117,12 @@ namespace SABSyncGUI
             return result;
         }
 
-        private void label1_Click_1(object sender, EventArgs e)
+        private void lblTvTemplate_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void label1_Click_2(object sender, EventArgs e)
+        private void lblTvDailyTemplate_Click(object sender, EventArgs e)
         {
 
         }
@@ -132,20 +132,97 @@ namespace SABSyncGUI
 
         }
 
-        private void btnTvRootBrowse_MouseHover(object sender, EventArgs e)
+        private void btnTvRootBrowse_MouseEnter(object sender, EventArgs e)
         {
+            statusStripLabel.Text = "Click to Browse for the TV Root Directory";
+        }
 
-            //statusStrip1.Text = "Click to Browse for the TV Root Directory";
-            statusStrip1.Text = "Browse";
+        private void btnNzbDir_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Click to Browse for NZB Directory";
+        }
+
+        private void btnRssConfig_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Click to Browse for RSS Config";
+        }
+
+        private void lblTvRoot_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Where are your TV Shows Located?";
+        }
+
+        private void lblTvTemplate_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Copy+Paste from SAB's TV Sorting Config";
+        }
+
+        private void lblTvDailyTemplate_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Copy+Paste from SAB's Daily TV Sorting Config";
+        }
+
+        private void lblVideoExt_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Extensions that should be considered Video Files";
+        }
+
+        private void lblSabInfo_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Hostname/IP Address + Port for SABnzbd";
+        }
+
+        private void lblUsername_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "SABnzbd Username";
+        }
+
+        private void lblPassword_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "SABnzbd Password";
+        }
+
+        private void lblApiKey_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "SABnzbd API Key (Config-General)";
+        }
+
+        private void lblNzbDir_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Imported NZB Directory";
+        }
+
+        private void lblPriority_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "The Priority NZBs should be added with";
+        }
+
+        private void lblRssConfig_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "RSS Configuration File";
+        }
+
+        private void lblIgnoreSeasons_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Shows & Seasons to Ignore";
+        }
+
+        private void checkBoxSabReplace_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "SAB is Replacing Illegal Characters = Checked";
+        }
+
+        private void statusBarClear(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "SABSync GUI - Mouse over labels for more info!";
+        }
+
+        private void lblUsername_Click(object sender, EventArgs e)
+        {
 
         }
 
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void textBox2_TextChanged(object sender, EventArgs e)
+        private void txtUsername_TextChanged(object sender, EventArgs e)
         {
 
         }

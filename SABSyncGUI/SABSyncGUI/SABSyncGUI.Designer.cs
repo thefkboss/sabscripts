@@ -46,7 +46,6 @@
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.lblSabInfo = new System.Windows.Forms.Label();
             this.txtSabInfo = new System.Windows.Forms.TextBox();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.txtNzbDir = new System.Windows.Forms.TextBox();
             this.lblNzbDir = new System.Windows.Forms.Label();
             this.nzbDirBrowse = new System.Windows.Forms.Button();
@@ -62,7 +61,10 @@
             this.lblIgnoreSeasons = new System.Windows.Forms.Label();
             this.chkReplaceChars = new System.Windows.Forms.CheckBox();
             this.lblPriorityDesc = new System.Windows.Forms.Label();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.statusStripLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.groupBox1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // saveButton
@@ -77,6 +79,7 @@
             // 
             // txtTvRoot
             // 
+            this.txtTvRoot.BackColor = System.Drawing.SystemColors.Control;
             this.txtTvRoot.Location = new System.Drawing.Point(118, 19);
             this.txtTvRoot.Name = "txtTvRoot";
             this.txtTvRoot.Size = new System.Drawing.Size(250, 20);
@@ -91,7 +94,9 @@
             this.lblTvRoot.Size = new System.Drawing.Size(50, 13);
             this.lblTvRoot.TabIndex = 2;
             this.lblTvRoot.Text = "TV Root:";
+            this.lblTvRoot.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblTvRoot.Click += new System.EventHandler(this.label1_Click);
+            this.lblTvRoot.MouseEnter += new System.EventHandler(this.lblTvRoot_MouseEnter);
             // 
             // tvRootBrowse
             // 
@@ -101,8 +106,9 @@
             this.tvRootBrowse.TabIndex = 3;
             this.tvRootBrowse.Text = "...";
             this.tvRootBrowse.UseVisualStyleBackColor = true;
+            this.tvRootBrowse.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.tvRootBrowse.Click += new System.EventHandler(this.tvRootBrowse_Click);
-            this.tvRootBrowse.MouseHover += new System.EventHandler(this.btnTvRootBrowse_MouseHover);
+            this.tvRootBrowse.MouseEnter += new System.EventHandler(this.btnTvRootBrowse_MouseEnter);
             // 
             // tvRootDialog
             // 
@@ -111,6 +117,7 @@
             // 
             // txtTvTemplate
             // 
+            this.txtTvTemplate.BackColor = System.Drawing.SystemColors.Control;
             this.txtTvTemplate.Location = new System.Drawing.Point(118, 46);
             this.txtTvTemplate.Name = "txtTvTemplate";
             this.txtTvTemplate.Size = new System.Drawing.Size(250, 20);
@@ -124,10 +131,13 @@
             this.lblTvTemplate.Size = new System.Drawing.Size(71, 13);
             this.lblTvTemplate.TabIndex = 5;
             this.lblTvTemplate.Text = "TV Template:";
-            this.lblTvTemplate.Click += new System.EventHandler(this.label1_Click_1);
+            this.lblTvTemplate.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblTvTemplate.Click += new System.EventHandler(this.lblTvTemplate_Click);
+            this.lblTvTemplate.MouseEnter += new System.EventHandler(this.lblTvTemplate_MouseEnter);
             // 
             // txtTvDailyTemplate
             // 
+            this.txtTvDailyTemplate.BackColor = System.Drawing.SystemColors.Control;
             this.txtTvDailyTemplate.Location = new System.Drawing.Point(118, 72);
             this.txtTvDailyTemplate.Name = "txtTvDailyTemplate";
             this.txtTvDailyTemplate.Size = new System.Drawing.Size(250, 20);
@@ -141,7 +151,9 @@
             this.label1.Size = new System.Drawing.Size(97, 13);
             this.label1.TabIndex = 7;
             this.label1.Text = "TV Daily Template:";
-            this.label1.Click += new System.EventHandler(this.label1_Click_2);
+            this.label1.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.label1.Click += new System.EventHandler(this.lblTvDailyTemplate_Click);
+            this.label1.MouseEnter += new System.EventHandler(this.lblTvDailyTemplate_MouseEnter);
             // 
             // groupBox1
             // 
@@ -153,7 +165,7 @@
             this.groupBox1.Controls.Add(this.txtUsername);
             this.groupBox1.Controls.Add(this.lblSabInfo);
             this.groupBox1.Controls.Add(this.txtSabInfo);
-            this.groupBox1.Location = new System.Drawing.Point(24, 149);
+            this.groupBox1.Location = new System.Drawing.Point(24, 140);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(365, 129);
             this.groupBox1.TabIndex = 8;
@@ -169,6 +181,8 @@
             this.lblApiKey.Size = new System.Drawing.Size(48, 13);
             this.lblApiKey.TabIndex = 15;
             this.lblApiKey.Text = "API Key:";
+            this.lblApiKey.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblApiKey.MouseEnter += new System.EventHandler(this.lblApiKey_MouseEnter);
             // 
             // lblPassword
             // 
@@ -178,9 +192,12 @@
             this.lblPassword.Size = new System.Drawing.Size(56, 13);
             this.lblPassword.TabIndex = 14;
             this.lblPassword.Text = "Password:";
+            this.lblPassword.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblPassword.MouseEnter += new System.EventHandler(this.lblPassword_MouseEnter);
             // 
             // txtApiKey
             // 
+            this.txtApiKey.BackColor = System.Drawing.SystemColors.Control;
             this.txtApiKey.Location = new System.Drawing.Point(104, 97);
             this.txtApiKey.Name = "txtApiKey";
             this.txtApiKey.Size = new System.Drawing.Size(200, 20);
@@ -188,6 +205,7 @@
             // 
             // txtPassword
             // 
+            this.txtPassword.BackColor = System.Drawing.SystemColors.Control;
             this.txtPassword.Location = new System.Drawing.Point(104, 71);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.Size = new System.Drawing.Size(200, 20);
@@ -201,15 +219,18 @@
             this.lblUsername.Size = new System.Drawing.Size(58, 13);
             this.lblUsername.TabIndex = 11;
             this.lblUsername.Text = "Username:";
-            this.lblUsername.Click += new System.EventHandler(this.label2_Click);
+            this.lblUsername.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblUsername.Click += new System.EventHandler(this.lblUsername_Click);
+            this.lblUsername.MouseEnter += new System.EventHandler(this.lblUsername_MouseEnter);
             // 
             // txtUsername
             // 
+            this.txtUsername.BackColor = System.Drawing.SystemColors.Control;
             this.txtUsername.Location = new System.Drawing.Point(104, 45);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.Size = new System.Drawing.Size(200, 20);
             this.txtUsername.TabIndex = 10;
-            this.txtUsername.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            this.txtUsername.TextChanged += new System.EventHandler(this.txtUsername_TextChanged);
             // 
             // lblSabInfo
             // 
@@ -219,25 +240,21 @@
             this.lblSabInfo.Size = new System.Drawing.Size(89, 13);
             this.lblSabInfo.TabIndex = 9;
             this.lblSabInfo.Text = "Hostname + Port:";
+            this.lblSabInfo.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblSabInfo.MouseEnter += new System.EventHandler(this.lblSabInfo_MouseEnter);
             // 
             // txtSabInfo
             // 
+            this.txtSabInfo.BackColor = System.Drawing.SystemColors.Control;
             this.txtSabInfo.Location = new System.Drawing.Point(104, 19);
             this.txtSabInfo.Name = "txtSabInfo";
             this.txtSabInfo.Size = new System.Drawing.Size(200, 20);
             this.txtSabInfo.TabIndex = 8;
             // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Location = new System.Drawing.Point(0, 490);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(404, 22);
-            this.statusStrip1.TabIndex = 9;
-            this.statusStrip1.Text = "Hello";
-            // 
             // txtNzbDir
             // 
-            this.txtNzbDir.Location = new System.Drawing.Point(104, 312);
+            this.txtNzbDir.BackColor = System.Drawing.SystemColors.Control;
+            this.txtNzbDir.Location = new System.Drawing.Point(104, 292);
             this.txtNzbDir.Name = "txtNzbDir";
             this.txtNzbDir.Size = new System.Drawing.Size(250, 20);
             this.txtNzbDir.TabIndex = 10;
@@ -246,21 +263,25 @@
             // lblNzbDir
             // 
             this.lblNzbDir.AutoSize = true;
-            this.lblNzbDir.Location = new System.Drawing.Point(21, 319);
+            this.lblNzbDir.Location = new System.Drawing.Point(21, 299);
             this.lblNzbDir.Name = "lblNzbDir";
             this.lblNzbDir.Size = new System.Drawing.Size(77, 13);
             this.lblNzbDir.TabIndex = 11;
             this.lblNzbDir.Text = "NZB Directory:";
+            this.lblNzbDir.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblNzbDir.MouseEnter += new System.EventHandler(this.lblNzbDir_MouseEnter);
             // 
             // nzbDirBrowse
             // 
-            this.nzbDirBrowse.Location = new System.Drawing.Point(360, 310);
+            this.nzbDirBrowse.Location = new System.Drawing.Point(360, 290);
             this.nzbDirBrowse.Name = "nzbDirBrowse";
             this.nzbDirBrowse.Size = new System.Drawing.Size(24, 23);
             this.nzbDirBrowse.TabIndex = 12;
             this.nzbDirBrowse.Text = "...";
             this.nzbDirBrowse.UseVisualStyleBackColor = true;
+            this.nzbDirBrowse.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.nzbDirBrowse.Click += new System.EventHandler(this.nzbDirBrowse_Click);
+            this.nzbDirBrowse.MouseEnter += new System.EventHandler(this.btnNzbDir_MouseEnter);
             // 
             // nzbDirDialog
             // 
@@ -269,6 +290,7 @@
             // 
             // txtVideoExt
             // 
+            this.txtVideoExt.BackColor = System.Drawing.SystemColors.Control;
             this.txtVideoExt.Location = new System.Drawing.Point(118, 98);
             this.txtVideoExt.Name = "txtVideoExt";
             this.txtVideoExt.Size = new System.Drawing.Size(250, 20);
@@ -282,10 +304,13 @@
             this.lblVideoExt.Size = new System.Drawing.Size(91, 13);
             this.lblVideoExt.TabIndex = 14;
             this.lblVideoExt.Text = "Video Extensions:";
+            this.lblVideoExt.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblVideoExt.MouseEnter += new System.EventHandler(this.lblVideoExt_MouseEnter);
             // 
             // txtPriority
             // 
-            this.txtPriority.Location = new System.Drawing.Point(104, 338);
+            this.txtPriority.BackColor = System.Drawing.SystemColors.Control;
+            this.txtPriority.Location = new System.Drawing.Point(104, 318);
             this.txtPriority.Name = "txtPriority";
             this.txtPriority.Size = new System.Drawing.Size(26, 20);
             this.txtPriority.TabIndex = 15;
@@ -293,15 +318,18 @@
             // lblPriority
             // 
             this.lblPriority.AutoSize = true;
-            this.lblPriority.Location = new System.Drawing.Point(57, 345);
+            this.lblPriority.Location = new System.Drawing.Point(57, 325);
             this.lblPriority.Name = "lblPriority";
             this.lblPriority.Size = new System.Drawing.Size(41, 13);
             this.lblPriority.TabIndex = 16;
             this.lblPriority.Text = "Priority:";
+            this.lblPriority.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblPriority.MouseEnter += new System.EventHandler(this.lblPriority_MouseEnter);
             // 
             // txtRssConfig
             // 
-            this.txtRssConfig.Location = new System.Drawing.Point(104, 364);
+            this.txtRssConfig.BackColor = System.Drawing.SystemColors.Control;
+            this.txtRssConfig.Location = new System.Drawing.Point(104, 344);
             this.txtRssConfig.Name = "txtRssConfig";
             this.txtRssConfig.Size = new System.Drawing.Size(250, 20);
             this.txtRssConfig.TabIndex = 17;
@@ -309,69 +337,97 @@
             // lblRssConfig
             // 
             this.lblRssConfig.AutoSize = true;
-            this.lblRssConfig.Location = new System.Drawing.Point(14, 371);
+            this.lblRssConfig.Location = new System.Drawing.Point(14, 351);
             this.lblRssConfig.Name = "lblRssConfig";
             this.lblRssConfig.Size = new System.Drawing.Size(84, 13);
             this.lblRssConfig.TabIndex = 18;
             this.lblRssConfig.Text = "RSS Config File:";
+            this.lblRssConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblRssConfig.MouseEnter += new System.EventHandler(this.lblRssConfig_MouseEnter);
             // 
             // btnRssConfig
             // 
-            this.btnRssConfig.Location = new System.Drawing.Point(360, 362);
+            this.btnRssConfig.Location = new System.Drawing.Point(360, 342);
             this.btnRssConfig.Name = "btnRssConfig";
             this.btnRssConfig.Size = new System.Drawing.Size(24, 23);
             this.btnRssConfig.TabIndex = 19;
             this.btnRssConfig.Text = "...";
             this.btnRssConfig.UseVisualStyleBackColor = true;
+            this.btnRssConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.btnRssConfig.Click += new System.EventHandler(this.btnRssConfig_Click);
+            this.btnRssConfig.MouseEnter += new System.EventHandler(this.btnRssConfig_MouseEnter);
             // 
             // txtIgnoreSeasons
             // 
             this.txtIgnoreSeasons.AcceptsReturn = true;
+            this.txtIgnoreSeasons.BackColor = System.Drawing.SystemColors.Control;
             this.txtIgnoreSeasons.Cursor = System.Windows.Forms.Cursors.Default;
-            this.txtIgnoreSeasons.Location = new System.Drawing.Point(104, 390);
+            this.txtIgnoreSeasons.Location = new System.Drawing.Point(104, 370);
             this.txtIgnoreSeasons.Multiline = true;
             this.txtIgnoreSeasons.Name = "txtIgnoreSeasons";
             this.txtIgnoreSeasons.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtIgnoreSeasons.Size = new System.Drawing.Size(250, 60);
+            this.txtIgnoreSeasons.Size = new System.Drawing.Size(250, 72);
             this.txtIgnoreSeasons.TabIndex = 20;
             // 
             // lblIgnoreSeasons
             // 
             this.lblIgnoreSeasons.AutoSize = true;
-            this.lblIgnoreSeasons.Location = new System.Drawing.Point(2, 393);
+            this.lblIgnoreSeasons.Location = new System.Drawing.Point(2, 373);
             this.lblIgnoreSeasons.Name = "lblIgnoreSeasons";
             this.lblIgnoreSeasons.Size = new System.Drawing.Size(96, 13);
             this.lblIgnoreSeasons.TabIndex = 21;
             this.lblIgnoreSeasons.Text = "Seasons to Ignore:";
+            this.lblIgnoreSeasons.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblIgnoreSeasons.MouseEnter += new System.EventHandler(this.lblIgnoreSeasons_MouseEnter);
             // 
             // chkReplaceChars
             // 
             this.chkReplaceChars.AutoSize = true;
-            this.chkReplaceChars.Location = new System.Drawing.Point(104, 456);
+            this.chkReplaceChars.Location = new System.Drawing.Point(104, 455);
             this.chkReplaceChars.Name = "chkReplaceChars";
             this.chkReplaceChars.Size = new System.Drawing.Size(120, 17);
             this.chkReplaceChars.TabIndex = 22;
             this.chkReplaceChars.Text = "Replace Characters";
             this.chkReplaceChars.UseVisualStyleBackColor = true;
+            this.chkReplaceChars.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.chkReplaceChars.MouseEnter += new System.EventHandler(this.checkBoxSabReplace_MouseEnter);
             // 
             // lblPriorityDesc
             // 
             this.lblPriorityDesc.AutoSize = true;
+            this.lblPriorityDesc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPriorityDesc.ForeColor = System.Drawing.Color.MidnightBlue;
-            this.lblPriorityDesc.Location = new System.Drawing.Point(137, 344);
+            this.lblPriorityDesc.Location = new System.Drawing.Point(137, 324);
             this.lblPriorityDesc.Name = "lblPriorityDesc";
-            this.lblPriorityDesc.Size = new System.Drawing.Size(127, 13);
+            this.lblPriorityDesc.Size = new System.Drawing.Size(149, 13);
             this.lblPriorityDesc.TabIndex = 23;
             this.lblPriorityDesc.Text = "Low=-1 Normal=0 High=1";
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusStripLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 490);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(404, 22);
+            this.statusStrip1.TabIndex = 24;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // statusStripLabel
+            // 
+            this.statusStripLabel.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.statusStripLabel.Name = "statusStripLabel";
+            this.statusStripLabel.Size = new System.Drawing.Size(257, 17);
+            this.statusStripLabel.Text = "SABSync GUI - Mouse over labels for more info!";
             // 
             // SABSyncGUI
             // 
             this.AcceptButton = this.saveButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.Silver;
+            this.BackColor = System.Drawing.Color.Snow;
             this.ClientSize = new System.Drawing.Size(404, 512);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.lblPriorityDesc);
             this.Controls.Add(this.chkReplaceChars);
             this.Controls.Add(this.lblIgnoreSeasons);
@@ -386,7 +442,6 @@
             this.Controls.Add(this.nzbDirBrowse);
             this.Controls.Add(this.lblNzbDir);
             this.Controls.Add(this.txtNzbDir);
-            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtTvDailyTemplate);
@@ -396,11 +451,15 @@
             this.Controls.Add(this.lblTvRoot);
             this.Controls.Add(this.txtTvRoot);
             this.Controls.Add(this.saveButton);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
             this.Name = "SABSyncGUI";
             this.Text = "SABSync GUI";
             this.Load += new System.EventHandler(this.SABSyncGUI_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -418,7 +477,6 @@
         private System.Windows.Forms.TextBox txtTvDailyTemplate;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.Label lblSabInfo;
         private System.Windows.Forms.TextBox txtSabInfo;
         private System.Windows.Forms.Label lblUsername;
@@ -442,6 +500,8 @@
         private System.Windows.Forms.Label lblIgnoreSeasons;
         private System.Windows.Forms.CheckBox chkReplaceChars;
         private System.Windows.Forms.Label lblPriorityDesc;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel statusStripLabel;
 
     }
 }
