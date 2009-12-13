@@ -14,3 +14,6 @@ It will also join 2 AVI movies together to create single AVI file. The Movie fil
   * movieDir - Full path to your Movies Folder (.avi)
   * hdMovieDir - Full path to your HD Movies Folder (.mkv/.wmv)
   * ipodMoviesDir - Full path to your iPod Movies Folder (.mp4)
+
+== Required Applications ==
+mencoder is required for joining multiple AVI files, it can be downloaded as part of the MPlayer Suite, available here: http://www.mplayerhq.hu/design7/dload.html
