@@ -113,7 +113,7 @@ namespace SABSync
 
             _ignoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"]; //Get _ignoreSeasons from app.config
 
-            _videoExt = ConfigurationManager.AppSettings["videoExt"].Split(';'); //Get _videoExt from app.config
+            _videoExt = ConfigurationManager.AppSettings["videoExt"].Trim(';',' ').Split(';'); //Get _videoExt from app.config
 
             _tvTemplate = ConfigurationManager.AppSettings["tvTemplate"]; //Get _tvTemplate from app.config
             if (String.IsNullOrEmpty(_tvTemplate))
@@ -486,7 +486,7 @@ namespace SABSync
         {
             if (_ignoreSeasons.Contains(showName))
             {
-                string[] showsSeasonIgnore = _ignoreSeasons.Split(';');
+                string[] showsSeasonIgnore = _ignoreSeasons.Trim(';', ' ').Split(';');
                 foreach (string showSeasonIgnore in showsSeasonIgnore)
                 {
                     string[] showNameIgnoreSplit = showSeasonIgnore.Split('=');
