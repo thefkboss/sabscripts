@@ -50,12 +50,16 @@ namespace TVMove
                 {
                     showName = fileNameArray[0].Trim();
                     seasonEpisode = fileNameArray[1].Trim();
+                    episodeName = fileNameArray[2] + fileNameArray[3];
+                    episodeName.Trim();
                 }
 
                 else if (fileNameArray[2].Contains("x"))
                 {
-                    showName = fileNameArray[0].Trim() + fileNameArray[1].Trim();
+                    showName = fileNameArray[0] + fileNameArray[1];
+                    showName.Trim();
                     seasonEpisode = fileNameArray[2].Trim();
+                    episodeName = fileNameArray[3].Trim();
                 }
 
                 else
