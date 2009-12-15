@@ -5,6 +5,9 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
+using System.Net;
+using System.Xml;
+using System.IO;
 
 namespace SABSyncGUI
 {
@@ -25,13 +28,14 @@ namespace SABSyncGUI
             Settings.VideoExt = txtVideoExt.Text;
             Settings.IgnoreSeasons = txtIgnoreSeasons.Text;
             Settings.NzbDir = txtNzbDir.Text;
-            Settings.SabnzbdInfo = txtSabInfo.Text;
+            Settings.SabnzbdInfo = SabInfoJoin(txtSabInfoHost.Text, txtSabInfoPort.Text);
             Settings.Username = txtUsername.Text;
             Settings.Password = txtPassword.Text;
             Settings.ApiKey = txtApiKey.Text; 
             Settings.Priority = txtPriority.Text;
             Settings.RssConfig = txtRssConfig.Text;
             Settings.SabReplaceChars = Convert.ToString(chkReplaceChars.Checked);
+            statusStripLabel.Text = "Settings have been saved!";
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -56,24 +60,41 @@ namespace SABSyncGUI
 
         private void UpdateBindedUi()
         {
+            string[] sabInfoSplit = Settings.SabnzbdInfo.Split(':');
+            
+            string hostname = null;
+            string port = null;
+            if (sabInfoSplit.Length == 2)
+            {
+                hostname = sabInfoSplit[0];
+                port = sabInfoSplit[1];
+            }
+            else
+            {
+                hostname = "127.0.0.1";
+                port = "8080";
+            }
+
             txtTvRoot.Text = Settings.TvRootPath;
             txtTvTemplate.Text = Settings.TvTemplate;
             txtTvDailyTemplate.Text = Settings.TvDailyTemplate;
             txtVideoExt.Text = Settings.VideoExt;
             txtIgnoreSeasons.Text = Settings.IgnoreSeasons;
             txtNzbDir.Text = Settings.NzbDir;
-            txtSabInfo.Text = Settings.SabnzbdInfo;
+            txtSabInfoHost.Text = hostname;
+            txtSabInfoPort.Text = port;
             txtUsername.Text = Settings.Username;
             txtPassword.Text = Settings.Password;
             txtApiKey.Text = Settings.ApiKey;
             txtPriority.Text = Settings.Priority;
             txtRssConfig.Text = Settings.RssConfig;
             chkReplaceChars.Checked = Convert.ToBoolean(Settings.SabReplaceChars);
+        }
 
-            //cmbXbmcStart.SelectedIndex = Convert.ToInt32(Settings.XbmcAutostart);
-            //chkUpdateIfXbmcIsRunning.Checked = Settings.XbmcAutoShutdown;
-            //txtXbmcStartArgs.Text = Settings.XbmcStartupArgs;
-            //chkPreventStandby.Checked = Settings.PreventStandBy;
+        private string SabInfoJoin(string hostname, string port)
+        {
+            string sabInfo = hostname + ":" + port;
+            return sabInfo;
         }
 
         private void SABSyncGUI_Load(object sender, EventArgs e)
@@ -167,9 +188,14 @@ namespace SABSyncGUI
             statusStripLabel.Text = "Extensions that should be considered Video Files";
         }
 
-        private void lblSabInfo_MouseEnter(object sender, EventArgs e)
+        private void lblSabInfoHostname_MouseEnter(object sender, EventArgs e)
         {
-            statusStripLabel.Text = "Hostname/IP Address + Port for SABnzbd";
+            statusStripLabel.Text = "Hostname/IP Address for SABnzbd";
+        }
+
+        private void lblSabInfoPort_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Port for SABnzbd";
         }
 
         private void lblUsername_MouseEnter(object sender, EventArgs e)
@@ -212,29 +238,19 @@ namespace SABSyncGUI
             statusStripLabel.Text = "SAB is Replacing Illegal Characters = Checked";
         }
 
+        private void btnTestSab_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Test current settings to connect to SABnzbd";
+        }
+
+        private void btnReset_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Reload settings from Config File";
+        }
+
         private void statusBarClear(object sender, EventArgs e)
         {
             statusStripLabel.Text = "SABSync GUI - Mouse over labels for more info!";
-        }
-
-        private void lblUsername_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtUsername_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtNzbDir_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void nzbDirDialog_HelpRequest(object sender, EventArgs e)
-        {
-
         }
 
         private void btnRssConfig_Click(object sender, EventArgs e)
@@ -250,6 +266,54 @@ namespace SABSyncGUI
         {
             txtRssConfig.Text = fdlg.FileName ;
         }
+        }
+
+        private void btnTestSab_Click(object sender, EventArgs e)
+        {
+            string response = TestConnection(txtSabInfoHost.Text, txtSabInfoPort.Text, txtApiKey.Text, txtUsername.Text, txtPassword.Text);
+            statusStripLabel.Text = response;
+        }
+
+        private static string TestConnection(string hostname, string port, string apiKey, string username, string password)
+        {
+            string versionRssUrl = "http://" + hostname + ":" + port + "/api?mode=version&output=xml&apikey=" + apiKey + "&ma_username" + username + "&ma_password" + password;
+            string sabVersion = null;
+            try
+            {
+                HttpWebRequest versionRssRequest = (HttpWebRequest)WebRequest.Create(versionRssUrl);
+                versionRssRequest.Timeout = 5000;
+                HttpWebResponse versionRssResponse = (HttpWebResponse)versionRssRequest.GetResponse();
+
+                Stream versionDoc = versionRssResponse.GetResponseStream();
+
+                XmlReaderSettings readerSettings = new XmlReaderSettings();
+                readerSettings.IgnoreWhitespace = false;
+
+                using (XmlReader reader = XmlReader.Create(versionDoc, readerSettings))
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element && reader.Name == "version")
+                        {
+                            sabVersion = reader.ReadString();
+                        }
+                    }
+                }
+                versionRssResponse.Close();
+            }
+
+            catch
+            {
+                string error = "Timed out connecting to SABnzbd, check your settings";
+                return error;
+            }
+            string result = "Successfully Connected to SABnzbd! Version: " + sabVersion;
+            return result;
+        }
+
+        private void btnReset_Click(object sender, EventArgs e)
+        {
+            UpdateBindedUi();
         }
     }
 }
