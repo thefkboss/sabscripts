@@ -38,14 +38,16 @@
             this.txtTvDailyTemplate = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.txtSabInfoPort = new System.Windows.Forms.TextBox();
+            this.lblSabInfoPort = new System.Windows.Forms.Label();
             this.lblApiKey = new System.Windows.Forms.Label();
             this.lblPassword = new System.Windows.Forms.Label();
             this.txtApiKey = new System.Windows.Forms.TextBox();
             this.txtPassword = new System.Windows.Forms.TextBox();
             this.lblUsername = new System.Windows.Forms.Label();
             this.txtUsername = new System.Windows.Forms.TextBox();
-            this.lblSabInfo = new System.Windows.Forms.Label();
-            this.txtSabInfo = new System.Windows.Forms.TextBox();
+            this.lblSabInfoHost = new System.Windows.Forms.Label();
+            this.txtSabInfoHost = new System.Windows.Forms.TextBox();
             this.txtNzbDir = new System.Windows.Forms.TextBox();
             this.lblNzbDir = new System.Windows.Forms.Label();
             this.nzbDirBrowse = new System.Windows.Forms.Button();
@@ -63,13 +65,15 @@
             this.lblPriorityDesc = new System.Windows.Forms.Label();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusStripLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btnTestSab = new System.Windows.Forms.Button();
+            this.btnReset = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // saveButton
             // 
-            this.saveButton.Location = new System.Drawing.Point(318, 458);
+            this.saveButton.Location = new System.Drawing.Point(318, 467);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 0;
@@ -121,7 +125,7 @@
             this.txtTvTemplate.Location = new System.Drawing.Point(118, 46);
             this.txtTvTemplate.Name = "txtTvTemplate";
             this.txtTvTemplate.Size = new System.Drawing.Size(250, 20);
-            this.txtTvTemplate.TabIndex = 4;
+            this.txtTvTemplate.TabIndex = 2;
             // 
             // lblTvTemplate
             // 
@@ -141,7 +145,7 @@
             this.txtTvDailyTemplate.Location = new System.Drawing.Point(118, 72);
             this.txtTvDailyTemplate.Name = "txtTvDailyTemplate";
             this.txtTvDailyTemplate.Size = new System.Drawing.Size(250, 20);
-            this.txtTvDailyTemplate.TabIndex = 6;
+            this.txtTvDailyTemplate.TabIndex = 3;
             // 
             // label1
             // 
@@ -157,21 +161,43 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.txtSabInfoPort);
+            this.groupBox1.Controls.Add(this.lblSabInfoPort);
             this.groupBox1.Controls.Add(this.lblApiKey);
             this.groupBox1.Controls.Add(this.lblPassword);
             this.groupBox1.Controls.Add(this.txtApiKey);
             this.groupBox1.Controls.Add(this.txtPassword);
             this.groupBox1.Controls.Add(this.lblUsername);
             this.groupBox1.Controls.Add(this.txtUsername);
-            this.groupBox1.Controls.Add(this.lblSabInfo);
-            this.groupBox1.Controls.Add(this.txtSabInfo);
-            this.groupBox1.Location = new System.Drawing.Point(24, 140);
+            this.groupBox1.Controls.Add(this.lblSabInfoHost);
+            this.groupBox1.Controls.Add(this.txtSabInfoHost);
+            this.groupBox1.Location = new System.Drawing.Point(24, 136);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(365, 129);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "SABnzbd Settings";
             this.groupBox1.Enter += new System.EventHandler(this.grpSabSettings_Enter);
+            // 
+            // txtSabInfoPort
+            // 
+            this.txtSabInfoPort.BackColor = System.Drawing.SystemColors.Control;
+            this.txtSabInfoPort.Location = new System.Drawing.Point(265, 19);
+            this.txtSabInfoPort.MaxLength = 5;
+            this.txtSabInfoPort.Name = "txtSabInfoPort";
+            this.txtSabInfoPort.Size = new System.Drawing.Size(39, 20);
+            this.txtSabInfoPort.TabIndex = 6;
+            // 
+            // lblSabInfoPort
+            // 
+            this.lblSabInfoPort.AutoSize = true;
+            this.lblSabInfoPort.Location = new System.Drawing.Point(230, 26);
+            this.lblSabInfoPort.Name = "lblSabInfoPort";
+            this.lblSabInfoPort.Size = new System.Drawing.Size(29, 13);
+            this.lblSabInfoPort.TabIndex = 16;
+            this.lblSabInfoPort.Text = "Port:";
+            this.lblSabInfoPort.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblSabInfoPort.MouseEnter += new System.EventHandler(this.lblSabInfoPort_MouseEnter);
             // 
             // lblApiKey
             // 
@@ -201,7 +227,7 @@
             this.txtApiKey.Location = new System.Drawing.Point(104, 97);
             this.txtApiKey.Name = "txtApiKey";
             this.txtApiKey.Size = new System.Drawing.Size(200, 20);
-            this.txtApiKey.TabIndex = 13;
+            this.txtApiKey.TabIndex = 9;
             // 
             // txtPassword
             // 
@@ -209,7 +235,7 @@
             this.txtPassword.Location = new System.Drawing.Point(104, 71);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.Size = new System.Drawing.Size(200, 20);
-            this.txtPassword.TabIndex = 12;
+            this.txtPassword.TabIndex = 8;
             // 
             // lblUsername
             // 
@@ -220,7 +246,6 @@
             this.lblUsername.TabIndex = 11;
             this.lblUsername.Text = "Username:";
             this.lblUsername.MouseLeave += new System.EventHandler(this.statusBarClear);
-            this.lblUsername.Click += new System.EventHandler(this.lblUsername_Click);
             this.lblUsername.MouseEnter += new System.EventHandler(this.lblUsername_MouseEnter);
             // 
             // txtUsername
@@ -229,41 +254,39 @@
             this.txtUsername.Location = new System.Drawing.Point(104, 45);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.Size = new System.Drawing.Size(200, 20);
-            this.txtUsername.TabIndex = 10;
-            this.txtUsername.TextChanged += new System.EventHandler(this.txtUsername_TextChanged);
+            this.txtUsername.TabIndex = 7;
             // 
-            // lblSabInfo
+            // lblSabInfoHost
             // 
-            this.lblSabInfo.AutoSize = true;
-            this.lblSabInfo.Location = new System.Drawing.Point(9, 26);
-            this.lblSabInfo.Name = "lblSabInfo";
-            this.lblSabInfo.Size = new System.Drawing.Size(89, 13);
-            this.lblSabInfo.TabIndex = 9;
-            this.lblSabInfo.Text = "Hostname + Port:";
-            this.lblSabInfo.MouseLeave += new System.EventHandler(this.statusBarClear);
-            this.lblSabInfo.MouseEnter += new System.EventHandler(this.lblSabInfo_MouseEnter);
+            this.lblSabInfoHost.AutoSize = true;
+            this.lblSabInfoHost.Location = new System.Drawing.Point(40, 26);
+            this.lblSabInfoHost.Name = "lblSabInfoHost";
+            this.lblSabInfoHost.Size = new System.Drawing.Size(58, 13);
+            this.lblSabInfoHost.TabIndex = 9;
+            this.lblSabInfoHost.Text = "Hostname:";
+            this.lblSabInfoHost.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.lblSabInfoHost.MouseEnter += new System.EventHandler(this.lblSabInfoHostname_MouseEnter);
             // 
-            // txtSabInfo
+            // txtSabInfoHost
             // 
-            this.txtSabInfo.BackColor = System.Drawing.SystemColors.Control;
-            this.txtSabInfo.Location = new System.Drawing.Point(104, 19);
-            this.txtSabInfo.Name = "txtSabInfo";
-            this.txtSabInfo.Size = new System.Drawing.Size(200, 20);
-            this.txtSabInfo.TabIndex = 8;
+            this.txtSabInfoHost.BackColor = System.Drawing.SystemColors.Control;
+            this.txtSabInfoHost.Location = new System.Drawing.Point(104, 19);
+            this.txtSabInfoHost.Name = "txtSabInfoHost";
+            this.txtSabInfoHost.Size = new System.Drawing.Size(120, 20);
+            this.txtSabInfoHost.TabIndex = 5;
             // 
             // txtNzbDir
             // 
             this.txtNzbDir.BackColor = System.Drawing.SystemColors.Control;
-            this.txtNzbDir.Location = new System.Drawing.Point(104, 292);
+            this.txtNzbDir.Location = new System.Drawing.Point(104, 286);
             this.txtNzbDir.Name = "txtNzbDir";
             this.txtNzbDir.Size = new System.Drawing.Size(250, 20);
             this.txtNzbDir.TabIndex = 10;
-            this.txtNzbDir.TextChanged += new System.EventHandler(this.txtNzbDir_TextChanged);
             // 
             // lblNzbDir
             // 
             this.lblNzbDir.AutoSize = true;
-            this.lblNzbDir.Location = new System.Drawing.Point(21, 299);
+            this.lblNzbDir.Location = new System.Drawing.Point(21, 293);
             this.lblNzbDir.Name = "lblNzbDir";
             this.lblNzbDir.Size = new System.Drawing.Size(77, 13);
             this.lblNzbDir.TabIndex = 11;
@@ -273,7 +296,7 @@
             // 
             // nzbDirBrowse
             // 
-            this.nzbDirBrowse.Location = new System.Drawing.Point(360, 290);
+            this.nzbDirBrowse.Location = new System.Drawing.Point(360, 284);
             this.nzbDirBrowse.Name = "nzbDirBrowse";
             this.nzbDirBrowse.Size = new System.Drawing.Size(24, 23);
             this.nzbDirBrowse.TabIndex = 12;
@@ -294,7 +317,7 @@
             this.txtVideoExt.Location = new System.Drawing.Point(118, 98);
             this.txtVideoExt.Name = "txtVideoExt";
             this.txtVideoExt.Size = new System.Drawing.Size(250, 20);
-            this.txtVideoExt.TabIndex = 13;
+            this.txtVideoExt.TabIndex = 4;
             // 
             // lblVideoExt
             // 
@@ -310,15 +333,15 @@
             // txtPriority
             // 
             this.txtPriority.BackColor = System.Drawing.SystemColors.Control;
-            this.txtPriority.Location = new System.Drawing.Point(104, 318);
+            this.txtPriority.Location = new System.Drawing.Point(104, 312);
             this.txtPriority.Name = "txtPriority";
             this.txtPriority.Size = new System.Drawing.Size(26, 20);
-            this.txtPriority.TabIndex = 15;
+            this.txtPriority.TabIndex = 11;
             // 
             // lblPriority
             // 
             this.lblPriority.AutoSize = true;
-            this.lblPriority.Location = new System.Drawing.Point(57, 325);
+            this.lblPriority.Location = new System.Drawing.Point(57, 319);
             this.lblPriority.Name = "lblPriority";
             this.lblPriority.Size = new System.Drawing.Size(41, 13);
             this.lblPriority.TabIndex = 16;
@@ -329,15 +352,15 @@
             // txtRssConfig
             // 
             this.txtRssConfig.BackColor = System.Drawing.SystemColors.Control;
-            this.txtRssConfig.Location = new System.Drawing.Point(104, 344);
+            this.txtRssConfig.Location = new System.Drawing.Point(104, 338);
             this.txtRssConfig.Name = "txtRssConfig";
             this.txtRssConfig.Size = new System.Drawing.Size(250, 20);
-            this.txtRssConfig.TabIndex = 17;
+            this.txtRssConfig.TabIndex = 12;
             // 
             // lblRssConfig
             // 
             this.lblRssConfig.AutoSize = true;
-            this.lblRssConfig.Location = new System.Drawing.Point(14, 351);
+            this.lblRssConfig.Location = new System.Drawing.Point(14, 345);
             this.lblRssConfig.Name = "lblRssConfig";
             this.lblRssConfig.Size = new System.Drawing.Size(84, 13);
             this.lblRssConfig.TabIndex = 18;
@@ -347,7 +370,7 @@
             // 
             // btnRssConfig
             // 
-            this.btnRssConfig.Location = new System.Drawing.Point(360, 342);
+            this.btnRssConfig.Location = new System.Drawing.Point(360, 336);
             this.btnRssConfig.Name = "btnRssConfig";
             this.btnRssConfig.Size = new System.Drawing.Size(24, 23);
             this.btnRssConfig.TabIndex = 19;
@@ -362,17 +385,17 @@
             this.txtIgnoreSeasons.AcceptsReturn = true;
             this.txtIgnoreSeasons.BackColor = System.Drawing.SystemColors.Control;
             this.txtIgnoreSeasons.Cursor = System.Windows.Forms.Cursors.Default;
-            this.txtIgnoreSeasons.Location = new System.Drawing.Point(104, 370);
+            this.txtIgnoreSeasons.Location = new System.Drawing.Point(104, 364);
             this.txtIgnoreSeasons.Multiline = true;
             this.txtIgnoreSeasons.Name = "txtIgnoreSeasons";
             this.txtIgnoreSeasons.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtIgnoreSeasons.Size = new System.Drawing.Size(250, 72);
-            this.txtIgnoreSeasons.TabIndex = 20;
+            this.txtIgnoreSeasons.TabIndex = 13;
             // 
             // lblIgnoreSeasons
             // 
             this.lblIgnoreSeasons.AutoSize = true;
-            this.lblIgnoreSeasons.Location = new System.Drawing.Point(2, 373);
+            this.lblIgnoreSeasons.Location = new System.Drawing.Point(2, 367);
             this.lblIgnoreSeasons.Name = "lblIgnoreSeasons";
             this.lblIgnoreSeasons.Size = new System.Drawing.Size(96, 13);
             this.lblIgnoreSeasons.TabIndex = 21;
@@ -383,10 +406,10 @@
             // chkReplaceChars
             // 
             this.chkReplaceChars.AutoSize = true;
-            this.chkReplaceChars.Location = new System.Drawing.Point(104, 455);
+            this.chkReplaceChars.Location = new System.Drawing.Point(104, 443);
             this.chkReplaceChars.Name = "chkReplaceChars";
             this.chkReplaceChars.Size = new System.Drawing.Size(120, 17);
-            this.chkReplaceChars.TabIndex = 22;
+            this.chkReplaceChars.TabIndex = 14;
             this.chkReplaceChars.Text = "Replace Characters";
             this.chkReplaceChars.UseVisualStyleBackColor = true;
             this.chkReplaceChars.MouseLeave += new System.EventHandler(this.statusBarClear);
@@ -397,7 +420,7 @@
             this.lblPriorityDesc.AutoSize = true;
             this.lblPriorityDesc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPriorityDesc.ForeColor = System.Drawing.Color.MidnightBlue;
-            this.lblPriorityDesc.Location = new System.Drawing.Point(137, 324);
+            this.lblPriorityDesc.Location = new System.Drawing.Point(137, 318);
             this.lblPriorityDesc.Name = "lblPriorityDesc";
             this.lblPriorityDesc.Size = new System.Drawing.Size(149, 13);
             this.lblPriorityDesc.TabIndex = 23;
@@ -407,7 +430,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusStripLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 490);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 500);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(404, 22);
             this.statusStrip1.TabIndex = 24;
@@ -420,13 +443,37 @@
             this.statusStripLabel.Size = new System.Drawing.Size(257, 17);
             this.statusStripLabel.Text = "SABSync GUI - Mouse over labels for more info!";
             // 
+            // btnTestSab
+            // 
+            this.btnTestSab.Location = new System.Drawing.Point(12, 467);
+            this.btnTestSab.Name = "btnTestSab";
+            this.btnTestSab.Size = new System.Drawing.Size(64, 23);
+            this.btnTestSab.TabIndex = 25;
+            this.btnTestSab.Text = "Test SAB";
+            this.btnTestSab.UseVisualStyleBackColor = true;
+            this.btnTestSab.MouseLeave += new System.EventHandler(this.statusBarClear);
+            this.btnTestSab.Click += new System.EventHandler(this.btnTestSab_Click);
+            this.btnTestSab.MouseEnter += new System.EventHandler(this.btnTestSab_MouseEnter);
+            // 
+            // btnReset
+            // 
+            this.btnReset.Location = new System.Drawing.Point(222, 467);
+            this.btnReset.Name = "btnReset";
+            this.btnReset.Size = new System.Drawing.Size(64, 23);
+            this.btnReset.TabIndex = 26;
+            this.btnReset.Text = "Reset";
+            this.btnReset.UseVisualStyleBackColor = true;
+            this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            // 
             // SABSyncGUI
             // 
             this.AcceptButton = this.saveButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Snow;
-            this.ClientSize = new System.Drawing.Size(404, 512);
+            this.ClientSize = new System.Drawing.Size(404, 522);
+            this.Controls.Add(this.btnReset);
+            this.Controls.Add(this.btnTestSab);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.lblPriorityDesc);
             this.Controls.Add(this.chkReplaceChars);
@@ -477,8 +524,8 @@
         private System.Windows.Forms.TextBox txtTvDailyTemplate;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.Label lblSabInfo;
-        private System.Windows.Forms.TextBox txtSabInfo;
+        private System.Windows.Forms.Label lblSabInfoHost;
+        private System.Windows.Forms.TextBox txtSabInfoHost;
         private System.Windows.Forms.Label lblUsername;
         private System.Windows.Forms.TextBox txtUsername;
         private System.Windows.Forms.Label lblApiKey;
@@ -502,6 +549,10 @@
         private System.Windows.Forms.Label lblPriorityDesc;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel statusStripLabel;
+        private System.Windows.Forms.TextBox txtSabInfoPort;
+        private System.Windows.Forms.Label lblSabInfoPort;
+        private System.Windows.Forms.Button btnTestSab;
+        private System.Windows.Forms.Button btnReset;
 
     }
 }

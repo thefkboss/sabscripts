@@ -5,7 +5,7 @@ using System.Configuration;
 
 namespace SABSyncGUI
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// The main entry point for the application.
@@ -17,5 +17,7 @@ namespace SABSyncGUI
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new SABSyncGUI());
         }
+
+
     }
 }
