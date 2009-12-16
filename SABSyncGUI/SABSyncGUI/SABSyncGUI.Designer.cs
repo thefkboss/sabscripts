@@ -451,7 +451,6 @@
             this.btnTestSab.TabIndex = 25;
             this.btnTestSab.Text = "Test SAB";
             this.btnTestSab.UseVisualStyleBackColor = true;
-            this.btnTestSab.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.btnTestSab.Click += new System.EventHandler(this.btnTestSab_Click);
             this.btnTestSab.MouseEnter += new System.EventHandler(this.btnTestSab_MouseEnter);
             // 
@@ -463,7 +462,9 @@
             this.btnReset.TabIndex = 26;
             this.btnReset.Text = "Reset";
             this.btnReset.UseVisualStyleBackColor = true;
+            this.btnReset.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            this.btnReset.MouseEnter += new System.EventHandler(this.btnReset_MouseEnter);
             // 
             // SABSyncGUI
             // 
