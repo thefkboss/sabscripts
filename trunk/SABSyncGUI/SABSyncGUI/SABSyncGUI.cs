@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Net;
 using System.Xml;
 using System.IO;
+using System.Reflection;
 
 namespace SABSyncGUI
 {
