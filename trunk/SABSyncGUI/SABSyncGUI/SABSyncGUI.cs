@@ -276,36 +276,38 @@ namespace SABSyncGUI
 
         private static string TestConnection(string hostname, string port, string apiKey, string username, string password)
         {
-            string versionRssUrl = "http://" + hostname + ":" + port + "/api?mode=version&output=xml&apikey=" + apiKey + "&ma_username" + username + "&ma_password" + password;
+            string versionRssUrl = "http://" + hostname + ":" + port + "/api?mode=queue&output=xml&apikey=" + apiKey + "&ma_username=" + username + "&ma_password=" + password;
             string sabVersion = null;
             try
             {
                 HttpWebRequest versionRssRequest = (HttpWebRequest)WebRequest.Create(versionRssUrl);
-                versionRssRequest.Timeout = 5000;
+                versionRssRequest.Timeout = 10000;
                 HttpWebResponse versionRssResponse = (HttpWebResponse)versionRssRequest.GetResponse();
-
                 Stream versionDoc = versionRssResponse.GetResponseStream();
+                XmlTextReader versionReader = new XmlTextReader(versionDoc);
+                XmlDocument versionRssDoc = new XmlDocument();
+                versionRssDoc.Load(versionReader);
 
-                XmlReaderSettings readerSettings = new XmlReaderSettings();
-                readerSettings.IgnoreWhitespace = false;
+                var version = versionRssDoc.GetElementsByTagName(@"version");
+                var error = versionRssDoc.GetElementsByTagName(@"error");
 
-                using (XmlReader reader = XmlReader.Create(versionDoc, readerSettings))
+                if (error.Count != 0)
                 {
-                    while (reader.Read())
-                    {
-                        if (reader.NodeType == XmlNodeType.Element && reader.Name == "version")
-                        {
-                            sabVersion = reader.ReadString();
-                        }
-                    }
+                    string errorMsg = "Error connecting to SAB: " + error[0].InnerText;
+                    return errorMsg;
+                }
+
+                if (version.Count != 0)
+                {
+                    sabVersion = version[0].InnerText;
                 }
                 versionRssResponse.Close();
             }
 
             catch
             {
-                string error = "Timed out connecting to SABnzbd, check your settings";
-                return error;
+                string errorMsg = "Timed out connecting to SABnzbd, check your settings";
+                return errorMsg;
             }
             string result = "Successfully Connected to SABnzbd! Version: " + sabVersion;
             return result;
