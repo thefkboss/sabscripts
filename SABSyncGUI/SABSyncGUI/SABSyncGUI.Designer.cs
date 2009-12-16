@@ -1,4 +1,6 @@
-﻿namespace SABSyncGUI
+﻿using System.Reflection;
+
+namespace SABSyncGUI
 {
     partial class SABSyncGUI
     {
@@ -502,7 +504,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "SABSyncGUI";
-            this.Text = "SABSync GUI";
+            this.Text = Assembly.GetExecutingAssembly().GetName().Name + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
             this.Load += new System.EventHandler(this.SABSyncGUI_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace XBox360
 {
@@ -45,6 +46,9 @@ namespace XBox360
                     File.AppendAllText(logFile, "Running abgx360 on: " + isoFileInfo + "\n");
                     Process.Start("cmd.exe", abgxCommands).WaitForExit(); //Run abgx360 and wait for exit
                     Process.Start("cmd.exe", abgxCommands).WaitForExit(); //Run abgx360 and wait for exit a second time
+
+                    Thread.Sleep(1000);
+
                     string htmlFile = gamePath + "\\abgx360-" + isoFileNum + ".html"; //Get full path to HTML file
                     string htmlFileContents = File.ReadAllText(htmlFile); //Read html file into string
                     if (!htmlFileContents.Contains("Verification was successful!")) //Check string for "Verification was successful!"
