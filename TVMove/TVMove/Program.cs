@@ -2,11 +2,13 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 
 namespace TVMove
 {
     class Program
     {
+        private static bool _updateXbmc = Convert.ToBoolean(ConfigurationManager.AppSettings["updateXbmc"]); //Get updateXbmc Bool from App.Config
         private static string _filenameTemplate = ConfigurationManager.AppSettings["filenameTemplate"]; //Get _tvTemplate from app.config
         private static string _videoExt = ConfigurationManager.AppSettings["videoExt"]; //Get _tvTemplate from app.config
 
@@ -91,6 +93,12 @@ namespace TVMove
                     }
                 }
             }
+            if (_updateXbmc)
+            {
+                File.AppendAllText(logFile, "Attempting to Update XBMC\n");
+                string xbmcUpdate = UpdateXbmc(showPath);
+                File.AppendAllText(logFile, "XBMC Returned: " + xbmcUpdate + "\n");
+            }
         }
 
         private static string GetFilename(string showName, int seasonNumber, int episodeNumber, string episodeName)
@@ -123,6 +131,50 @@ namespace TVMove
             path = path.Replace("%e", eReplace);
 
             return path;
+        }
+
+        private static string UpdateXbmc(string showPath)
+        {
+            string downloadTvPath = ConfigurationManager.AppSettings["downloadTvPath"];
+            string xbmcTvPath = ConfigurationManager.AppSettings["xbmcTvPath"];
+            string xbmcInfo = ConfigurationManager.AppSettings["xbmcInfo"];
+            string xbmcUsername = ConfigurationManager.AppSettings["xbmcUsername"];
+            string xbmcPassword = ConfigurationManager.AppSettings["xbmcPassword"];
+            string xbmcPath = null;
+
+            if (downloadTvPath.ToLower() != xbmcTvPath.ToLower())
+            {
+                xbmcPath = showPath.Replace(downloadTvPath, xbmcTvPath);
+                xbmcPath = xbmcPath.Replace('\\', '/');
+            }
+
+            else
+            {
+                xbmcPath = showPath;
+            }
+
+            Console.WriteLine(xbmcPath);
+
+            try
+            {
+                string xbmcUrl = "http://" + xbmcInfo + "/xbmcCmds/xbmcHttp?command=ExecBuiltIn&parameter=XBMC.updatelibrary(video," + xbmcPath + ")";
+
+                HttpWebRequest xbmcRequest = (HttpWebRequest)WebRequest.Create(xbmcUrl);
+                xbmcRequest.Timeout = 10000;
+                xbmcRequest.Credentials = new NetworkCredential(xbmcUsername, xbmcPassword);
+                xbmcRequest.PreAuthenticate = true;
+
+                HttpWebResponse xbmcRepsonse = (HttpWebResponse)xbmcRequest.GetResponse();
+                xbmcRepsonse.Close();
+            }
+            catch
+            {
+                string errorMsg = "An error occured connecting to XBMC";
+                return errorMsg;
+            }
+
+            string xbmcUpdating = "XBMC is Updating";
+            return xbmcUpdating;
         }
     }
 }
