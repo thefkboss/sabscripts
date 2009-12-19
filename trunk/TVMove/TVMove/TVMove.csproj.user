@@ -3,7 +3,7 @@
     <StartArguments>"C:\Test\30 Rock\Season 01" 2 "30 Rock - 1x01 - Test Name"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <StartArguments>"W:\Test\30 Rock" 2 "30 Rock - 1x01 - Test Name"</StartArguments>
+    <StartArguments>"D:\shares\TV\Curb Your Enthusiasm\Season 07" 2 "Curb - 1x02 - TEst"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>
