@@ -153,8 +153,6 @@ namespace TVMove
                 xbmcPath = showPath;
             }
 
-            Console.WriteLine(xbmcPath);
-
             try
             {
                 string xbmcUrl = "http://" + xbmcInfo + "/xbmcCmds/xbmcHttp?command=ExecBuiltIn&parameter=XBMC.updatelibrary(video," + xbmcPath + ")";
