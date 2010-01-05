@@ -1,5 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>"W:\Test\30 Rock" 2 "30 Rock"</StartArguments>
+    <StartArguments>"W:\Test\Movies\Max Payne (2008)" 2 "Max Payne (2008)"</StartArguments>
   </PropertyGroup>
 </Project>
