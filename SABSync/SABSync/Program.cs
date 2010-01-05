@@ -562,6 +562,7 @@ namespace SABSync
             //return !File.Exists(_nzbDir + "\\" + rssTitle + ".nzb.gz");
 
             string nzbFileName = rssTitle.TrimEnd('.');
+            nzbFileName = CleanString(nzbFileName);
 
             if (File.Exists(_nzbDir + "\\" + nzbFileName + ".nzb.gz"))
             {
