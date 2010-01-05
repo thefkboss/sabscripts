@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 
 namespace Movies
 {
@@ -13,12 +14,13 @@ namespace Movies
             string movieDir = ConfigurationSettings.AppSettings["movieDir"].ToString(); //Get movieDir from app.config
             string hdMovieDir = ConfigurationSettings.AppSettings["hdMovieDir"].ToString(); //Get hdMovieDir from app.config
             string ipodMovieDir = ConfigurationSettings.AppSettings["ipodMovieDir"].ToString(); //Get ipodMovieDir from app.config
+            bool updateXbmc = Convert.ToBoolean(ConfigurationSettings.AppSettings["updateXbmc"]); //Get ipodMovieDir from app.config
             string moviePath = args[0]; //Get moviePath from first CMD Line argument
             string movieName = args[2]; //Get movieName from third CMD Line argument
             string movieFileName = movieDir + "\\" + movieName + ".avi"; //Create movieFileName from movieDir + movieName
             string hdMovieMkvFileName = hdMovieDir + "\\" + movieName + ".mkv"; //Create hdMovieMkvFileName from hdMovieDir + movieName
             string hdMovieWmvFileName = hdMovieDir + "\\" + movieName + ".wmv"; //Create hdMovieWmvFileName from hdMovieDir + movieName
-            string ipodMovieFileName = ipodMovieDir + "\\" + movieName + ".mp4";//Create ipodMovieFileName from ipodMovieDir + movieName
+            string ipodMovieFileName = ipodMovieDir + "\\" + movieName + ". mp4";//Create ipodMovieFileName from ipodMovieDir + movieName
             string mencoderOptions = "-forceidx -ovc copy -oac copy -o"; //Options for mencoder (static)
 
             string[] filesSizeTest = Directory.GetFiles(moviePath, "*.*", SearchOption.AllDirectories); //Search moviePath for all Files, including sub-folders
@@ -45,6 +47,10 @@ namespace Movies
                 {
                     File.Move(aviFile, movieFileName); //Move/Rename File
                     Directory.Delete(moviePath, true); //Delete directory + all files
+                    if (updateXbmc)
+                    {
+                        string xbmcUpdate = UpdateXbmc();
+                    }
                     return; //Exit
                 }
             }
@@ -64,6 +70,10 @@ namespace Movies
                     string mencoderCommand = mencoderOptions + " \"" + movieFileName + "\" \"" + aviFileOne+ "\" \"" +aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
                     Process.Start("mencoder.exe", mencoderCommand).WaitForExit(); //Run mencoder on the two AVIs & wait for finish
                     Directory.Delete(moviePath, true); //Delete directory + all files
+                    if (updateXbmc)
+                    {
+                        string xbmcUpdate = UpdateXbmc();
+                    }
                     return; //Exit
                 }
 
@@ -90,6 +100,10 @@ namespace Movies
                 {
                     File.Move(mkvFile, hdMovieMkvFileName); //Move + Rename MKV File
                     Directory.Delete(moviePath, true); //Delete directory + contents
+                    if (updateXbmc)
+                    {
+                        string xbmcUpdate = UpdateXbmc(hdMovieDir);
+                    }
                     return; //Exit
                 }
             }
@@ -111,6 +125,10 @@ namespace Movies
                 {
                     File.Move(wmvFile, hdMovieWmvFileName); //Move + Rename WMV File
                     Directory.Delete(moviePath, true); //Delete directory + contents
+                    if (updateXbmc)
+                    {
+                        string xbmcUpdate = UpdateXbmc(hdMovieDir);
+                    }
                     return; //Exit
                 }
             }
@@ -140,6 +158,90 @@ namespace Movies
             {
                 //Too Many MP4s! Abort!
             }
+        }
+
+        private static string UpdateXbmc()
+        {
+            string movieDir = ConfigurationManager.AppSettings["movieDir"];
+            string xbmcMoviePath = ConfigurationManager.AppSettings["xbmcMoviePath"];
+            string xbmcInfo = ConfigurationManager.AppSettings["xbmcInfo"];
+            string xbmcUsername = ConfigurationManager.AppSettings["xbmcUsername"];
+            string xbmcPassword = ConfigurationManager.AppSettings["xbmcPassword"];
+            string xbmcPath = null;
+
+            if (movieDir.ToLower() != xbmcMoviePath.ToLower())
+            {
+                xbmcPath = movieDir.Replace(movieDir, xbmcMoviePath);
+                xbmcPath = xbmcPath.Replace('\\', '/');
+            }
+
+            else
+            {
+                xbmcPath = movieDir;
+            }
+
+            try
+            {
+                string xbmcUrl = "http://" + xbmcInfo + "/xbmcCmds/xbmcHttp?command=ExecBuiltIn&parameter=XBMC.updatelibrary(video)";
+
+                HttpWebRequest xbmcRequest = (HttpWebRequest)WebRequest.Create(xbmcUrl);
+                xbmcRequest.Timeout = 10000;
+                xbmcRequest.Credentials = new NetworkCredential(xbmcUsername, xbmcPassword);
+                xbmcRequest.PreAuthenticate = true;
+
+                HttpWebResponse xbmcRepsonse = (HttpWebResponse)xbmcRequest.GetResponse();
+                xbmcRepsonse.Close();
+            }
+            catch
+            {
+                string errorMsg = "An error occured connecting to XBMC";
+                return errorMsg;
+            }
+
+            string xbmcUpdating = "XBMC is Updating";
+            return xbmcUpdating;
+        }
+
+        private static string UpdateXbmc(string moviePath)
+        {
+            string downloadMoviePath = ConfigurationManager.AppSettings["downloadMoviePath"];
+            string xbmcMoviePath = ConfigurationManager.AppSettings["xbmcMoviePath"];
+            string xbmcInfo = ConfigurationManager.AppSettings["xbmcInfo"];
+            string xbmcUsername = ConfigurationManager.AppSettings["xbmcUsername"];
+            string xbmcPassword = ConfigurationManager.AppSettings["xbmcPassword"];
+            string xbmcPath = null;
+
+            if (downloadMoviePath.ToLower() != xbmcMoviePath.ToLower())
+            {
+                xbmcPath = moviePath.Replace(downloadMoviePath, xbmcMoviePath);
+                xbmcPath = xbmcPath.Replace('\\', '/');
+            }
+
+            else
+            {
+                xbmcPath = moviePath;
+            }
+
+            try
+            {
+                string xbmcUrl = "http://" + xbmcInfo + "/xbmcCmds/xbmcHttp?command=ExecBuiltIn&parameter=XBMC.updatelibrary(video," + xbmcPath + ")";
+
+                HttpWebRequest xbmcRequest = (HttpWebRequest)WebRequest.Create(xbmcUrl);
+                xbmcRequest.Timeout = 10000;
+                xbmcRequest.Credentials = new NetworkCredential(xbmcUsername, xbmcPassword);
+                xbmcRequest.PreAuthenticate = true;
+
+                HttpWebResponse xbmcRepsonse = (HttpWebResponse)xbmcRequest.GetResponse();
+                xbmcRepsonse.Close();
+            }
+            catch
+            {
+                string errorMsg = "An error occured connecting to XBMC";
+                return errorMsg;
+            }
+
+            string xbmcUpdating = "XBMC is Updating";
+            return xbmcUpdating;
         }
     }
 }
