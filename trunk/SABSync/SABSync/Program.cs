@@ -27,7 +27,6 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml;
 using Rss;
 
@@ -47,13 +46,20 @@ namespace SABSync
         private static string _sabRequest;
         private static readonly List<string> Queued = new List<string>();
         private static readonly List<string> Summary = new List<string>();
-
+        private static readonly FileInfo LogFile = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\log\\" + DateTime.Now.ToString("MM.dd-HH-mm") + ".txt");
         private static void Main()
         {
             Stopwatch sw = Stopwatch.StartNew();
 
+            //Create log dir if it doesn't exist
+            if (!LogFile.Directory.Exists)
+            {
+                LogFile.Directory.Create();
+            }
+
             Log("=====================================================================");
-            Log("Starting " + Assembly.GetExecutingAssembly().GetName().Name + ". V " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            Log("Starting " + Assembly.GetExecutingAssembly().GetName().Name + ". v" + Assembly.GetExecutingAssembly().GetName().Version + " - Build Date: " + new FileInfo(Process.GetCurrentProcess().MainModule.FileName).LastWriteTime.ToLongDateString());
+            Log("Current System Time: {0}", DateTime.Now);
             Log("=====================================================================");
 
             try
@@ -95,6 +101,7 @@ namespace SABSync
             Log("Number of reports added to the queue: " + Queued.Count);
 
             Log("Process successfully completed. Duration {0:##.#}s", sw.Elapsed.TotalSeconds);
+            Log(DateTime.Now.ToString());
         }
 
         private static void LoadConfig()
@@ -113,7 +120,7 @@ namespace SABSync
 
             _ignoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"]; //Get _ignoreSeasons from app.config
 
-            _videoExt = ConfigurationManager.AppSettings["videoExt"].Trim(';',' ').Split(';'); //Get _videoExt from app.config
+            _videoExt = ConfigurationManager.AppSettings["videoExt"].Trim(';', ' ').Split(';'); //Get _videoExt from app.config
 
             _tvTemplate = ConfigurationManager.AppSettings["tvTemplate"]; //Get _tvTemplate from app.config
             if (String.IsNullOrEmpty(_tvTemplate))
@@ -338,126 +345,136 @@ namespace SABSync
             Log("----------------------------------------------------------------");
             Log("Verifying '{0}'", title);
 
-            if (title.Length > 80)
+            try
             {
-                title = title.Substring(0, 79);
-            }
-
-            string[] titleArray = title.Split('-');
-
-            if (titleArray.Length == 3)
-            {
-                string showName = titleArray[0].Trim();
-                string seasonEpisode = titleArray[1].Trim();
-
-                string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                int seasonNumber;
-                int episodeNumber;
-
-                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
 
 
-                // Go through each video file extension
-                if (!IsShowWanted(showName))
-                    return false;
-
-                string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
-                string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
-                if (IsOnDisk(dir, fileMask))
-                    return false;
-
-                if (IsSeasonIgnored(showName, seasonNumber))
-                    return false;
-
-                if (IsInQueue(title, reportId))
-                    return false;
-
-                if (InNzbArchive(title))
-                    return false;
-
-                return true;
-            }
-
-            if (titleArray.Length == 4)
-            {
-                string showName;
-                string seasonEpisode;
-
-
-                if (titleArray[1].Contains("x"))
+                if (title.Length > 80)
                 {
-                    showName = titleArray[0].Trim();
-                    seasonEpisode = titleArray[1].Trim();
+                    title = title.Substring(0, 79);
                 }
 
-                else if (titleArray[2].Contains("x"))
+                string[] titleArray = title.Split('-');
+
+                if (titleArray.Length == 3)
                 {
-                    showName = titleArray[0].Trim() + titleArray[1].Trim();
-                    seasonEpisode = titleArray[2].Trim();
+                    string showName = titleArray[0].Trim();
+                    string seasonEpisode = titleArray[1].Trim();
+
+                    string[] seasonEpisodeSplit = seasonEpisode.Split('x');
+                    int seasonNumber;
+                    int episodeNumber;
+
+                    Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
+                    Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
+
+
+                    // Go through each video file extension
+                    if (!IsShowWanted(showName))
+                        return false;
+
+                    string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
+                    string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
+                    if (IsOnDisk(dir, fileMask))
+                        return false;
+
+                    if (IsSeasonIgnored(showName, seasonNumber))
+                        return false;
+
+                    if (IsInQueue(title, reportId))
+                        return false;
+
+                    if (InNzbArchive(title))
+                        return false;
+
+                    return true;
                 }
 
-                else
+                if (titleArray.Length == 4)
                 {
-                    Log("Unsupported Title: {0}", title);
-                    return false;
+                    string showName;
+                    string seasonEpisode;
+
+
+                    if (titleArray[1].Contains("x"))
+                    {
+                        showName = titleArray[0].Trim();
+                        seasonEpisode = titleArray[1].Trim();
+                    }
+
+                    else if (titleArray[2].Contains("x"))
+                    {
+                        showName = titleArray[0].Trim() + titleArray[1].Trim();
+                        seasonEpisode = titleArray[2].Trim();
+                    }
+
+                    else
+                    {
+                        Log("Unsupported Title: {0}", title);
+                        return false;
+                    }
+
+                    string[] seasonEpisodeSplit = seasonEpisode.Split('x');
+                    int seasonNumber;
+                    int episodeNumber;
+
+                    Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
+                    Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
+
+                    if (!IsShowWanted(showName))
+                        return false;
+
+                    string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
+                    string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
+                    if (IsOnDisk(dir, fileMask))
+                        return false;
+
+                    if (IsSeasonIgnored(showName, seasonNumber))
+                        return false;
+
+                    if (IsInQueue(title, reportId))
+                        return false;
+
+                    if (InNzbArchive(title))
+                        return false;
+
+                    return true;
                 }
 
-                string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                int seasonNumber;
-                int episodeNumber;
 
-                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
+                //Daiy Episode
+                if (titleArray.Length == 5)
+                {
+                    string showName = titleArray[0].Trim();
+                    int year;
+                    int month;
+                    int day;
 
-                if (!IsShowWanted(showName))
-                    return false;
+                    Int32.TryParse(titleArray[1], out year);
+                    Int32.TryParse(titleArray[2], out month);
+                    Int32.TryParse(titleArray[3], out day);
 
-                string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
-                string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
-                if (IsOnDisk(dir, fileMask))
-                    return false;
+                    if (!IsShowWanted(showName))
+                        return false;
 
-                if (IsSeasonIgnored(showName, seasonNumber))
-                    return false;
+                    string dir = GetEpisodeDir(showName, year, month, day);
+                    string fileMask = GetEpisodeFileMask(year, month, day);
+                    if (IsOnDisk(dir, fileMask))
+                        return false;
 
-                if (IsInQueue(title, reportId))
-                    return false;
+                    if (IsInQueue(title, reportId))
+                        return false;
 
-                if (InNzbArchive(title))
-                    return false;
+                    if (InNzbArchive(title))
+                        return false;
 
-                return true;
+                    return true;
+                }
             }
-
-
-            //Daiy Episode
-            if (titleArray.Length == 5)
+            catch (Exception e)
             {
-                string showName = titleArray[0].Trim();
-                int year;
-                int month;
-                int day;
-
-                Int32.TryParse(titleArray[1], out year);
-                Int32.TryParse(titleArray[2], out month);
-                Int32.TryParse(titleArray[3], out day);
-
-                if (!IsShowWanted(showName))
-                    return false;
-
-                string dir = GetEpisodeDir(showName, year, month, day);
-                string fileMask = GetEpisodeFileMask(year, month, day);
-                if (IsOnDisk(dir, fileMask))
-                    return false;
-
-                if (IsInQueue(title, reportId))
-                    return false;
-
-                if (InNzbArchive(title))
-                    return false;
-
-                return true;
+                Log("Unsupported Title: {0} - {1}", title, e);
+                return false;
             }
 
             Log("Unsupported Title: {0}", title);
@@ -588,7 +605,7 @@ namespace SABSync
             Console.WriteLine(message);
             try
             {
-                using (StreamWriter sw = File.AppendText("log.txt"))
+                using (StreamWriter sw = File.AppendText(LogFile.FullName))
                 {
                     sw.WriteLine(message);
                 }
