@@ -204,16 +204,16 @@ namespace Movies
 
         private static string UpdateXbmc(string moviePath)
         {
-            string downloadMoviePath = ConfigurationManager.AppSettings["downloadMoviePath"];
-            string xbmcMoviePath = ConfigurationManager.AppSettings["xbmcMoviePath"];
+            string downloadMoviePath = moviePath;
+            string xbmcHdMoviePath = ConfigurationManager.AppSettings["xbmcHdMoviePath"];
             string xbmcInfo = ConfigurationManager.AppSettings["xbmcInfo"];
             string xbmcUsername = ConfigurationManager.AppSettings["xbmcUsername"];
             string xbmcPassword = ConfigurationManager.AppSettings["xbmcPassword"];
             string xbmcPath = null;
 
-            if (downloadMoviePath.ToLower() != xbmcMoviePath.ToLower())
+            if (downloadMoviePath.ToLower() != xbmcHdMoviePath.ToLower())
             {
-                xbmcPath = moviePath.Replace(downloadMoviePath, xbmcMoviePath);
+                xbmcPath = moviePath.Replace(downloadMoviePath, xbmcHdMoviePath);
                 xbmcPath = xbmcPath.Replace('\\', '/');
             }
 
