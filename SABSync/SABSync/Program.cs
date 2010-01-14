@@ -41,7 +41,7 @@ namespace SABSync
         private static string _tvDailyTemplate;
         private static string[] _videoExt;
         private static FileInfo _rss;
-        private static DirectoryInfo[] _wantedShowNames;
+        private static List<DirectoryInfo> _wantedShowNames;
         private static bool _sabReplaceChars;
         private static string _sabRequest;
         private static readonly List<string> Queued = new List<string>();
@@ -65,9 +65,10 @@ namespace SABSync
             try
             {
                 LoadConfig();
+
                 var reports = GetReports();
 
-                Log("Watching {0} shows", _wantedShowNames.Length);
+                Log("Watching {0} shows", _wantedShowNames.Count);
                 Log("_ignoreSeasons: {0}", _ignoreSeasons);
 
                 foreach (var report in reports)
@@ -113,7 +114,7 @@ namespace SABSync
                 throw new ApplicationException("Invalid TV Root folder. " + _tvRoot);
 
 
-            _wantedShowNames = _tvRoot.GetDirectories();
+            _wantedShowNames =new List<DirectoryInfo> (_tvRoot.GetDirectories());
             _rss = new FileInfo(ConfigurationManager.AppSettings["rss"]); //Get rss config file from app.config
             if (!_rss.Exists)
                 throw new ApplicationException("Invalid RSS file path. " + _rss);
@@ -177,7 +178,7 @@ namespace SABSync
 
                 foreach (RssItem item in channel.Items)
                 {
-                    if (!item.Title.ToLower().Contains("passworded"))
+                    if (!item.Title.EndsWith("(Passworded)", StringComparison.InvariantCultureIgnoreCase))
                     {
                         Int64 reportId = Convert.ToInt64(Regex.Match(item.Link.AbsolutePath, @"\d{7,10}").Value);
 
@@ -190,7 +191,7 @@ namespace SABSync
                     }
                     else
                     {
-                        Log("Skipping {0}", item.Title);
+                        Log("Skipping Passworded Report {0}", item.Title);
                     }
                 }
             }
@@ -331,7 +332,7 @@ namespace SABSync
         {
             foreach (var di in _wantedShowNames)
             {
-                if (di.Name.ToLower() == CleanString(wantedShowName).ToLower())
+                if (String.Equals(di.Name, CleanString(wantedShowName), StringComparison.InvariantCultureIgnoreCase))
                 {
                     return true;
                 }
