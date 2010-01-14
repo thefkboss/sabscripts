@@ -1,15 +1,37 @@
-﻿using System;
+﻿// /*
+//  *   Sab SABSync: Automatic TV Sync for SAB http://sabscripts.googlecode.com
+//  *
+//  * 
+//  *   This program is free software: you can redistribute it and/or modify
+//  *   it under the terms of the GNU General Public License as published by
+//  *   the Free Software Foundation, either version 3 of the License, or
+//  *   (at your option) any later version.
+//  *
+//  *   This program is distributed in the hope that it will be useful,
+//  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  *   GNU General Public License for more details.
+//  *
+//  *   You should have received a copy of the GNU General Public License
+//  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//  * 
+//  */
+
+
+
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml;
 using Rss;
 
-namespace Downloader
+namespace SABSync
 {
     internal class Program
     {
@@ -29,6 +51,10 @@ namespace Downloader
         private static void Main()
         {
             Stopwatch sw = Stopwatch.StartNew();
+
+            Log("=====================================================================");
+            Log("Starting " + Assembly.GetExecutingAssembly().GetName().Name + ". V " + Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            Log("=====================================================================");
 
             try
             {
@@ -55,7 +81,7 @@ namespace Downloader
 
 
             sw.Stop();
-            Log(Environment.NewLine + "=====================================================================");
+            Log("=====================================================================" + Environment.NewLine);
 
             foreach (var logItem in Summary)
             {
@@ -121,7 +147,6 @@ namespace Downloader
 
         private static Dictionary<Int64, string> GetReports()
         {
-
             Log("Loading RSS feed list from {0}", _rss.FullName);
 
             var feeds = File.ReadAllLines(_rss.FullName);
@@ -130,7 +155,6 @@ namespace Downloader
 
             foreach (var s in feeds)
             {
-
                 var feedParts = s.Split('|');
                 string url = feedParts[0];
                 string name = "UN-NAMED";
@@ -165,7 +189,6 @@ namespace Downloader
                         Log("Skipping {0}", item.Title);
                     }
                 }
-
             }
 
             Log(Environment.NewLine + "Download Completed. Total of {0} reports found", reports.Count);
