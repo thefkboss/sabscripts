@@ -14,7 +14,8 @@ namespace Movies
             string movieDir = ConfigurationSettings.AppSettings["movieDir"].ToString(); //Get movieDir from app.config
             string hdMovieDir = ConfigurationSettings.AppSettings["hdMovieDir"].ToString(); //Get hdMovieDir from app.config
             string ipodMovieDir = ConfigurationSettings.AppSettings["ipodMovieDir"].ToString(); //Get ipodMovieDir from app.config
-            bool updateXbmc = Convert.ToBoolean(ConfigurationSettings.AppSettings["updateXbmc"]); //Get ipodMovieDir from app.config
+            bool deleteFolder = Convert.ToBoolean(ConfigurationSettings.AppSettings["deleteFolder"]); //Get deleteFolder from app.config
+            bool updateXbmc = Convert.ToBoolean(ConfigurationSettings.AppSettings["updateXbmc"]); //Get updateXbmc from app.config
             string moviePath = args[0]; //Get moviePath from first CMD Line argument
             string movieName = args[2]; //Get movieName from third CMD Line argument
             string movieFileName = movieDir + "\\" + movieName + ".avi"; //Create movieFileName from movieDir + movieName
@@ -45,8 +46,18 @@ namespace Movies
                 long aviSize = aviFileInfo.Length; //Create long to store AVI File Size
                 if (aviSize > 150000000) //If avi is greater than 150MB then continue
                 {
-                    File.Move(aviFile, movieFileName); //Move/Rename File
-                    Directory.Delete(moviePath, true); //Delete directory + all files
+                    if (deleteFolder)
+                    {
+                        File.Move(aviFile, movieFileName); //Move/Rename File
+                        Directory.Delete(moviePath, true); //Delete directory + all files
+                    }
+
+                    else
+                    {
+                        movieFileName = moviePath + "\\" + movieName + ".avi";
+                        File.Move(aviFile, movieFileName);
+                    }
+
                     if (updateXbmc)
                     {
                         string xbmcUpdate = UpdateXbmc();
@@ -67,9 +78,21 @@ namespace Movies
 
                 if (aviOneSize > 150000000 && aviTwoSize > 150000000) //Ensure that both files are actually
                 {
-                    string mencoderCommand = mencoderOptions + " \"" + movieFileName + "\" \"" + aviFileOne+ "\" \"" +aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
-                    Process.Start("mencoder.exe", mencoderCommand).WaitForExit(); //Run mencoder on the two AVIs & wait for finish
-                    Directory.Delete(moviePath, true); //Delete directory + all files
+                    if (deleteFolder)
+                        {
+                            string mencoderCommand = mencoderOptions + " \"" + movieFileName + "\" \"" + aviFileOne+ "\" \"" +aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
+                            Process.Start("mencoder.exe", mencoderCommand).WaitForExit(); //Run mencoder on the two AVIs & wait for finish
+                            Directory.Delete(moviePath, true); //Delete directory + all files
+                        }
+
+                    else
+                    {
+                            movieFileName = moviePath + "\\" + movieName + ".avi";
+                            string mencoderCommand = mencoderOptions + " \"" + movieFileName + "\" \"" + aviFileOne+ "\" \"" + aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
+                            Process.Start("mencoder.exe", mencoderCommand).WaitForExit(); //Run mencoder on the two AVIs & wait for finish
+                            File.Delete(aviFileOne);
+                            File.Delete(aviFileTwo);
+                    }
                     if (updateXbmc)
                     {
                         string xbmcUpdate = UpdateXbmc();
@@ -98,8 +121,18 @@ namespace Movies
 
                 if (mkvFileInfo.Length > 1200000000) //Ensure MKV is over 1200MB in size
                 {
-                    File.Move(mkvFile, hdMovieMkvFileName); //Move + Rename MKV File
-                    Directory.Delete(moviePath, true); //Delete directory + contents
+                    if (deleteFolder)
+                    {
+                        File.Move(mkvFile, hdMovieMkvFileName); //Move/Rename File
+                        Directory.Delete(moviePath, true); //Delete directory + all files
+                    }
+
+                    else
+                    {
+                        hdMovieMkvFileName = moviePath + "\\" + movieName + ".mkv";
+                        File.Move(mkvFile, hdMovieMkvFileName);
+                    }
+
                     if (updateXbmc)
                     {
                         string xbmcUpdate = UpdateXbmc(hdMovieDir);
@@ -123,8 +156,19 @@ namespace Movies
 
                 if (wmvFileInfo.Length > 1200000000) //Ensure WMV is over 1200MB in size
                 {
-                    File.Move(wmvFile, hdMovieWmvFileName); //Move + Rename WMV File
-                    Directory.Delete(moviePath, true); //Delete directory + contents
+                    if (deleteFolder)
+                    {
+                        File.Move(wmvFile, hdMovieWmvFileName); //Move/Rename File
+                        Directory.Delete(moviePath, true); //Delete directory + all files
+                    }
+
+                    else
+                    {
+                        hdMovieWmvFileName = moviePath + "\\" + movieName + ".wmv";
+                        File.Move(wmvFile, hdMovieWmvFileName);
+                    }
+
+
                     if (updateXbmc)
                     {
                         string xbmcUpdate = UpdateXbmc(hdMovieDir);
@@ -148,8 +192,17 @@ namespace Movies
 
                 if (mp4FileInfo.Length > 100000000) //Ensure MP4 is over 100MB in size
                 {
-                    File.Move(mp4File, ipodMovieFileName); //Move + Rename MP4 File
-                    Directory.Delete(moviePath, true); //Delete directory + contents
+                    if (deleteFolder)
+                    {
+                        File.Move(mp4File, ipodMovieFileName); //Move/Rename File
+                        Directory.Delete(moviePath, true); //Delete directory + all files
+                    }
+
+                    else
+                    {
+                        ipodMovieFileName = moviePath + "\\" + movieName + ".mp4";
+                        File.Move(mp4File, ipodMovieFileName);
+                    }
                     return; //Exit
                 }
             }
