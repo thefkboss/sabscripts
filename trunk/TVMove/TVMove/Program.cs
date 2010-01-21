@@ -96,8 +96,7 @@ namespace TVMove
             if (_updateXbmc)
             {
                 File.AppendAllText(logFile, "Attempting to Update XBMC\n");
-                string xbmcUpdate = UpdateXbmc(showPath);
-                File.AppendAllText(logFile, "XBMC Returned: " + xbmcUpdate + "\n");
+                string xbmcUpdate = UpdateXbmc(showPath, showInfo);
             }
         }
 
@@ -133,14 +132,19 @@ namespace TVMove
             return path;
         }
 
-        private static string UpdateXbmc(string showPath)
+        private static string UpdateXbmc(string showPath, string showInfo)
         {
             string downloadTvPath = ConfigurationManager.AppSettings["downloadTvPath"];
             string xbmcTvPath = ConfigurationManager.AppSettings["xbmcTvPath"];
-            string xbmcInfo = ConfigurationManager.AppSettings["xbmcInfo"];
-            string xbmcUsername = ConfigurationManager.AppSettings["xbmcUsername"];
-            string xbmcPassword = ConfigurationManager.AppSettings["xbmcPassword"];
+            string xbmcHost = ConfigurationManager.AppSettings["xbmcHost"];
+            int xbmcPort = 9777;
+            string xbmcPortS = ConfigurationManager.AppSettings["xbmcPort"];
+            int.TryParse(xbmcPortS, out xbmcPort);
             string xbmcPath = null;
+            bool notifyXbmc = Convert.ToBoolean(ConfigurationManager.AppSettings["notifyXbmc"]);
+            bool cleanLibrary = Convert.ToBoolean(ConfigurationManager.AppSettings["cleanLibrary"]);
+
+            string xbmcUpdating = null;
 
             if (downloadTvPath.ToLower() != xbmcTvPath.ToLower())
             {
@@ -153,25 +157,23 @@ namespace TVMove
                 xbmcPath = showPath;
             }
 
-            try
-            {
-                string xbmcUrl = "http://" + xbmcInfo + "/xbmcCmds/xbmcHttp?command=ExecBuiltIn&parameter=XBMC.updatelibrary(video," + xbmcPath + ")";
+            if (!XBMC.EventClient.Current.Connected)
+                XBMC.EventClient.Current.Connect(xbmcHost, xbmcPort);
 
-                HttpWebRequest xbmcRequest = (HttpWebRequest)WebRequest.Create(xbmcUrl);
-                xbmcRequest.Timeout = 10000;
-                xbmcRequest.Credentials = new NetworkCredential(xbmcUsername, xbmcPassword);
-                xbmcRequest.PreAuthenticate = true;
-
-                HttpWebResponse xbmcRepsonse = (HttpWebResponse)xbmcRequest.GetResponse();
-                xbmcRepsonse.Close();
-            }
-            catch
+            if (XBMC.EventClient.Current.Connected)
             {
-                string errorMsg = "An error occured connecting to XBMC";
-                return errorMsg;
+                string xbmcLibraryUpdate = "UpdateLibrary(video," + xbmcPath + ")";
+
+                XBMC.EventClient.Current.SendAction(xbmcLibraryUpdate, "");
+                if (notifyXbmc)
+                    XBMC.EventClient.Current.SendNotification("TV Show Downloaded", showInfo, XBMC.IconType.ICON_PNG, "sabnzbd");
+                if (cleanLibrary)
+                    XBMC.EventClient.Current.SendAction("CleanLibrary(video)", "");
+                xbmcUpdating = "XBMC is Updating";
+                return xbmcUpdating;
             }
 
-            string xbmcUpdating = "XBMC is Updating";
+            xbmcUpdating = "Could not connect to XBMC";
             return xbmcUpdating;
         }
     }

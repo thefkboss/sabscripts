@@ -1,9 +1,9 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>"C:\Test\30 Rock\Season 01" 2 "30 Rock - 1x01 - Test Name"</StartArguments>
+    <StartArguments>"T:\\30 Rock\Season 02" 2 "8 Simple Rules - 1x01 - Testing"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <StartArguments>"D:\shares\TV\Curb Your Enthusiasm\Season 07" 2 "Curb - 1x02 - TEst"</StartArguments>
+    <StartArguments>"T:\\30 Rock\Season 02\" 2 "The Batman - 1x01 - Test"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>
