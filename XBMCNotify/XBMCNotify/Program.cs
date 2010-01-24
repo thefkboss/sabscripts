@@ -30,7 +30,7 @@ namespace XBMCNotify
             {
                 XBMC.EventClient.Current.SendNotification(string.Format("Download Complete {0}", p.NewzbinCategory), string.Format("{0}", p.CleanedJobName), XBMC.IconType.ICON_PNG, "sabnzbd");
                 if (cleanLibrary) XBMC.EventClient.Current.SendAction("CleanLibrary(video)", "");
-                if (updateLibrary) XBMC.EventClient.Current.SendAction("UpdateLibrary(video,smb://HOMESERVER/TV/30 Rock/Season 03)", "");
+                if (updateLibrary) XBMC.EventClient.Current.SendAction("UpdateLibrary(video)", "");
             }
 
 
