@@ -197,12 +197,40 @@ namespace TVConvertSvc
 
         private static string RunHandbrake(string inputFile, string inputFileName)
         {
+            //File.AppendAllText(_logFile, DateTime.Now + " - Running handbrake \n");
+            //string outputFile = _outputDir + "\\" + inputFileName + ".mp4";
+            //string handBrakeCommands = "-i \"" + inputFile + "\" -o \"" + outputFile + "\" --preset=\"iPhone & iPod Touch\""; //Commands for Handbrake
+            //string handBrakeFile = _handBrakeLocation + "\\handbrakeCLI.exe"; //Path to handbrake.exe
+            //Process.Start(handBrakeFile, handBrakeCommands).WaitForExit(); //Run HandBrake and wait for Exit
+            //return outputFile;
+
             File.AppendAllText(_logFile, DateTime.Now + " - Running handbrake \n");
             string outputFile = _outputDir + "\\" + inputFileName + ".mp4";
             string handBrakeCommands = "-i \"" + inputFile + "\" -o \"" + outputFile + "\" --preset=\"iPhone & iPod Touch\""; //Commands for Handbrake
             string handBrakeFile = _handBrakeLocation + "\\handbrakeCLI.exe"; //Path to handbrake.exe
-            Process.Start(handBrakeFile, handBrakeCommands).WaitForExit(); //Run HandBrake and wait for Exit
+            //Process.Start(handBrakeFile, handBrakeCommands).WaitForExit(); //Run HandBrake and wait for Exit
+            ProcessStartInfo handBrakeInfo = new ProcessStartInfo(handBrakeFile, handBrakeCommands);
+            handBrakeInfo.UseShellExecute = false;
+            handBrakeInfo.RedirectStandardOutput = true;
+            handBrakeInfo.RedirectStandardError = true;
+
+            try
+            {
+                Process handBrake = Process.Start(handBrakeInfo);
+                handBrake.WaitForExit();
+                StreamReader oReader = handBrake.StandardOutput;
+                //StreamReader eReader = handBrake.StandardError;
+                string sRes = oReader.ReadToEnd();
+                oReader.Close();
+                File.AppendAllText(@"C:\Logs\Output.txt", sRes);
+            }
+
+            catch (Exception ex)
+            {
+                File.AppendAllText(@"C:\Logs\Exception.txt", ex.ToString());
+            }
             return outputFile;
+
         }
 
         private static string RunAtomicParsley(string showName, int seasonNumber, int episodeNumber, string episodeName, string outputFile)

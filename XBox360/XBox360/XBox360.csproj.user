@@ -1,5 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>"X:\Dead Space" 2 "Dead Space"</StartArguments>
+    <StartArguments>"W:\Test\XBOX\Forza Motorsport 3 (2009)" 2 "Forza Motorsport 3 (2009)"</StartArguments>
   </PropertyGroup>
 </Project>
