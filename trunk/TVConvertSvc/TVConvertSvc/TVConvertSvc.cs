@@ -41,12 +41,20 @@ namespace TVConvertSvc
         //Initialize Watcher
         static void InitializeWatcher()
         {
-            dirWatcher = new FileSystemWatcher();
-            dirWatcher.Path = _watchDir;
+            try
+            {
 
-            dirWatcher.Created += new FileSystemEventHandler(dirWatcher_Created);
-            dirWatcher.EnableRaisingEvents = true;
-            dirWatcher.Filter = "*.*";
+                dirWatcher = new FileSystemWatcher();
+                dirWatcher.Path = _watchDir;
+
+                dirWatcher.Created += new FileSystemEventHandler(dirWatcher_Created);
+                dirWatcher.EnableRaisingEvents = true;
+                dirWatcher.Filter = "*.*";
+            }
+            catch (Exception e)
+            {
+                File.AppendAllText(@"C:\Logs\Exception.txt", e.ToString());
+            }
         }
 
         //Action when File is Created
