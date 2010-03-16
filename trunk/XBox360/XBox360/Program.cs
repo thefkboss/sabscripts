@@ -35,7 +35,7 @@ namespace XBox360
                 Directory.Move(gamePath, xblaPath);
             }
 
-            if (checkIso == true)
+            if (checkIso)
             {
                 string newGamePath = CheckWithAbgx(gamePath, gameName);
                 gamePath = newGamePath;
@@ -57,7 +57,7 @@ namespace XBox360
             string wiiDir = ConfigurationSettings.AppSettings["wiiDir"].ToString(); //Wii Directory from Config File
             string passDir = ConfigurationSettings.AppSettings["passDir"].ToString(); //Pass Directory from Config File
             bool requireSSv2 = Convert.ToBoolean(ConfigurationSettings.AppSettings["requireSSv2"]);
-
+            bool failedSs = false;
             bool gamePassed = true; //Boolean for Game Passed
             bool ssVersionTwo = true;
             string failedGame = failedDir + @"\" + gameName; //Path to Failed Game Name
@@ -87,12 +87,11 @@ namespace XBox360
 
                     string htmlFile = gamePath + "\\abgx360-" + isoFileNum + ".html"; //Get full path to HTML file
                     gamePassed = IsoPassed(htmlFile);
-                    ssVersionTwo = CheckSSVersion(htmlFile);
-                    bool failedSS = false;
+                    ssVersionTwo = CheckSsVersion(htmlFile);
                     if (requireSSv2 == true && ssVersionTwo == false)
-                        failedSS = true;
+                        failedSs = true;
 
-                    if (gamePassed == false || failedSS == true)
+                    if (gamePassed == false || failedSs == true)
                         break;
                 }
                 else
@@ -107,18 +106,35 @@ namespace XBox360
                 {
                     if (passedGameInfo.FullName != gamePathInfo.FullName) //If game is not in already in the Passed Directory
                     {
+                        File.AppendAllText(_logFile, "Game Passed, SSv1 not required, moving to: " + passedGame + "\n");
                         MovePassedGame(gamePath, passedGame); //Move Game to Passed Directory
                         return passedGame;
                     }
                 }
+
                 else
                 {
-                    if (failedGameInfo.FullName != gamePathInfo.FullName) //If Game failed and is not in failed dir, move it
+                    if (failedSs)
                     {
-                        File.AppendAllText(_logFile, "Game Passed, but SSv1 was Detected and is being moved to: " + failedGame + "\n");
-                        MoveFailedGame(gamePath, failedGame);
-                        return failedGame;
+                        if (failedGameInfo.FullName != gamePathInfo.FullName) //If Game failed and is not in failed dir, move it
+                        {
+                            File.AppendAllText(_logFile, "Game Passed, but SSv1 was Detected and is being moved to: " + failedGame + "\n");
+                            MoveFailedGame(gamePath, failedGame);
+                            return failedGame;
+                        }
                     }
+
+                    else
+                    {
+                        if (passedGameInfo.FullName != gamePathInfo.FullName) //If game is not in already in the Passed Directory
+                        {
+                            File.AppendAllText(_logFile, "Game passed and is being moved to: " + passedGame + "\n");
+                            MovePassedGame(gamePath, passedGame); //Move Game to Passed Directory
+                            return passedGame;
+                        }
+                    }
+
+
                 }
             }
             else
@@ -137,17 +153,17 @@ namespace XBox360
         private static bool IsoPassed(string htmlFile)
         {
             string htmlFileContents = File.ReadAllText(htmlFile); //Read html file into string
-            if (!htmlFileContents.Contains("Verification was successful!")) //Check string for "Verification was successful!"
+            if (htmlFileContents.Contains("Verification was successful!")) //Check string for "Verification was successful!"
                 return true;
 
             else
                 return false;
         }
 
-        private static bool CheckSSVersion(string htmlFile)
+        private static bool CheckSsVersion(string htmlFile)
         {
             string htmlFileContents = File.ReadAllText(htmlFile); //Read html file into string
-            if (!htmlFileContents.Contains("SS Version: 2")) //Check string for "SS Version: 2"
+            if (htmlFileContents.Contains("SS Version: 2")) //Check string for "SS Version: 2"
                 return true;
 
             else
@@ -217,8 +233,6 @@ namespace XBox360
                 string isoFileTwo = isoFiles[1];
                 string extractedGameDirOne = extractDir + @"\" + gameName + " Disk 1";
                 string extractedGameDirTwo = extractDir + @"\" + gameName + " Disk 2";
-                Console.WriteLine(isoFileOne);
-                Console.WriteLine(extractedGameDirOne);
 
                 RunExiso(isoFileOne, extractedGameDirOne);
                 RunExiso(isoFileTwo, extractedGameDirTwo);
