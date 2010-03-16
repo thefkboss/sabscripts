@@ -8,6 +8,9 @@ namespace Movies
 {
     class Program
     {
+        private static string _logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Get logDir from app.config
+        private static string _logFile = _logDir + @"\Movies.txt"; // Log File 
+
         static void Main(string[] args)
         {
             string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Get logDir from app.config
@@ -15,14 +18,24 @@ namespace Movies
             string hdMovieDir = ConfigurationSettings.AppSettings["hdMovieDir"].ToString(); //Get hdMovieDir from app.config
             string ipodMovieDir = ConfigurationSettings.AppSettings["ipodMovieDir"].ToString(); //Get ipodMovieDir from app.config
             bool deleteFolder = Convert.ToBoolean(ConfigurationSettings.AppSettings["deleteFolder"]); //Get deleteFolder from app.config
+            bool useFolderName = Convert.ToBoolean(ConfigurationSettings.AppSettings["useFolderName"]); //Get deleteFolder from app.config
             bool updateXbmc = Convert.ToBoolean(ConfigurationSettings.AppSettings["updateXbmc"]); //Get updateXbmc from app.config
             string moviePath = args[0]; //Get moviePath from first CMD Line argument
             string movieName = args[2]; //Get movieName from third CMD Line argument
-            string movieFileName = movieDir + "\\" + movieName + ".avi"; //Create movieFileName from movieDir + movieName
-            string hdMovieMkvFileName = hdMovieDir + "\\" + movieName + ".mkv"; //Create hdMovieMkvFileName from hdMovieDir + movieName
-            string hdMovieWmvFileName = hdMovieDir + "\\" + movieName + ".wmv"; //Create hdMovieWmvFileName from hdMovieDir + movieName
-            string ipodMovieFileName = ipodMovieDir + "\\" + movieName + ". mp4";//Create ipodMovieFileName from ipodMovieDir + movieName
+            string movieFilename = movieDir + "\\" + movieName + ".avi"; //Create movieFilename from movieDir + movieName
+            string hdMovieMkvFilename = hdMovieDir + "\\" + movieName + ".mkv"; //Create hdMovieMkvFilename from hdMovieDir + movieName
+            string hdMovieWmvFilename = hdMovieDir + "\\" + movieName + ".wmv"; //Create hdMovieWmvFilename from hdMovieDir + movieName
+            string ipodMovieFilename = ipodMovieDir + "\\" + movieName + ". mp4";//Create ipodMovieFilename from ipodMovieDir + movieName
             string mencoderOptions = "-forceidx -ovc copy -oac copy -o"; //Options for mencoder (static)
+
+            DirectoryInfo moviePathInfo = new DirectoryInfo(moviePath);
+
+            if (useFolderName)
+                movieName = moviePathInfo.Name;
+
+            Console.WriteLine(movieName);
+            Console.ReadKey();
+
 
             string[] filesSizeTest = Directory.GetFiles(moviePath, "*.*", SearchOption.AllDirectories); //Search moviePath for all Files, including sub-folders
             Array.Sort(filesSizeTest); //Sort Array :)
@@ -48,14 +61,18 @@ namespace Movies
                 {
                     if (deleteFolder)
                     {
-                        File.Move(aviFile, movieFileName); //Move/Rename File
+                        //File.Move(aviFile, movieFilename); //Move/Rename File
+                        aviFileInfo.MoveTo(movieFilename);
                         Directory.Delete(moviePath, true); //Delete directory + all files
                     }
 
                     else
                     {
-                        movieFileName = moviePath + "\\" + movieName + ".avi";
-                        File.Move(aviFile, movieFileName);
+                        string aviMovieDir = movieDir + "\\" + movieName;
+                        string aviMovieDirFilename = aviMovieDir + "\\" + movieName + ".avi";
+                        Directory.CreateDirectory(aviMovieDir);
+                        aviFileInfo.MoveTo(aviMovieDirFilename);
+                        Directory.Delete(moviePath, true); //Delete old directory + all files
                     }
 
                     if (updateXbmc)
@@ -80,18 +97,23 @@ namespace Movies
                 {
                     if (deleteFolder)
                         {
-                            string mencoderCommand = mencoderOptions + " \"" + movieFileName + "\" \"" + aviFileOne+ "\" \"" +aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
+                            string mencoderCommand = mencoderOptions + " \"" + movieFilename + "\" \"" + aviFileOne+ "\" \"" +aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
                             Process.Start("mencoder.exe", mencoderCommand).WaitForExit(); //Run mencoder on the two AVIs & wait for finish
                             Directory.Delete(moviePath, true); //Delete directory + all files
                         }
 
                     else
                     {
-                            movieFileName = moviePath + "\\" + movieName + ".avi";
-                            string mencoderCommand = mencoderOptions + " \"" + movieFileName + "\" \"" + aviFileOne+ "\" \"" + aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
-                            Process.Start("mencoder.exe", mencoderCommand).WaitForExit(); //Run mencoder on the two AVIs & wait for finish
-                            File.Delete(aviFileOne);
-                            File.Delete(aviFileTwo);
+                        string aviMovieDir = movieDir + "\\" + movieName;
+                        movieFilename = aviMovieDir + "\\" + movieName + ".avi";
+                        Directory.CreateDirectory(aviMovieDir);
+
+                        Console.WriteLine(movieFilename);
+                        Console.ReadKey();
+
+                        string mencoderCommand = mencoderOptions + " \"" + movieFilename + "\" \"" + aviFileOne+ "\" \"" + aviFileTwoInfo + "\""; //Create string to hold commands to pass to mencoder
+                        Process.Start("mencoder.exe", mencoderCommand).WaitForExit(); //Run mencoder on the two AVIs & wait for finish
+                        Directory.Delete(moviePath, true); //Delete old directory + all files
                     }
                     if (updateXbmc)
                     {
@@ -119,18 +141,22 @@ namespace Movies
                 string mkvFile = mkvFiles[0]; //Create mkvFile from first & only string in Array
                 FileInfo mkvFileInfo = new FileInfo(mkvFile); //Create FileInfo
 
-                if (mkvFileInfo.Length > 1200000000) //Ensure MKV is over 1200MB in size
+                if (mkvFileInfo.Length > 120000000) //Ensure MKV is over 1200MB in size
                 {
                     if (deleteFolder)
                     {
-                        File.Move(mkvFile, hdMovieMkvFileName); //Move/Rename File
+                        //File.Move(mkvFile, hdMovieMkvFilename); //Move/Rename File
+                        mkvFileInfo.MoveTo(hdMovieMkvFilename);
                         Directory.Delete(moviePath, true); //Delete directory + all files
                     }
 
                     else
                     {
-                        hdMovieMkvFileName = moviePath + "\\" + movieName + ".mkv";
-                        File.Move(mkvFile, hdMovieMkvFileName);
+                        string mkvMovieDir = hdMovieDir + "\\" + movieName;
+                        string mkvMovieDirFilename = mkvMovieDir + "\\" + movieName + ".mkv";
+                        Directory.CreateDirectory(mkvMovieDir);
+                        mkvFileInfo.MoveTo(mkvMovieDirFilename);
+                        Directory.Delete(moviePath, true); //Delete old directory + all files
                     }
 
                     if (updateXbmc)
@@ -154,18 +180,22 @@ namespace Movies
                 string wmvFile = wmvFiles[0]; //Create wmvFile from first & only string in Array
                 FileInfo wmvFileInfo = new FileInfo(wmvFile); //Create FileInfo
 
-                if (wmvFileInfo.Length > 1200000000) //Ensure WMV is over 1200MB in size
+                if (wmvFileInfo.Length > 120000000) //Ensure WMV is over 1200MB in size
                 {
                     if (deleteFolder)
                     {
-                        File.Move(wmvFile, hdMovieWmvFileName); //Move/Rename File
+                        //File.Move(wmvFile, hdMovieWmvFilename); //Move/Rename File
+                        wmvFileInfo.MoveTo(hdMovieWmvFilename);
                         Directory.Delete(moviePath, true); //Delete directory + all files
                     }
 
                     else
                     {
-                        hdMovieWmvFileName = moviePath + "\\" + movieName + ".wmv";
-                        File.Move(wmvFile, hdMovieWmvFileName);
+                        string wmvMovieDir = hdMovieDir + "\\" + movieName;
+                        string wmvMovieDirFilename = wmvMovieDir + "\\" + movieName + ".wmv";
+                        Directory.CreateDirectory(wmvMovieDir);
+                        wmvFileInfo.MoveTo(wmvMovieDirFilename);
+                        Directory.Delete(moviePath, true);
                     }
 
 
@@ -194,14 +224,21 @@ namespace Movies
                 {
                     if (deleteFolder)
                     {
-                        File.Move(mp4File, ipodMovieFileName); //Move/Rename File
+                        //File.Move(mp4File, ipodMovieFilename); //Move/Rename File
+                        mp4FileInfo.MoveTo(ipodMovieFilename);
                         Directory.Delete(moviePath, true); //Delete directory + all files
                     }
 
                     else
                     {
-                        ipodMovieFileName = moviePath + "\\" + movieName + ".mp4";
-                        File.Move(mp4File, ipodMovieFileName);
+                        ipodMovieFilename = moviePath + "\\" + movieName + ".mp4";
+                        File.Move(mp4File, ipodMovieFilename);
+
+                        string mp4MovieDir = ipodMovieDir + "\\" + movieName;
+                        string mp4MovieDirFilename = mp4MovieDir + "\\" + movieName + ".mp4";
+                        Directory.CreateDirectory(mp4MovieDir);
+                        mp4FileInfo.MoveTo(mp4MovieDirFilename);
+                        Directory.Delete(moviePath, true);
                     }
                     return; //Exit
                 }
@@ -295,6 +332,12 @@ namespace Movies
 
             string xbmcUpdating = "XBMC is Updating";
             return xbmcUpdating;
+        }
+
+        private static void Log(string message)
+        {
+            Console.WriteLine(message);
+            File.AppendAllText(_logFile, message + "\n");
         }
     }
 }
