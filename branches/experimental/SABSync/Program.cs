@@ -68,17 +68,90 @@ namespace SABSync
             {
                 LoadConfig();
 
-                var reports = GetReports();
-
                 Log("Watching {0} shows", _wantedShowNames.Count);
                 Log("_ignoreSeasons: {0}", _ignoreSeasons);
 
-                foreach (var report in reports)
                 {
-                    if (IsEpisodeWanted(report.Value, report.Key))
+                    Log("Loading RSS feed list from {0}", _rss.FullName);
+
+                    var feeds = File.ReadAllLines(_rss.FullName);
+
+                    Dictionary<Int64, string> reports = new Dictionary<Int64, string>();
+
+                    foreach (var s in feeds)
                     {
-                        string queueResponse = AddToQueue(report.Key);
-                        Queued.Add(report.Value + ": " + queueResponse);
+                        var feedParts = s.Split('|');
+                        string url = feedParts[0];
+                        string name = "UN-NAMED";
+
+                        if (feedParts.Length > 1)
+                        {
+                            name = feedParts[0];
+                            url = feedParts[1];
+                        }
+
+                        Log("Downloading feed {0} from {1}", name, url);
+
+                        RssFeed feed = RssFeed.Read(url);
+                        RssChannel channel = feed.Channels[0];
+
+
+                        foreach (RssItem item in channel.Items)
+                        {
+                            if (!item.Title.EndsWith("(Passworded)", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                Int64 reportId = 0;
+                                string rssTitle = null;
+                                string nzbSite = null;
+                                string downloadLink = null;
+
+                                if (url.ToLower().Contains("newzbin.com"))
+                                {
+                                    reportId = Convert.ToInt64(Regex.Match(item.Link.AbsolutePath, @"\d{7,10}").Value);
+                                    rssTitle = item.Title;
+                                    nzbSite = "newzbin";
+                                }
+
+                                else if (url.ToLower().Contains("nzbs.org"))
+                                {
+                                    reportId = Convert.ToInt64(Regex.Match(item.Guid.Name, @"\d{5,10}").Value);
+                                    rssTitle = item.Title;
+                                    nzbSite = "nzbsDotOrg";
+                                    downloadLink = item.Link.ToString();
+                                    downloadLink = downloadLink.Replace("&", "%26");
+                                    Console.WriteLine(downloadLink);
+                                }
+
+                                else
+                                {
+                                    reportId = Convert.ToInt64(Regex.Match(item.Guid.Name, @"\d{5,10}").Value);
+                                    rssTitle = item.Title;
+                                    nzbSite = "unknown";
+                                }
+
+                                //Check if Show is Wanted
+                                if (IsEpisodeWanted(rssTitle, reportId))
+                                {
+                                    if (nzbSite == "newzbin")
+                                    {
+                                        string queueResponse = AddToQueue(reportId);
+                                        Queued.Add(rssTitle + ": " + queueResponse);
+                                    }
+
+                                    else if (nzbSite == "nzbsDotOrg")
+                                    {
+                                        string queueResponse = AddToQueue(rssTitle, downloadLink);
+                                        Queued.Add(rssTitle + ": " + queueResponse);
+                                    }
+
+                                }
+
+                            }
+                            else
+                            {
+                                Log("Skipping Passworded Report {0}", item.Title);
+                            }
+                        }
                     }
                 }
             }
@@ -161,7 +234,7 @@ namespace SABSync
             var feeds = File.ReadAllLines(_rss.FullName);
 
             Dictionary<Int64, string> reports = new Dictionary<Int64, string>();
-
+            
             foreach (var s in feeds)
             {
                 var feedParts = s.Split('|');
@@ -724,15 +797,15 @@ namespace SABSync
             return response;
         } // Ends AddToQueue
 
-        private static string AddToQueue(Int64 reportId, string nzbsKey)
+        private static string AddToQueue(string rssTitle, string downloadLink)
         {
-            string nzbFileDownload = String.Format(_sabRequest, "mode=addid&name=" + reportId);
-            Log("Adding report [{0}] to the queue.", reportId);
+            string nzbFileDownload = String.Format(_sabRequest, "mode=addurl&name=" + downloadLink + "&cat=tv");
+            Log("Adding report [{0}] to the queue.", rssTitle);
             WebClient client = new WebClient();
             string response = client.DownloadString(nzbFileDownload).Replace("\n", String.Empty);
             Log("Queue Response: [{0}]", response);
             return response;
-        } // Ends AddToQueue (NZBs.org)
+        } // Ends AddToQueue (Non-Newzbin)
 
         private static string CheckTvDb(string showName, int seasonNumber, int episodeNumber)
         {
