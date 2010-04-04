@@ -140,8 +140,19 @@ namespace SABSync
 
                                     else if (nzbSite == "nzbsDotOrg")
                                     {
+                                        string titleFix = GetTitleFix(rssTitle);
+
                                         string queueResponse = AddToQueue(rssTitle, downloadLink);
                                         Queued.Add(rssTitle + ": " + queueResponse);
+
+                                        Console.WriteLine(queueResponse);
+                                        
+                                        if (queueResponse.ToLower() == "ok")
+                                        {
+
+                                            //Rename Item
+                                        }
+
                                     }
 
                                 }
@@ -565,6 +576,7 @@ namespace SABSync
                 if (titleArray.Length == 2)
                 {
                     string[] titleSplit = null;
+                    string[] titleSplitDaily = null;
                     string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
 
                     Match titleMatch = Regex.Match(title, pattern);
@@ -573,7 +585,7 @@ namespace SABSync
                     string patternDaily = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
 
                     Match titleMatchDaily = Regex.Match(title, pattern);
-                    titleSplit = Regex.Split(title, pattern);
+                    titleSplitDaily = Regex.Split(title, pattern);
 
                     string showName = titleSplit[0].Replace('.', ' ');
                     showName = showName.TrimEnd();
@@ -952,6 +964,49 @@ namespace SABSync
             showName = Regex.Replace(showName, patternCountry, replaceCountry);
 
             return showName;
+        }
+
+        private static void RenameQueueItem(string rssTitle, string rssTitleFix)
+        {
+            //Use this to rename QueueItem
+
+        }
+
+        private static string GetTitleFix(string title)
+        {
+            string[] titleSplit = null;
+            string[] titleSplitDaily = null;
+            string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
+
+            Match titleMatch = Regex.Match(title, pattern);
+            titleSplit = Regex.Split(title, pattern);
+
+            string patternDaily = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
+
+            Match titleMatchDaily = Regex.Match(title, pattern);
+            titleSplitDaily = Regex.Split(title, pattern);
+
+            string showName = titleSplit[0].Replace('.', ' ');
+            showName = showName.TrimEnd();
+
+            int seasonNumber = 0;
+            int episodeNumber = 0;
+
+            string seasonEpisode = titleMatch.ToString();
+
+            seasonEpisode = seasonEpisode.TrimStart('S');
+
+            string[] seasonEpisdeSplit = seasonEpisode.Split('E');
+            Int32.TryParse(seasonEpisdeSplit[0], out seasonNumber);
+            Int32.TryParse(seasonEpisdeSplit[1], out episodeNumber);
+
+            showName = ShowAlias(showName);
+            Console.WriteLine(showName);
+
+            string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
+            string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
+
+            return titleFix;
         }
 
         private static void Log(string message)
