@@ -12,6 +12,7 @@ namespace TVConvert
         private static string _tempDir = ConfigurationSettings.AppSettings["tempDir"].ToString(); // Temp Directory from app.cpnfig
         private static string _outputDir = ConfigurationSettings.AppSettings["outputDir"].ToString(); //Output Directory from app.config
         private static string _handBrakeLocation = ConfigurationSettings.AppSettings["handBrakeLocation"].ToString(); //HandBrake location from app.config
+        private static string _handBrakePreset = ConfigurationSettings.AppSettings["handBrakePreset"].ToString(); //HandBrake location from app.config
         private static string _atomicParsleyLocation = ConfigurationSettings.AppSettings["atomicParsleyLocation"].ToString(); //Atomic Parsley from app.config
         private static string _episodeNameFormat = ConfigurationSettings.AppSettings["episodeNameFormat"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
         private static string _videoExt = ConfigurationSettings.AppSettings["videoExt"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
@@ -138,8 +139,11 @@ namespace TVConvert
 
         private static string RunHandbrake(string inputFile, string inputFileName)
         {
+            string handBreakReplace = _handBrakePreset.Replace(" AND ", " & ");
+            Console.WriteLine(handBreakReplace);
+            Console.ReadKey();
             string outputFile = _outputDir + "\\" + inputFileName + ".mp4";
-            string handBrakeCommands = "-i \"" + inputFile + "\" -o \"" + outputFile + "\" --preset=\"iPhone & iPod Touch\""; //Commands for Handbrake
+            string handBrakeCommands = "-i \"" + inputFile + "\" -o \"" + outputFile + "\" --preset=\"" + handBreakReplace + "\""; //Commands for Handbrake
             string handBrakeFile = _handBrakeLocation + "\\handbrakeCLI.exe"; //Path to handbrake.exe
             Process.Start(handBrakeFile, handBrakeCommands).WaitForExit(); //Run HandBrake and wait for Exit
             return outputFile;

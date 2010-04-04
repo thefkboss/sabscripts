@@ -277,5 +277,11 @@ namespace XBox360
             else
                 Console.WriteLine("No $SystemUpdate Folder found");
         }
+
+        private static void Log(string message)
+        {
+            Console.WriteLine(message);
+            File.AppendAllText(_logFile, message + "\n");
+        }
     }
 }

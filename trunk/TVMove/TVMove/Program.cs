@@ -98,6 +98,7 @@ namespace TVMove
                 File.AppendAllText(logFile, "Attempting to Update XBMC\n");
                 string xbmcUpdate = UpdateXbmc(showPath, showInfo);
             }
+            //Console.ReadKey();
         }
 
         private static string GetFilename(string showName, int seasonNumber, int episodeNumber, string episodeName)
@@ -134,6 +135,8 @@ namespace TVMove
 
         private static string UpdateXbmc(string showPath, string showInfo)
         {
+            bool xbmcOsWindows = Convert.ToBoolean(ConfigurationSettings.AppSettings["xbmcOsWindows"]);
+
             string downloadTvPath = ConfigurationManager.AppSettings["downloadTvPath"];
             string xbmcTvPath = ConfigurationManager.AppSettings["xbmcTvPath"];
             string xbmcHost = ConfigurationManager.AppSettings["xbmcHost"];
@@ -149,13 +152,18 @@ namespace TVMove
             if (downloadTvPath.ToLower() != xbmcTvPath.ToLower())
             {
                 xbmcPath = showPath.Replace(downloadTvPath, xbmcTvPath);
-                xbmcPath = xbmcPath.Replace('\\', '/');
+                if (!xbmcOsWindows)
+                {
+                   xbmcPath = xbmcPath.Replace('\\', '/'); 
+                }
             }
 
             else
             {
                 xbmcPath = showPath;
             }
+
+            Console.WriteLine(xbmcPath);
 
             if (!XBMC.EventClient.Current.Connected)
                 XBMC.EventClient.Current.Connect(xbmcHost, xbmcPort);
