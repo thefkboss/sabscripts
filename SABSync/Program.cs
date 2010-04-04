@@ -149,14 +149,11 @@ namespace SABSync
                                         
                                         if (queueResponse.ToLower() == "ok")
                                         {
-
                                             //Rename Item
+                                            bool queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
                                         }
-
                                     }
-
                                 }
-
                             }
                             else
                             {
@@ -966,10 +963,73 @@ namespace SABSync
             return showName;
         }
 
-        private static void RenameQueueItem(string rssTitle, string rssTitleFix)
+        private static bool RenameQueueItem(string rssTitle, string rssTitleFix)
         {
             //Use this to rename QueueItem
+            //Get Queue Items
+            //Get NZO for item that matches rssTitle (Bad Name)
+            //Rename queue item
+            //Possible issue if NZB has not been loaded into SAB yet... ideas?
 
+            string nzoName = null;
+
+            try
+            {
+                string queueRssUrl = String.Format(_sabRequest, "mode=queue&output=xml");
+
+                XmlTextReader queueRssReader = new XmlTextReader(queueRssUrl);
+                XmlDocument queueRssDoc = new XmlDocument();
+                queueRssDoc.Load(queueRssReader);
+
+
+                var queue = queueRssDoc.GetElementsByTagName(@"queue");
+                var error = queueRssDoc.GetElementsByTagName(@"error");
+                if (error.Count != 0)
+                {
+                    Log("Sab Queue Error: {0}", true, error[0].InnerText);
+                }
+
+                else if (queue.Count != 0)
+                {
+                    var slot = ((XmlElement)queue[0]).GetElementsByTagName("slot");
+
+                    foreach (var s in slot)
+                    {
+                        XmlElement queueElement = (XmlElement)s;
+
+                        //Queue is empty
+                        if (String.IsNullOrEmpty(queueElement.InnerText))
+                            return false;
+
+                        string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
+
+
+                        if (fileName.ToLower() == CleanString(rssTitle).ToLower())
+                        {
+                            nzoName = queueElement.GetElementsByTagName("nzo_id")[0].InnerText.ToLower();
+                            Log("Episode in queue, Renaming '{0}' to '{1}'", true, rssTitle, rssTitleFix);
+                            //return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("An Error has occurred while checking the queue. {0}", true, ex);
+            }
+
+            //Do Rename now.... (nzoName & rssTitleFix)
+            string renameNzb = String.Format(_sabRequest, "=queue&name=rename&value=" + nzoName + "&value2=" + rssTitleFix);
+            Log("Renaming NZB [{0}] to [{1}].", rssTitle, rssTitleFix);
+            WebClient client = new WebClient();
+            string response = client.DownloadString(renameNzb).Replace("\n", String.Empty);
+            Log("Queue Response: [{0}]", response);
+            //return response;
+
+            if (response.ToLower() == "ok")
+                return true;
+
+            return false;
         }
 
         private static string GetTitleFix(string title)
