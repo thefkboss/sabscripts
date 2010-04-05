@@ -29,6 +29,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Rss;
+using System.Threading;
 
 namespace SABSync
 {
@@ -151,6 +152,15 @@ namespace SABSync
                                         {
                                             //Rename Item
                                             bool queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+
+                                            if (!queueItemRenamed)
+                                            {
+                                                Thread.Sleep(5000);
+                                                queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+
+                                                if (!queueItemRenamed)
+                                                    Log("Unable to Rename Item - NZB has not been downloaded yet");
+                                            }
                                         }
                                     }
                                 }
@@ -168,7 +178,6 @@ namespace SABSync
                 Log(ex.Message, true);
                 Log(ex.ToString(), true);
             }
-
 
             sw.Stop();
             Log("=====================================================================" + Environment.NewLine);
@@ -981,7 +990,6 @@ namespace SABSync
                 XmlDocument queueRssDoc = new XmlDocument();
                 queueRssDoc.Load(queueRssReader);
 
-
                 var queue = queueRssDoc.GetElementsByTagName(@"queue");
                 var error = queueRssDoc.GetElementsByTagName(@"error");
                 if (error.Count != 0)
@@ -1003,10 +1011,9 @@ namespace SABSync
 
                         string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
 
-
                         if (fileName.ToLower() == CleanString(rssTitle).ToLower())
                         {
-                            nzoName = queueElement.GetElementsByTagName("nzo_id")[0].InnerText.ToLower();
+                            nzoName = queueElement.GetElementsByTagName("nzo_id")[0].InnerText;
                             Log("Episode in queue, Renaming '{0}' to '{1}'", true, rssTitle, rssTitleFix);
                             //return true;
                         }
