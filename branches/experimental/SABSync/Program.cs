@@ -50,6 +50,7 @@ namespace SABSync
         private static readonly List<string> Queued = new List<string>();
         private static readonly List<string> Summary = new List<string>();
         private static readonly FileInfo LogFile = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\log\\" + DateTime.Now.ToString("MM.dd-HH-mm") + ".txt");
+
         private static void Main()
         {
             Stopwatch sw = Stopwatch.StartNew();
@@ -131,15 +132,19 @@ namespace SABSync
                                 }
 
                                 //Check if Show is Wanted
-                                if (IsEpisodeWanted(rssTitle, reportId))
+
+                                if (nzbSite == "newzbin")
                                 {
-                                    if (nzbSite == "newzbin")
+                                    if (IsEpisodeWanted(rssTitle, reportId))
                                     {
                                         string queueResponse = AddToQueue(reportId);
                                         Queued.Add(rssTitle + ": " + queueResponse);
                                     }
+                                }
 
-                                    else if (nzbSite == "nzbsDotOrg")
+                                else if (nzbSite == "nzbsDotOrg")
+                                {
+                                    if (IsEpisodeWanted(rssTitle))
                                     {
                                         string titleFix = GetTitleFix(rssTitle);
 
@@ -147,7 +152,35 @@ namespace SABSync
                                         Queued.Add(rssTitle + ": " + queueResponse);
 
                                         Console.WriteLine(queueResponse);
-                                        
+
+                                        if (queueResponse.ToLower() == "ok")
+                                        {
+                                            //Rename Item
+                                            bool queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+
+                                            if (!queueItemRenamed)
+                                            {
+                                                Thread.Sleep(5000);
+                                                queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+
+                                                if (!queueItemRenamed)
+                                                    Log("Unable to Rename Item - NZB has not been downloaded yet");
+                                            }
+                                        }
+                                    }
+                                }
+
+                                else
+                                {
+                                    if (IsEpisodeWanted(rssTitle))
+                                    {
+                                        string titleFix = GetTitleFix(rssTitle);
+
+                                        string queueResponse = AddToQueue(rssTitle, downloadLink);
+                                        Queued.Add(rssTitle + ": " + queueResponse);
+
+                                        Console.WriteLine(queueResponse);
+
                                         if (queueResponse.ToLower() == "ok")
                                         {
                                             //Rename Item
@@ -588,10 +621,10 @@ namespace SABSync
                     Match titleMatch = Regex.Match(title, pattern);
                     titleSplit = Regex.Split(title, pattern);
 
-                    string patternDaily = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
+                    string patternDaily = @"(?<Year>(?:\d{1,2})).{1}(?<Month>(?:\d{1,2})).{1}(?<Day>(?:\d{1,2}))";
 
-                    Match titleMatchDaily = Regex.Match(title, pattern);
-                    titleSplitDaily = Regex.Split(title, pattern);
+                    Match titleMatchDaily = Regex.Match(title, patternDaily);
+                    titleSplitDaily = Regex.Split(title, patternDaily);
 
                     string showName = titleSplit[0].Replace('.', ' ');
                     showName = showName.TrimEnd();
@@ -637,6 +670,88 @@ namespace SABSync
                     return true;
                 }
             }
+            catch (Exception e)
+            {
+                Log("Unsupported Title: {0} - {1}", title, e);
+                return false;
+            }
+
+            Log("Unsupported Title: {0}", title);
+            return false;
+        }
+
+        private static bool IsEpisodeWanted(string title)
+        {
+            Log("----------------------------------------------------------------");
+            Log("Verifying '{0}'", title);
+
+            try
+            {
+                if (title.Length > 80)
+                {
+                    title = title.Substring(0, 79);
+                }
+
+                string[] titleSplit = null;
+                string[] titleSplitDaily = null;
+                string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
+
+                Match titleMatch = Regex.Match(title, pattern);
+                titleSplit = Regex.Split(title, pattern);
+
+                if (titleSplit.Length == 2)
+                {
+                    string showName = titleSplit[0].Replace('.', ' ');
+                    showName = showName.TrimEnd();
+
+                    int seasonNumber = 0;
+                    int episodeNumber = 0;
+
+                    Int32.TryParse(titleMatch.Groups["Season"].Value, out seasonNumber);
+                    Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
+
+                    showName = ShowAlias(showName);
+                    Console.WriteLine(showName);
+
+                    if (!IsShowWanted(showName))
+                        return false;
+
+                    string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
+                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
+
+                    string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
+                    string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
+
+                    if (IsOnDisk(dir, fileMask))
+                        return false;
+
+                    if (IsSeasonIgnored(showName, seasonNumber))
+                        return false;
+
+                    if (IsInQueue(title, titleFix))
+                        return false;
+
+                    if (InNzbArchive(title))
+                        return false;
+
+                    if (InNzbArchive(titleFix))
+                        return false;
+
+                    return true;
+                }
+
+                string patternDaily = @"(?<Year>(?:\d{1,2})).{1}(?<Month>(?:\d{1,2})).{1}(?<Day>(?:\d{1,2}))";
+
+                Match titleMatchDaily = Regex.Match(title, patternDaily);
+                titleSplitDaily = Regex.Split(title, patternDaily);
+
+                if (titleSplitDaily.Length == 2)
+                {
+                    //Daily Show Title Check
+                }
+
+            }
+
             catch (Exception e)
             {
                 Log("Unsupported Title: {0} - {1}", title, e);
@@ -1048,10 +1163,10 @@ namespace SABSync
             Match titleMatch = Regex.Match(title, pattern);
             titleSplit = Regex.Split(title, pattern);
 
-            string patternDaily = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
+            string patternDaily = @"(?<Year>(?:\d{1,2})).{1}(?<Month>(?:\d{1,2})).{1}(?<Day>(?:\d{1,2}))";
 
-            Match titleMatchDaily = Regex.Match(title, pattern);
-            titleSplitDaily = Regex.Split(title, pattern);
+            Match titleMatchDaily = Regex.Match(title, patternDaily);
+            titleSplitDaily = Regex.Split(title, patternDaily);
 
             string showName = titleSplit[0].Replace('.', ' ');
             showName = showName.TrimEnd();
