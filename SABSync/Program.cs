@@ -121,7 +121,7 @@ namespace SABSync
                                     nzbSite = "nzbsDotOrg";
                                     downloadLink = item.Link.ToString();
                                     downloadLink = downloadLink.Replace("&", "%26");
-                                    Console.WriteLine(downloadLink);
+                                    //Console.WriteLine(downloadLink);
                                 }
 
                                 else
@@ -135,6 +135,7 @@ namespace SABSync
 
                                 if (nzbSite == "newzbin")
                                 {
+                                    Console.WriteLine("Newzbin");
                                     if (IsEpisodeWanted(rssTitle, reportId))
                                     {
                                         string queueResponse = AddToQueue(reportId);
@@ -151,8 +152,6 @@ namespace SABSync
                                         string queueResponse = AddToQueue(rssTitle, downloadLink);
                                         Queued.Add(rssTitle + ": " + queueResponse);
 
-                                        Console.WriteLine(queueResponse);
-
                                         if (queueResponse.ToLower() == "ok")
                                         {
                                             //Rename Item
@@ -160,8 +159,18 @@ namespace SABSync
 
                                             if (!queueItemRenamed)
                                             {
-                                                Thread.Sleep(5000);
-                                                queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                int i = 0;
+                                                while (!queueItemRenamed && i < 5)
+                                                {
+                                                    Thread.Sleep(5000);
+                                                    queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                    i++;
+                                                }
+                                                //for (int i = 0; i < 5; i++)
+                                                //{
+                                                //    Thread.Sleep(5000);
+                                                //    queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                //}
 
                                                 if (!queueItemRenamed)
                                                     Log("Unable to Rename Item - NZB has not been downloaded yet");
@@ -179,8 +188,6 @@ namespace SABSync
                                         string queueResponse = AddToQueue(rssTitle, downloadLink);
                                         Queued.Add(rssTitle + ": " + queueResponse);
 
-                                        Console.WriteLine(queueResponse);
-
                                         if (queueResponse.ToLower() == "ok")
                                         {
                                             //Rename Item
@@ -188,8 +195,12 @@ namespace SABSync
 
                                             if (!queueItemRenamed)
                                             {
-                                                Thread.Sleep(5000);
-                                                queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                for (int i = 0; i < 5; i++)
+                                                {
+                                                    Console.WriteLine("Sleeping...");
+                                                    Thread.Sleep(5000);
+                                                    queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                }
 
                                                 if (!queueItemRenamed)
                                                     Log("Unable to Rename Item - NZB has not been downloaded yet");
@@ -273,8 +284,6 @@ namespace SABSync
             //Create URL String
 
             _nzbDir = new DirectoryInfo(ConfigurationManager.AppSettings["nzbDir"]); //Get _nzbDir from app.config
-
-            _downloadQuality = ConfigurationManager.AppSettings["downloadQuality"];
         }
 
         private static Dictionary<Int64, string> GetReports()
@@ -528,6 +537,9 @@ namespace SABSync
                     if (InNzbArchive(title))
                         return false;
 
+                    if (IsQueued(title))
+                        return false;
+
                     return true;
                 }
 
@@ -579,6 +591,9 @@ namespace SABSync
                     if (InNzbArchive(title))
                         return false;
 
+                    if (IsQueued(title))
+                        return false;
+
                     return true;
                 }
 
@@ -609,62 +624,7 @@ namespace SABSync
                     if (InNzbArchive(title))
                         return false;
 
-                    return true;
-                }
-
-                if (titleArray.Length == 2)
-                {
-                    string[] titleSplit = null;
-                    string[] titleSplitDaily = null;
-                    string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
-
-                    Match titleMatch = Regex.Match(title, pattern);
-                    titleSplit = Regex.Split(title, pattern);
-
-                    string patternDaily = @"(?<Year>(?:\d{1,2})).{1}(?<Month>(?:\d{1,2})).{1}(?<Day>(?:\d{1,2}))";
-
-                    Match titleMatchDaily = Regex.Match(title, patternDaily);
-                    titleSplitDaily = Regex.Split(title, patternDaily);
-
-                    string showName = titleSplit[0].Replace('.', ' ');
-                    showName = showName.TrimEnd();
-
-                    int seasonNumber = 0;
-                    int episodeNumber = 0;
-
-                    string seasonEpisode = titleMatch.ToString();
-
-                    seasonEpisode = seasonEpisode.TrimStart('S');
-                    
-                    string[] seasonEpisdeSplit = seasonEpisode.Split('E');
-                    Int32.TryParse(seasonEpisdeSplit[0], out seasonNumber);
-                    Int32.TryParse(seasonEpisdeSplit[1], out episodeNumber);
-
-                    showName = ShowAlias(showName);
-                    Console.WriteLine(showName);
-
-                    if (!IsShowWanted(showName))
-                        return false;
-
-                    string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
-                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
-
-                    string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
-                    string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
-
-                    if (IsOnDisk(dir, fileMask))
-                        return false;
-
-                    if (IsSeasonIgnored(showName, seasonNumber))
-                        return false;
-
-                    if (IsInQueue(title, titleFix))
-                        return false;
-
-                    if (InNzbArchive(title))
-                        return false;
-
-                    if (InNzbArchive(titleFix))
+                    if (IsQueued(title))
                         return false;
 
                     return true;
@@ -699,7 +659,7 @@ namespace SABSync
                 Match titleMatch = Regex.Match(title, pattern);
                 titleSplit = Regex.Split(title, pattern);
 
-                if (titleSplit.Length == 2)
+                if (titleSplit.Length == 4)
                 {
                     string showName = titleSplit[0].Replace('.', ' ');
                     showName = showName.TrimEnd();
@@ -711,7 +671,6 @@ namespace SABSync
                     Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
 
                     showName = ShowAlias(showName);
-                    Console.WriteLine(showName);
 
                     if (!IsShowWanted(showName))
                         return false;
@@ -735,6 +694,9 @@ namespace SABSync
                         return false;
 
                     if (InNzbArchive(titleFix))
+                        return false;
+
+                    if (IsQueued(titleFix))
                         return false;
 
                     return true;
@@ -887,7 +849,7 @@ namespace SABSync
                         string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
 
 
-                        if (fileName.ToLower() == CleanString(rssTitle).ToLower() || fileName == CleanString(rssTitleFix))
+                        if (fileName.ToLower() == CleanString(rssTitle).ToLower() || fileName.ToLower() == CleanString(rssTitleFix).ToLower())
                         {
                             Log("Episode in queue - '{0}'", true, rssTitle);
                             return true;
@@ -902,6 +864,16 @@ namespace SABSync
 
             return false;
         } //Ends IsInQueue (Non-Newzbin)
+
+        private static bool IsQueued(string rssTitleFix)
+        {
+            //Checks Queued List for "Fixed" name, resolves issue when Item is added, but not properly renamed and it is found at another source.
+
+            if (Queued.Contains(rssTitleFix))
+                return true;
+
+            return false;
+        }
 
         private static bool InNzbArchive(string rssTitle)
         {
@@ -1020,8 +992,6 @@ namespace SABSync
             {
                 string url = "http://thetvdb.com/api/" + _tvDbApiKey + "/series/" + seriesId + "/default/" + seasonNumber + "/" + episodeNumber;
 
-                Console.WriteLine(url);
-
                 XmlTextReader tvDbRssReader = new XmlTextReader(url);
                 XmlDocument tvDbRssDoc = new XmlDocument();
                 tvDbRssDoc.Load(tvDbRssReader);
@@ -1126,11 +1096,25 @@ namespace SABSync
 
                         string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
 
-                        if (fileName.ToLower() == CleanString(rssTitle).ToLower())
+                        if (fileName.ToLower() != CleanString(rssTitle).ToLower())
+                        {
+                            continue;
+                            //return false;
+                        }
+
+                        else
                         {
                             nzoName = queueElement.GetElementsByTagName("nzo_id")[0].InnerText;
                             Log("Episode in queue, Renaming '{0}' to '{1}'", true, rssTitle, rssTitleFix);
-                            //return true;
+
+                            //Do Rename now.... (nzoName & rssTitleFix);
+                            string renameNzb = String.Format(_sabRequest, "mode=queue&name=rename&value=" + nzoName + "&value2=" + rssTitleFix);
+                            WebClient client = new WebClient();
+                            string response = client.DownloadString(renameNzb).Replace("\n", String.Empty);
+                            Log("Queue Response: [{0}]", response);
+
+                            if (response.ToLower() == "ok")
+                                return true;
                         }
                     }
                 }
@@ -1139,17 +1123,6 @@ namespace SABSync
             {
                 Log("An Error has occurred while checking the queue. {0}", true, ex);
             }
-
-            //Do Rename now.... (nzoName & rssTitleFix)
-            string renameNzb = String.Format(_sabRequest, "=queue&name=rename&value=" + nzoName + "&value2=" + rssTitleFix);
-            Log("Renaming NZB [{0}] to [{1}].", rssTitle, rssTitleFix);
-            WebClient client = new WebClient();
-            string response = client.DownloadString(renameNzb).Replace("\n", String.Empty);
-            Log("Queue Response: [{0}]", response);
-            //return response;
-
-            if (response.ToLower() == "ok")
-                return true;
 
             return false;
         }
@@ -1174,16 +1147,10 @@ namespace SABSync
             int seasonNumber = 0;
             int episodeNumber = 0;
 
-            string seasonEpisode = titleMatch.ToString();
-
-            seasonEpisode = seasonEpisode.TrimStart('S');
-
-            string[] seasonEpisdeSplit = seasonEpisode.Split('E');
-            Int32.TryParse(seasonEpisdeSplit[0], out seasonNumber);
-            Int32.TryParse(seasonEpisdeSplit[1], out episodeNumber);
+            Int32.TryParse(titleMatch.Groups["Season"].Value, out seasonNumber);
+            Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
 
             showName = ShowAlias(showName);
-            Console.WriteLine(showName);
 
             string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
             string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
