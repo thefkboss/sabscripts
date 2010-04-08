@@ -46,7 +46,7 @@ namespace SABSync
         private static List<DirectoryInfo> _wantedShowNames;
         private static bool _sabReplaceChars;
         private static string _sabRequest;
-        private static string _downloadQuality;
+        private static string[] _downloadQuality;
         private static readonly List<string> Queued = new List<string>();
         private static readonly List<string> Summary = new List<string>();
         private static readonly FileInfo LogFile = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\log\\" + DateTime.Now.ToString("MM.dd-HH-mm") + ".txt");
@@ -121,7 +121,24 @@ namespace SABSync
                                     nzbSite = "nzbsDotOrg";
                                     downloadLink = item.Link.ToString();
                                     downloadLink = downloadLink.Replace("&", "%26");
-                                    //Console.WriteLine(downloadLink);
+                                }
+
+                                else if (url.ToLower().Contains("tvnzb.com"))
+                                {
+                                    reportId = Convert.ToInt64(Regex.Match(item.Link.ToString(), @"\d{5,10}").Value);
+                                    rssTitle = item.Title;
+                                    nzbSite = "tvnzb";
+                                    downloadLink = item.Link.ToString();
+                                    downloadLink = downloadLink.Replace("&", "%26");
+                                }
+
+                                else if (url.ToLower().Contains("nzbmatrix.com"))
+                                {
+                                    reportId = Convert.ToInt64(Regex.Match(item.Guid.Name, @"\d{6,10}").Value);
+                                    rssTitle = item.Title;
+                                    nzbSite = "nzbmatrix";
+                                    downloadLink = item.Link.ToString();
+                                    downloadLink = downloadLink.Replace("&", "%26");
                                 }
 
                                 else
@@ -166,11 +183,6 @@ namespace SABSync
                                                     queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
                                                     i++;
                                                 }
-                                                //for (int i = 0; i < 5; i++)
-                                                //{
-                                                //    Thread.Sleep(5000);
-                                                //    queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
-                                                //}
 
                                                 if (!queueItemRenamed)
                                                     Log("Unable to Rename Item - NZB has not been downloaded yet");
@@ -179,7 +191,48 @@ namespace SABSync
                                     }
                                 }
 
-                                else
+                                else if (nzbSite == "tvnzb")
+                                {
+                                    bool qualityWanted = false;
+                                    for (int i = 0; i < _downloadQuality.Length; i++)
+                                    {
+                                        if (rssTitle.ToLower().Contains(_downloadQuality[i]))
+                                            qualityWanted = true;
+                                    }
+
+                                    if (qualityWanted)
+                                    {
+                                        if (IsEpisodeWanted(rssTitle))
+                                        {
+                                            string titleFix = GetTitleFix(rssTitle);
+
+                                            string queueResponse = AddToQueue(rssTitle, downloadLink);
+                                            Queued.Add(rssTitle + ": " + queueResponse);
+
+                                            if (queueResponse.ToLower() == "ok")
+                                            {
+                                                //Rename Item
+                                                bool queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+
+                                                if (!queueItemRenamed)
+                                                {
+                                                    int i = 0;
+                                                    while (!queueItemRenamed && i < 5)
+                                                    {
+                                                        Thread.Sleep(5000);
+                                                        queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                        i++;
+                                                    }
+
+                                                    if (!queueItemRenamed)
+                                                        Log("Unable to Rename Item - NZB has not been downloaded yet");
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                else if (nzbSite == "nzbmatrix")
                                 {
                                     if (IsEpisodeWanted(rssTitle))
                                     {
@@ -195,15 +248,57 @@ namespace SABSync
 
                                             if (!queueItemRenamed)
                                             {
-                                                for (int i = 0; i < 5; i++)
+                                                int i = 0;
+                                                while (!queueItemRenamed && i < 5)
                                                 {
-                                                    Console.WriteLine("Sleeping...");
                                                     Thread.Sleep(5000);
                                                     queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                    i++;
                                                 }
 
                                                 if (!queueItemRenamed)
                                                     Log("Unable to Rename Item - NZB has not been downloaded yet");
+                                            }
+                                        }
+                                    }
+                                }
+
+                                else
+                                {
+                                    bool qualityWanted = false;
+                                    for (int i = 0; i < _downloadQuality.Length; i++)
+                                    {
+                                        if (rssTitle.ToLower().Contains(_downloadQuality[i]))
+                                            qualityWanted = true;
+                                    }
+
+                                    if (qualityWanted)
+                                    {
+                                        if (IsEpisodeWanted(rssTitle))
+                                        {
+                                            string titleFix = GetTitleFix(rssTitle);
+
+                                            string queueResponse = AddToQueue(rssTitle, downloadLink);
+                                            Queued.Add(rssTitle + ": " + queueResponse);
+
+                                            if (queueResponse.ToLower() == "ok")
+                                            {
+                                                //Rename Item
+                                                bool queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+
+                                                if (!queueItemRenamed)
+                                                {
+                                                    int i = 0;
+                                                    while (!queueItemRenamed && i < 5)
+                                                    {
+                                                        Thread.Sleep(5000);
+                                                        queueItemRenamed = RenameQueueItem(rssTitle, titleFix);
+                                                        i++;
+                                                    }
+
+                                                    if (!queueItemRenamed)
+                                                        Log("Unable to Rename Item - NZB has not been downloaded yet");
+                                                }
                                             }
                                         }
                                     }
@@ -239,6 +334,7 @@ namespace SABSync
 
             Log("Process successfully completed. Duration {0:##.#}s", sw.Elapsed.TotalSeconds);
             Log(DateTime.Now.ToString());
+            //Console.ReadKey();
         }
 
         private static void LoadConfig()
@@ -270,6 +366,7 @@ namespace SABSync
                 throw new ApplicationException("tvDailyTemplate");
 
             _sabReplaceChars = Convert.ToBoolean(ConfigurationManager.AppSettings["sabReplaceChars"]);
+            _downloadQuality = ConfigurationManager.AppSettings["downloadQuality"].Trim(';', ' ').Split(';'); //Get _downloadQuality from app.config
 
 
             //Generate template for a sab request.
@@ -1025,25 +1122,25 @@ namespace SABSync
 
         private static string ShowAlias(string showName)
         {
-            if (showName == "CSI")
+            if (showName.ToLower() == "csi")
                 showName = "CSI: Crime Scene Investigation";
 
-            if (showName == "Law and Order" || showName == "Law And Order")
+            if (showName.ToLower() == "law and order")
                 showName = "Law & Order";
 
-            if (showName == "CSI Miami")
+            if (showName.ToLower() == "csi miami")
                 showName = "CSI: Miami";
 
-            if (showName == "CSI New York" || showName == "CSI NY")
+            if (showName.ToLower() == "csi new york" || showName.ToLower() == "csi ny")
                 showName = "CSI: NY";
 
-            if (showName == "The Office")
+            if (showName.ToLower() == "the office")
                 showName = "The Office (US)";
 
-            if (showName == "Law And Order CI" || showName == "Law and Order CI")
+            if (showName.ToLower() == "law and order ci" || showName.ToLower() == "law and order criminal intent")
                 showName = "Law & Order: Criminal Intent";
 
-            if (showName == "Law And Order SVU")
+            if (showName.ToLower() == "law and order svu" || showName.ToLower() == "law and order special victims unit")
                 showName = "Law & Order: Special Victims Unit";
 
             string patternYear = @"(?<Year>(?:\d{4}))";
@@ -1108,6 +1205,8 @@ namespace SABSync
                             Log("Episode in queue, Renaming '{0}' to '{1}'", true, rssTitle, rssTitleFix);
 
                             //Do Rename now.... (nzoName & rssTitleFix);
+
+                            rssTitleFix = rssTitleFix.Replace("&", "%26");
                             string renameNzb = String.Format(_sabRequest, "mode=queue&name=rename&value=" + nzoName + "&value2=" + rssTitleFix);
                             WebClient client = new WebClient();
                             string response = client.DownloadString(renameNzb).Replace("\n", String.Empty);
