@@ -43,6 +43,7 @@ namespace SABSync
         private static string _tvDailyTemplate;
         private static string[] _videoExt;
         private static FileInfo _rss;
+        private static FileInfo _alias;
         private static List<DirectoryInfo> _wantedShowNames;
         private static bool _sabReplaceChars;
         private static string _sabRequest;
@@ -317,7 +318,6 @@ namespace SABSync
                 Log(ex.Message, true);
                 Log(ex.ToString(), true);
             }
-
             sw.Stop();
             Log("=====================================================================" + Environment.NewLine);
 
@@ -325,6 +325,8 @@ namespace SABSync
             {
                 Log(logItem);
             }
+
+            Log(Environment.NewLine);
 
             foreach (var item in Queued)
             {
@@ -350,6 +352,10 @@ namespace SABSync
             _rss = new FileInfo(ConfigurationManager.AppSettings["rss"]); //Get rss config file from app.config
             if (!_rss.Exists)
                 throw new ApplicationException("Invalid RSS file path. " + _rss);
+
+            _alias = new FileInfo(ConfigurationManager.AppSettings["alias"]); //Get alias config file from app.config
+            if (!_alias.Exists)
+                throw new ApplicationException("Invalid Alias file path. " + _alias);
 
             _ignoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"]; //Get _ignoreSeasons from app.config
 
@@ -580,6 +586,7 @@ namespace SABSync
             {
                 if (String.Equals(di.Name, CleanString(wantedShowName), StringComparison.InvariantCultureIgnoreCase))
                 {
+                    Log("'{0}' is being watched.", wantedShowName);
                     return true;
                 }
             }
@@ -754,20 +761,20 @@ namespace SABSync
                 string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
 
                 Match titleMatch = Regex.Match(title, pattern);
+
                 titleSplit = Regex.Split(title, pattern);
 
                 if (titleSplit.Length == 4)
                 {
                     string showName = titleSplit[0].Replace('.', ' ');
                     showName = showName.TrimEnd();
+                    showName = ShowAlias(showName);
 
                     int seasonNumber = 0;
                     int episodeNumber = 0;
 
                     Int32.TryParse(titleMatch.Groups["Season"].Value, out seasonNumber);
                     Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
-
-                    showName = ShowAlias(showName);
 
                     if (!IsShowWanted(showName))
                         return false;
@@ -799,16 +806,50 @@ namespace SABSync
                     return true;
                 }
 
-                string patternDaily = @"(?<Year>(?:\d{1,2})).{1}(?<Month>(?:\d{1,2})).{1}(?<Day>(?:\d{1,2}))";
+                //Daily Show Title Check
+                string patternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
 
                 Match titleMatchDaily = Regex.Match(title, patternDaily);
                 titleSplitDaily = Regex.Split(title, patternDaily);
 
-                if (titleSplitDaily.Length == 2)
+                if (titleSplitDaily.Length == 5)
                 {
-                    //Daily Show Title Check
-                }
+                    string showName = titleSplitDaily[0].Replace('.', ' ');
+                    showName = showName.TrimEnd();
+                    showName = ShowAlias(showName);
 
+                    int year = 0;
+                    int month = 0;
+                    int day = 0;
+
+                    Int32.TryParse(titleMatchDaily.Groups["Year"].Value, out year);
+                    Int32.TryParse(titleMatchDaily.Groups["Month"].Value, out month);
+                    Int32.TryParse(titleMatchDaily.Groups["Day"].Value, out day);
+
+                    if (!IsShowWanted(showName))
+                        return false;
+
+                    string dir = GetEpisodeDir(showName, year, month, day);
+                    string fileMask = GetEpisodeFileMask(year, month, day);
+                    if (IsOnDisk(dir, fileMask))
+                        return false;
+
+                    string episodeName = CheckTvDb(showName, year, month, day);
+                    string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2") + " - " + episodeName;
+
+                    Console.WriteLine(titleFix);
+
+                    if (IsInQueue(title, titleFix))
+                        return false;
+
+                    if (InNzbArchive(title))
+                        return false;
+
+                    if (IsQueued(title))
+                        return false;
+
+                    return true;
+                }
             }
 
             catch (Exception e)
@@ -832,7 +873,7 @@ namespace SABSync
 
                 if (matchingFiles.Length != 0)
                 {
-                    Log("Episode in disk. '{0}'", true, matchingFiles[0]);
+                    Log("Episode on disk. '{0}'", true, matchingFiles[0]);
                     return true;
                 }
             }
@@ -1017,9 +1058,7 @@ namespace SABSync
                 string seriesId = GetSeriesId(showName);
 
                 if (seriesId != null)
-                {
                     episodeName = GetEpisodeName(seriesId, seasonNumber, episodeNumber);
-                }
 
                 else
                     episodeName = "unknown";
@@ -1033,18 +1072,38 @@ namespace SABSync
             }
         }
 
-        public static string GetSeriesId(string seriesName)
+        private static string CheckTvDb(string showName, int year, int month, int day)
         {
             try
             {
+                string episodeName = null;
+                string seriesId = GetSeriesId(showName);
+
+                if (seriesId != null)
+                    episodeName = GetEpisodeName(seriesId, year, month, day);
+
+                else
+                    episodeName = "unknown";
+
+                return episodeName;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public static string GetSeriesId(string seriesName)
+        {
+            string seriesId = null;
+
+            try
+            {
                 string url = "http://thetvdb.com/api/GetSeries.php?seriesname=" + seriesName;
-
-                string seriesId = null;
-
+            
                 XmlTextReader tvDbRssReader = new XmlTextReader(url);
                 XmlDocument tvDbRssDoc = new XmlDocument();
                 tvDbRssDoc.Load(tvDbRssReader);
-
 
                 var data = tvDbRssDoc.GetElementsByTagName(@"Data");
 
@@ -1073,13 +1132,15 @@ namespace SABSync
                         else
                             continue;
                     }
+                        XmlElement tvDbElementLast = (XmlElement)series.Item(0);
+                        seriesId = tvDbElementLast.GetElementsByTagName("seriesid")[0].InnerText.ToLower();
+                        return seriesId;
                 }
             }
             catch (Exception ex)
             {
                 Log("An Error has occurred while get the Series ID: " + ex);
             }
-
             return null;
         }
 
@@ -1120,35 +1181,88 @@ namespace SABSync
             return null;
         }
 
+        private static string GetEpisodeName(string seriesId, int year, int month, int day)
+        {
+            try
+            {
+                string url = "http://thetvdb.com/api/" + _tvDbApiKey + "/series/" + seriesId + "/all/";
+
+                XmlTextReader tvDbRssReader = new XmlTextReader(url);
+                XmlDocument tvDbRssDoc = new XmlDocument();
+                tvDbRssDoc.Load(tvDbRssReader);
+
+                string rssAirDate = year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2");
+                string episodeName = null;
+
+                var data = tvDbRssDoc.GetElementsByTagName(@"Data");
+
+                if (data.Count != 0)
+                {
+                    var episodes = ((XmlElement)data[0]).GetElementsByTagName("Episode");
+
+                    if (episodes.Count == 0)
+                    {
+                        Log("Episode Not Found");
+                        return null;
+                    }
+
+                    foreach (var e in episodes)
+                    {
+                        XmlElement tvDbElement = (XmlElement)e;
+                        string tvDbAirDate = tvDbElement.GetElementsByTagName("FirstAired")[0].InnerText;
+                        //Console.WriteLine(tvDbAirDate);
+
+                        if (tvDbAirDate == rssAirDate)
+                        {
+                            episodeName = tvDbElement.GetElementsByTagName("EpisodeName")[0].InnerText;
+                            return episodeName;
+                        }
+
+                        else
+                            continue;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("An Error has occurred while get the Series ID: " + ex);
+            }
+
+            return "unknown";
+        }
+
         private static string ShowAlias(string showName)
         {
-            if (showName.ToLower() == "csi")
-                showName = "CSI: Crime Scene Investigation";
+            var aliases = File.ReadAllLines(_alias.FullName);
 
-            if (showName.ToLower() == "law and order")
-                showName = "Law & Order";
+            foreach (var a in aliases)
+            {
+                var feedParts = a.Split('|');
+                string alias = null;
+                string badName = null;
 
-            if (showName.ToLower() == "csi miami")
-                showName = "CSI: Miami";
+                if (feedParts.Length > 1)
+                {
+                    badName = feedParts[0];
+                    alias = feedParts[1];
+                }
 
-            if (showName.ToLower() == "csi new york" || showName.ToLower() == "csi ny")
-                showName = "CSI: NY";
+                if (showName.ToLower() == badName.ToLower())
+                {
+                    showName = alias;
+                }
 
-            if (showName.ToLower() == "the office")
-                showName = "The Office (US)";
-
-            if (showName.ToLower() == "law and order ci" || showName.ToLower() == "law and order criminal intent")
-                showName = "Law & Order: Criminal Intent";
-
-            if (showName.ToLower() == "law and order svu" || showName.ToLower() == "law and order special victims unit")
-                showName = "Law & Order: Special Victims Unit";
-
-            string patternYear = @"(?<Year>(?:\d{4}))";
-            string replaceYear = @"(${Year})";
+                else
+                {
+                    continue;
+                }
+            }
+            string patternYear = @"\s(?<Year>\d{4}\z)";
+            string replaceYear = @" (${Year})";
             showName = Regex.Replace(showName, patternYear, replaceYear);
 
-            string patternCountry = @"(?<Country>(?:[A-Z]{2}))";
-            string replaceCountry = @"(${Country})";
+            string patternCountry = @"\s(?<Country>[A-Z]{2}\z)";
+            string replaceCountry = @" (${Country})";
             showName = Regex.Replace(showName, patternCountry, replaceCountry);
 
             return showName;
@@ -1202,7 +1316,7 @@ namespace SABSync
                         else
                         {
                             nzoName = queueElement.GetElementsByTagName("nzo_id")[0].InnerText;
-                            Log("Episode in queue, Renaming '{0}' to '{1}'", true, rssTitle, rssTitleFix);
+                            Log("Renaming '{0}' to '{1}'", true, rssTitle, rssTitleFix);
 
                             //Do Rename now.... (nzoName & rssTitleFix);
 
@@ -1228,32 +1342,84 @@ namespace SABSync
 
         private static string GetTitleFix(string title)
         {
+            //string[] titleSplit = null;
+            //string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
+            //Match titleMatch = Regex.Match(title, pattern);
+            //titleSplit = Regex.Split(title, pattern);
+
+            //string showName = titleSplit[0].Replace('.', ' ');
+            //showName = showName.TrimEnd();
+
+            //int seasonNumber = 0;
+            //int episodeNumber = 0;
+
+            //Int32.TryParse(titleMatch.Groups["Season"].Value, out seasonNumber);
+            //Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
+
+            //showName = ShowAlias(showName);
+
+            //string[] titleSplitDaily = null;
+            //string patternDaily = @"(?<Year>(?:\d{1,2})).{1}(?<Month>(?:\d{1,2})).{1}(?<Day>(?:\d{1,2}))";
+            //Match titleMatchDaily = Regex.Match(title, patternDaily);
+            //titleSplitDaily = Regex.Split(title, patternDaily);
+
+            //string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
+            //string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
+
+
+            //New
+
+            string titleFix = null;
+
             string[] titleSplit = null;
-            string[] titleSplitDaily = null;
             string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
 
             Match titleMatch = Regex.Match(title, pattern);
+
             titleSplit = Regex.Split(title, pattern);
 
-            string patternDaily = @"(?<Year>(?:\d{1,2})).{1}(?<Month>(?:\d{1,2})).{1}(?<Day>(?:\d{1,2}))";
+            if (titleSplit.Length == 4)
+            {
+                string showName = titleSplit[0].Replace('.', ' ');
+                showName = showName.TrimEnd();
+                showName = ShowAlias(showName);
+
+                int seasonNumber = 0;
+                int episodeNumber = 0;
+
+                Int32.TryParse(titleMatch.Groups["Season"].Value, out seasonNumber);
+                Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
+
+                string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
+                titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
+
+            }
+
+            //Daily Show Title Check
+            string[] titleSplitDaily = null;
+            string patternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
 
             Match titleMatchDaily = Regex.Match(title, patternDaily);
             titleSplitDaily = Regex.Split(title, patternDaily);
 
-            string showName = titleSplit[0].Replace('.', ' ');
-            showName = showName.TrimEnd();
+            if (titleSplitDaily.Length == 5)
+            {
+                string showName = titleSplitDaily[0].Replace('.', ' ');
+                showName = showName.TrimEnd();
+                showName = ShowAlias(showName);
 
-            int seasonNumber = 0;
-            int episodeNumber = 0;
+                int year = 0;
+                int month = 0;
+                int day = 0;
 
-            Int32.TryParse(titleMatch.Groups["Season"].Value, out seasonNumber);
-            Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
+                Int32.TryParse(titleMatchDaily.Groups["Year"].Value, out year);
+                Int32.TryParse(titleMatchDaily.Groups["Month"].Value, out month);
+                Int32.TryParse(titleMatchDaily.Groups["Day"].Value, out day);
 
-            showName = ShowAlias(showName);
+                string episodeName = CheckTvDb(showName, year, month, day);
+                titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2") + " - " + episodeName;
 
-            string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
-            string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
-
+            }
             return titleFix;
         }
 
