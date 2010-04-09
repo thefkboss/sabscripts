@@ -44,6 +44,7 @@ namespace SABSync
         private static string[] _videoExt;
         private static FileInfo _rss;
         private static FileInfo _alias;
+        private static FileInfo _quality;
         private static List<DirectoryInfo> _wantedShowNames;
         private static bool _sabReplaceChars;
         private static string _sabRequest;
@@ -242,12 +243,17 @@ namespace SABSync
                 Log(logItem);
             }
 
-            Log(Environment.NewLine);
+            if (Summary.Count != 0)
+                Log(Environment.NewLine);
 
             foreach (var item in Queued)
             {
                 Log("Queued for download: " + item);
             }
+            
+            if (Queued.Count != 0)
+                Log(Environment.NewLine);
+
             Log("Number of reports added to the queue: " + Queued.Count);
 
             Log("Process successfully completed. Duration {0:##.#}s", sw.Elapsed.TotalSeconds);
@@ -272,6 +278,10 @@ namespace SABSync
             _alias = new FileInfo(ConfigurationManager.AppSettings["alias"]); //Get alias config file from app.config
             if (!_alias.Exists)
                 throw new ApplicationException("Invalid Alias file path. " + _alias);
+
+            _quality = new FileInfo(ConfigurationManager.AppSettings["quality"]); //Get alias config file from app.config
+            if (!_quality.Exists)
+                throw new ApplicationException("Invalid Quality file path. " + _quality);
 
             _ignoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"]; //Get _ignoreSeasons from app.config
 
@@ -695,16 +705,19 @@ namespace SABSync
                     if (!IsShowWanted(showName))
                         return false;
 
-                    string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
-                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
-
                     string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
                     string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
 
                     if (IsOnDisk(dir, fileMask))
                         return false;
 
+                    string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
+                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
+
                     if (IsSeasonIgnored(showName, seasonNumber))
+                        return false;
+                    
+                    if (!IsQualityWanted(showName, title))
                         return false;
 
                     if (IsInQueue(title, titleFix))
@@ -747,13 +760,15 @@ namespace SABSync
 
                     string dir = GetEpisodeDir(showName, year, month, day);
                     string fileMask = GetEpisodeFileMask(year, month, day);
+
                     if (IsOnDisk(dir, fileMask))
                         return false;
 
                     string episodeName = CheckTvDb(showName, year, month, day);
                     string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2") + " - " + episodeName;
 
-                    Console.WriteLine(titleFix);
+                    if (!IsQualityWanted(showName, title))
+                        return false;
 
                     if (IsInQueue(title, titleFix))
                         return false;
@@ -819,6 +834,40 @@ namespace SABSync
             } //Ends if _ignoreSeasons contains showName
             return false; //If Show Name is not being ignored or that season is not ignored return false
         } //Ends IsSeasonIgnored
+
+        private static bool IsQualityWanted(string showName, string rssTitle)
+        {
+            var qualities = File.ReadAllLines(_quality.FullName);
+
+            foreach (var q in qualities)
+            {
+                var qualityParts = q.Split('|');
+                string quality = null;
+                string name = null;
+
+                if (qualityParts.Length > 1)
+                {
+                    name = qualityParts[0];
+                    quality = qualityParts[1];
+                }
+
+                if (showName.ToLower() == name.ToLower())
+                {
+                    if (rssTitle.ToLower().Contains(quality.ToLower()))
+                    {
+                        Log("Quality is Wanted.");
+                        return true;
+                    }
+
+                    else
+                        return false;
+                }
+
+                else
+                    continue;
+            }
+            return true;
+        }
 
         private static bool IsInQueue(string rssTitle, Int64 reportId)
         {
@@ -958,6 +1007,7 @@ namespace SABSync
 
         private static string AddToQueue(string rssTitle, string downloadLink, string titleFix)
         {
+            titleFix = CleanString(titleFix);
             string nzbFileDownload = String.Format(_sabRequest, "mode=addurl&name=" + downloadLink + "&cat=tv&nzbname=" + titleFix);
             Log("Adding report [{0}] to the queue.", rssTitle);
             WebClient client = new WebClient();
@@ -1153,14 +1203,14 @@ namespace SABSync
 
             foreach (var a in aliases)
             {
-                var feedParts = a.Split('|');
+                var aliasParts = a.Split('|');
                 string alias = null;
                 string badName = null;
 
-                if (feedParts.Length > 1)
+                if (aliasParts.Length > 1)
                 {
-                    badName = feedParts[0];
-                    alias = feedParts[1];
+                    badName = aliasParts[0];
+                    alias = aliasParts[1];
                 }
 
                 if (showName.ToLower() == badName.ToLower())
@@ -1169,9 +1219,7 @@ namespace SABSync
                 }
 
                 else
-                {
                     continue;
-                }
             }
             string patternYear = @"\s(?<Year>\d{4}\z)";
             string replaceYear = @" (${Year})";
