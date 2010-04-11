@@ -47,6 +47,7 @@ namespace SABSync
         private static FileInfo _quality;
         private static List<DirectoryInfo> _wantedShowNames;
         private static bool _sabReplaceChars;
+        private static bool _downloadPropers;
         private static string _sabRequest;
         private static string[] _downloadQuality;
         private static readonly List<string> Queued = new List<string>();
@@ -297,9 +298,9 @@ namespace SABSync
             if (String.IsNullOrEmpty(_tvTemplate))
                 throw new ApplicationException("tvDailyTemplate");
 
-            _sabReplaceChars = Convert.ToBoolean(ConfigurationManager.AppSettings["sabReplaceChars"]);
+            _sabReplaceChars = Convert.ToBoolean(ConfigurationManager.AppSettings["sabReplaceChars"]); //Get sabReplaceChars from app.config
             _downloadQuality = ConfigurationManager.AppSettings["downloadQuality"].Trim(';', ' ').Split(';'); //Get _downloadQuality from app.config
-
+            _downloadPropers = Convert.ToBoolean(ConfigurationManager.AppSettings["downloadPropers"]); //Get downloadProper from app.config
 
             //Generate template for a sab request.
             string sabnzbdInfo = ConfigurationManager.AppSettings["sabnzbdInfo"]; //Get sabnzbdInfo from app.config
@@ -687,11 +688,10 @@ namespace SABSync
                 string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
 
                 Match titleMatch = Regex.Match(title, pattern);
-
-                titleSplit = Regex.Split(title, pattern);
-
-                if (titleSplit.Length == 4)
+                
+                if (titleMatch.Success)
                 {
+                    titleSplit = Regex.Split(title, pattern);
                     string showName = titleSplit[0].Replace('.', ' ');
                     showName = showName.TrimEnd();
                     showName = ShowAlias(showName);
@@ -707,12 +707,14 @@ namespace SABSync
 
                     string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber);
                     string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber);
+                    string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
+                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
+
+                    if (_downloadPropers && title.Contains("PROPER") && !InNzbArchive(title, titleFix) && !IsInQueue(title, titleFix))
+                        DeleteForProper(dir, fileMask);
 
                     if (IsOnDisk(dir, fileMask))
                         return false;
-
-                    string episodeName = CheckTvDb(showName, seasonNumber, episodeNumber);
-                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
 
                     if (IsSeasonIgnored(showName, seasonNumber))
                         return false;
@@ -723,10 +725,7 @@ namespace SABSync
                     if (IsInQueue(title, titleFix))
                         return false;
 
-                    if (InNzbArchive(title))
-                        return false;
-
-                    if (InNzbArchive(titleFix))
+                    if (InNzbArchive(title, titleFix))
                         return false;
 
                     if (IsQueued(titleFix))
@@ -739,10 +738,10 @@ namespace SABSync
                 string patternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
 
                 Match titleMatchDaily = Regex.Match(title, patternDaily);
-                titleSplitDaily = Regex.Split(title, patternDaily);
 
-                if (titleSplitDaily.Length == 5)
+                if (titleMatchDaily.Success)
                 {
+                    titleSplitDaily = Regex.Split(title, patternDaily);
                     string showName = titleSplitDaily[0].Replace('.', ' ');
                     showName = showName.TrimEnd();
                     showName = ShowAlias(showName);
@@ -760,12 +759,14 @@ namespace SABSync
 
                     string dir = GetEpisodeDir(showName, year, month, day);
                     string fileMask = GetEpisodeFileMask(year, month, day);
+                    string episodeName = CheckTvDb(showName, year, month, day);
+                    string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2") + " - " + episodeName;
+
+                    if (_downloadPropers && title.Contains("PROPER") && !InNzbArchive(title, titleFix) && !IsInQueue(title, titleFix))
+                        DeleteForProper(dir, fileMask);
 
                     if (IsOnDisk(dir, fileMask))
                         return false;
-
-                    string episodeName = CheckTvDb(showName, year, month, day);
-                    string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2") + " - " + episodeName;
 
                     if (!IsQualityWanted(showName, title))
                         return false;
@@ -773,7 +774,7 @@ namespace SABSync
                     if (IsInQueue(title, titleFix))
                         return false;
 
-                    if (InNzbArchive(title))
+                    if (InNzbArchive(title, titleFix))
                         return false;
 
                     if (IsQueued(title))
@@ -797,6 +798,8 @@ namespace SABSync
         {
             if (!Directory.Exists(dir))
                 return false;
+
+            Log("Checking directory: {0} for [{1}]", dir, fileMask);
 
             foreach (var ext in _videoExt)
             {
@@ -995,6 +998,32 @@ namespace SABSync
             return false;
         }
 
+        private static bool InNzbArchive(string rssTitle, string rssTitleFix)
+        {
+            Log("Checking for Imported NZB for [{0}]", rssTitle);
+            //return !File.Exists(_nzbDir + "\\" + rssTitle + ".nzb.gz");
+
+            string nzbFileName = rssTitle.TrimEnd('.');
+            nzbFileName = CleanString(nzbFileName);
+
+            string nzbFileNameFix = rssTitleFix.TrimEnd('.');
+            nzbFileNameFix = CleanString(nzbFileNameFix);
+
+            if (File.Exists(_nzbDir + "\\" + nzbFileName + ".nzb.gz") || File.Exists(_nzbDir + "\\" + nzbFileName.Replace('.', ' ') + ".nzb.gz") || File.Exists(_nzbDir + "\\" + nzbFileName.Replace(' ', '.') + ".nzb.gz"))
+            {
+                Log("Episode in archive: " + nzbFileName + ".nzb.gz", true);
+                return true;
+            }
+
+            if (File.Exists(_nzbDir + "\\" + nzbFileNameFix + ".nzb.gz"))
+            {
+                Log("Episode in archive: " + nzbFileName + ".nzb.gz", true);
+                return true;
+            }
+
+            return false;
+        }
+
         private static string AddToQueue(Int64 reportId)
         {
             string nzbFileDownload = String.Format(_sabRequest, "mode=addid&name=" + reportId);
@@ -1008,6 +1037,7 @@ namespace SABSync
         private static string AddToQueue(string rssTitle, string downloadLink, string titleFix)
         {
             titleFix = CleanString(titleFix);
+            titleFix = titleFix.Replace("&", "%26");
             string nzbFileDownload = String.Format(_sabRequest, "mode=addurl&name=" + downloadLink + "&cat=tv&nzbname=" + titleFix);
             Log("Adding report [{0}] to the queue.", rssTitle);
             WebClient client = new WebClient();
@@ -1042,7 +1072,7 @@ namespace SABSync
         {
             try
             {
-                string episodeName = null;
+                string episodeName = "unknown";
                 string seriesId = GetSeriesId(showName);
 
                 if (seriesId != null)
@@ -1241,10 +1271,9 @@ namespace SABSync
 
             Match titleMatch = Regex.Match(title, pattern);
 
-            titleSplit = Regex.Split(title, pattern);
-
-            if (titleSplit.Length == 4)
+            if (titleMatch.Success)
             {
+                titleSplit = Regex.Split(title, pattern);
                 string showName = titleSplit[0].Replace('.', ' ');
                 showName = showName.TrimEnd();
                 showName = ShowAlias(showName);
@@ -1265,10 +1294,11 @@ namespace SABSync
             string patternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
 
             Match titleMatchDaily = Regex.Match(title, patternDaily);
-            titleSplitDaily = Regex.Split(title, patternDaily);
+            
 
-            if (titleSplitDaily.Length == 5)
+            if (titleMatchDaily.Success)
             {
+                titleSplitDaily = Regex.Split(title, patternDaily);
                 string showName = titleSplitDaily[0].Replace('.', ' ');
                 showName = showName.TrimEnd();
                 showName = ShowAlias(showName);
@@ -1286,6 +1316,29 @@ namespace SABSync
 
             }
             return titleFix;
+        }
+
+        private static void DeleteForProper(string dir, string fileMask)
+        {
+            //Delete old download to make room for proper!
+
+            if (!Directory.Exists(dir))
+                return;
+
+            foreach (var ext in _videoExt)
+            {
+                var matchingFiles = Directory.GetFiles(dir, fileMask + ext);
+
+                if (matchingFiles.Length != 0)
+                {
+                    //Delete Matching File(s)
+                    foreach (var m in matchingFiles)
+                    {
+                        File.Delete(m);
+                    }
+                }
+            }
+            return;
         }
 
         private static void Log(string message)
