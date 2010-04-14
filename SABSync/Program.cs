@@ -169,7 +169,7 @@ namespace SABSync
                                     {
                                         string titleFix = GetTitleFix(rssTitle);
                                         string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                                        Queued.Add(rssTitle + ": " + queueResponse);
+                                        Queued.Add(titleFix + ": " + queueResponse);
                                     }
                                 }
 
@@ -188,7 +188,7 @@ namespace SABSync
                                         {
                                             string titleFix = GetTitleFix(rssTitle);
                                             string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                                            Queued.Add(rssTitle + ": " + queueResponse);
+                                            Queued.Add(titleFix + ": " + queueResponse);
                                         }
                                     }
                                 }
@@ -199,7 +199,7 @@ namespace SABSync
                                     {
                                         string titleFix = GetTitleFix(rssTitle);
                                         string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                                        Queued.Add(rssTitle + ": " + queueResponse);
+                                        Queued.Add(titleFix + ": " + queueResponse);
                                     }
                                 }
 
@@ -777,7 +777,7 @@ namespace SABSync
                     if (InNzbArchive(title, titleFix))
                         return false;
 
-                    if (IsQueued(title))
+                    if (IsQueued(titleFix))
                         return false;
 
                     return true;
@@ -926,12 +926,13 @@ namespace SABSync
         {
             try
             {
+                Log("Checking Queue for: [{0}] or [{1}]", rssTitle, rssTitleFix);
+
                 string queueRssUrl = String.Format(_sabRequest, "mode=queue&output=xml");
 
                 XmlTextReader queueRssReader = new XmlTextReader(queueRssUrl);
                 XmlDocument queueRssDoc = new XmlDocument();
                 queueRssDoc.Load(queueRssReader);
-
 
                 var queue = queueRssDoc.GetElementsByTagName(@"queue");
                 var error = queueRssDoc.GetElementsByTagName(@"error");
@@ -1000,18 +1001,23 @@ namespace SABSync
 
         private static bool InNzbArchive(string rssTitle, string rssTitleFix)
         {
-            Log("Checking for Imported NZB for [{0}]", rssTitle);
+            Log("Checking for Imported NZB for [{0}] or [{1}]", rssTitle, rssTitleFix);
             //return !File.Exists(_nzbDir + "\\" + rssTitle + ".nzb.gz");
 
             string nzbFileName = rssTitle.TrimEnd('.');
             nzbFileName = CleanString(nzbFileName);
+            nzbFileName = nzbFileName.Replace('.', '*');
+            nzbFileName = nzbFileName.Replace(' ', '*');
+            nzbFileName = nzbFileName.Replace('-', '*');
 
             string nzbFileNameFix = rssTitleFix.TrimEnd('.');
             nzbFileNameFix = CleanString(nzbFileNameFix);
 
-            if (File.Exists(_nzbDir + "\\" + nzbFileName + ".nzb.gz") || File.Exists(_nzbDir + "\\" + nzbFileName.Replace('.', ' ') + ".nzb.gz") || File.Exists(_nzbDir + "\\" + nzbFileName.Replace(' ', '.') + ".nzb.gz"))
+            var matchingNzbFiles = Directory.GetFiles(_nzbDir.ToString(), nzbFileName + ".nzb.gz"); 
+
+            if (matchingNzbFiles.Length != 0)
             {
-                Log("Episode in archive: " + nzbFileName + ".nzb.gz", true);
+                Log("Episode in archive: '{0}'", true, matchingNzbFiles[0]);
                 return true;
             }
 
