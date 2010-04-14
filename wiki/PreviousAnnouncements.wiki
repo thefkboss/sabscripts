@@ -1,5 +1,5 @@
 #labels Featured
-#Announcements that have been removed from the main page.
+# Announcements that have been removed from the main page.
 
 ==TVConvert 0.2.1 Released==
 Added the ability to choose the HandBrakeCLI Preset to use, setup for iPhone & iPod Touch by default. Make sure you use "AND" (all caps) instead of "&" in the config (without quotes) as "&" is used in XML files (such as the config file). Notes on this are in the config file as well.
