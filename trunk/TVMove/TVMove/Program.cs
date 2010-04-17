@@ -3,7 +3,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-
+ 
 namespace TVMove
 {
     class Program
@@ -11,12 +11,15 @@ namespace TVMove
         private static bool _updateXbmc = Convert.ToBoolean(ConfigurationManager.AppSettings["updateXbmc"]); //Get updateXbmc Bool from App.Config
         private static string _filenameTemplate = ConfigurationManager.AppSettings["filenameTemplate"]; //Get _tvTemplate from app.config
         private static string _videoExt = ConfigurationManager.AppSettings["videoExt"]; //Get _tvTemplate from app.config
+        private static string _logDir = ConfigurationManager.AppSettings["logDir"]; //Log Directory  from Config File
+        private static string _logFile = _logDir + @"\TVMove.txt"; // Log File
 
         static void Main(string[] args)
         {
-            string logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Log Directory  from Config File
-            string tempDir = ConfigurationSettings.AppSettings["tempDir"].ToString(); //Temp Directory from Config File
-            string shows = ConfigurationSettings.AppSettings["shows"].ToString(); // TV Shows from Config File
+            //string logDir = ConfigurationManager.AppSettings["logDir"]; //Log Directory  from Config File
+
+            string tempDir = ConfigurationManager.AppSettings["tempDir"]; //Temp Directory from Config File
+            string shows = ConfigurationManager.AppSettings["shows"]; // TV Shows from Config File
             shows = shows.ToLower(); //Convert Shows from user to Lower-Case (SABnzbd may have odd Case structure)
 
             string showPath = args[0]; //Get showPath from first CMD Line Argument
@@ -29,12 +32,10 @@ namespace TVMove
             int seasonNumber = 0;
             int episodeNumber = 0;
 
-            string logFile = logDir + @"\TVMove.txt"; // Log File
-
-            File.AppendAllText(logFile, "\n");
-            File.AppendAllText(logFile, "#######################################################################\n");
-            File.AppendAllText(logFile, "Show Name is: " + showName + "\n");
-            File.AppendAllText(logFile, "Show Path is: " + showPath + "\n");
+            Log(Environment.NewLine);
+            Log("#######################################################################");
+            Log("Show Name is: " + showName);
+            Log("Show Path is: " + showPath);
 
             if (fileNameArray.Length == 3)
             {
@@ -65,9 +66,7 @@ namespace TVMove
                 }
 
                 else
-                {
-                    File.AppendAllText(logFile, "Un-supported Episode \n"); //Log Un-Supported Episode
-                }
+                    Log("Un-supported Episode");
 
                 string[] seasonEpisodeSplit = seasonEpisode.Split('x');
 
@@ -78,8 +77,7 @@ namespace TVMove
 
             if (shows.Contains(showName.ToLower()))
             {
-                File.AppendAllText(logFile, "Show is Wanted: " + showName + "\n");
-                Console.WriteLine("Show is Wanted");
+                Log("Show is wanted: " + showName);
                 string[] videoExtLoop = _videoExt.Split(';');
                 foreach (string e in videoExtLoop)
                 {
@@ -89,13 +87,13 @@ namespace TVMove
                         string fileFullPath = showPath + "\\" + fileNameNoExt + e; //Path to downloaded file as based on path (from SAB) + fileName
                         string fileTempPath = tempDir + "\\" + fileNameNoExt + e; //Path to temp file as supplied by user + fileName
                         File.Copy(fileFullPath, fileTempPath, true); //Copy file to tempDir
-                        File.AppendAllText(logFile, "Show was Copied to: " + tempDir + fileNameNoExt + e + "\n");
+                        Log("Show was Copied to: " + tempDir + fileNameNoExt + e);
                     }
                 }
             }
             if (_updateXbmc)
             {
-                File.AppendAllText(logFile, "Attempting to Update XBMC\n");
+                Log("Attempting to Update XBMC");
                 string xbmcUpdate = UpdateXbmc(showPath, showInfo);
             }
             //Console.ReadKey();
@@ -135,7 +133,7 @@ namespace TVMove
 
         private static string UpdateXbmc(string showPath, string showInfo)
         {
-            bool xbmcOsWindows = Convert.ToBoolean(ConfigurationSettings.AppSettings["xbmcOsWindows"]);
+            bool xbmcOsWindows = Convert.ToBoolean(ConfigurationManager.AppSettings["xbmcOsWindows"]);
 
             string downloadTvPath = ConfigurationManager.AppSettings["downloadTvPath"];
             string xbmcTvPath = ConfigurationManager.AppSettings["xbmcTvPath"];
@@ -183,6 +181,25 @@ namespace TVMove
 
             xbmcUpdating = "Could not connect to XBMC";
             return xbmcUpdating;
+        }
+
+        private static void Log(string message)
+        {
+            Console.WriteLine(message);
+            try
+            {
+                using (StreamWriter sw = File.AppendText(_logFile))
+                {
+                    sw.WriteLine(message);
+                }
+            }
+            catch { }
+        }
+
+        private static void Log(string message, params object[] para)
+        {
+
+            Log(String.Format(message, para));
         }
     }
 }
