@@ -8,14 +8,15 @@ namespace TVConvert
 {
     class Program
     {
-        private static string _logDir = ConfigurationSettings.AppSettings["logDir"].ToString(); //Log Directory from app.config
-        private static string _tempDir = ConfigurationSettings.AppSettings["tempDir"].ToString(); // Temp Directory from app.cpnfig
-        private static string _outputDir = ConfigurationSettings.AppSettings["outputDir"].ToString(); //Output Directory from app.config
-        private static string _handBrakeLocation = ConfigurationSettings.AppSettings["handBrakeLocation"].ToString(); //HandBrake location from app.config
-        private static string _handBrakePreset = ConfigurationSettings.AppSettings["handBrakePreset"].ToString(); //HandBrake location from app.config
-        private static string _atomicParsleyLocation = ConfigurationSettings.AppSettings["atomicParsleyLocation"].ToString(); //Atomic Parsley from app.config
-        private static string _episodeNameFormat = ConfigurationSettings.AppSettings["episodeNameFormat"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
-        private static string _videoExt = ConfigurationSettings.AppSettings["videoExt"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
+        private static string _logDir = ConfigurationManager.AppSettings["logDir"].ToString(); //Log Directory from app.config
+        private static string _logFile = _logDir + @"\TVConvert.txt";
+        private static string _tempDir = ConfigurationManager.AppSettings["tempDir"].ToString(); // Temp Directory from app.cpnfig
+        private static string _outputDir = ConfigurationManager.AppSettings["outputDir"].ToString(); //Output Directory from app.config
+        private static string _handBrakeLocation = ConfigurationManager.AppSettings["handBrakeLocation"].ToString(); //HandBrake location from app.config
+        private static string _handBrakePreset = ConfigurationManager.AppSettings["handBrakePreset"].ToString(); //HandBrake location from app.config
+        private static string _atomicParsleyLocation = ConfigurationManager.AppSettings["atomicParsleyLocation"].ToString(); //Atomic Parsley from app.config
+        private static string _episodeNameFormat = ConfigurationManager.AppSettings["episodeNameFormat"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
+        private static string _videoExt = ConfigurationManager.AppSettings["videoExt"].ToString(); //Which Episode Naming Convention to Use (Poor multi-season sorting by Apple)
 
         static void Main(string[] args)
         {
@@ -140,8 +141,6 @@ namespace TVConvert
         private static string RunHandbrake(string inputFile, string inputFileName)
         {
             string handBreakReplace = _handBrakePreset.Replace(" AND ", " & ");
-            Console.WriteLine(handBreakReplace);
-            Console.ReadKey();
             string outputFile = _outputDir + "\\" + inputFileName + ".mp4";
             string handBrakeCommands = "-i \"" + inputFile + "\" -o \"" + outputFile + "\" --preset=\"" + handBreakReplace + "\""; //Commands for Handbrake
             string handBrakeFile = _handBrakeLocation + "\\handbrakeCLI.exe"; //Path to handbrake.exe
@@ -179,6 +178,61 @@ namespace TVConvert
                 Process.Start(atomicParsleyFile, atomicParsleyCommands).WaitForExit(); //Run AtomicParsley and Wait for Exit
             }
             return outputFile;
+        }
+
+        private static string GetShowName(string fileName)
+        {
+            string[] titleSplit = null;
+            string[] titleSplit = null;
+            string[] titleSplitDaily = null;
+
+            string patternMulti = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
+            string patternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
+
+            Match titleMatchMulti = Regex.Match(title, patternMulti);
+
+            if (titleMatchMulti.Success)
+            {
+                return fileName;
+            }
+
+            return fileName;
+        }
+
+        private static int GetSeasonNumber(string fileName)
+        {
+            return 0;
+        }
+
+        private static int GetEpisodeNumber(string fileName)
+        {
+            return 0;
+        }
+
+
+        private static string GetEpisodeName(string fileName)
+        {
+            return fileName;
+        }
+
+        private static void Log(string message)
+        {
+            Console.WriteLine(message);
+            try
+            {
+                using (StreamWriter sw = File.AppendText(_logFile))
+                {
+                    sw.WriteLine(message);
+                }
+            }
+            catch { }
+        }
+
+        private static void Log(string message, params object[] para)
+        {
+
+            Log(String.Format(message, para));
         }
     }
 }
