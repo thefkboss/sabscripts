@@ -182,8 +182,8 @@ namespace TVConvert
 
         private static string GetShowName(string fileName)
         {
-            string[] titleSplit = null;
-            string[] titleSplit = null;
+            string[] titleSplitSs = null;
+            string[] titleSplitX = null;
             string[] titleSplitDaily = null;
 
             string patternMulti = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
