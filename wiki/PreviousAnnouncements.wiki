@@ -1,6 +1,19 @@
 #summary Announcements that have been removed from the main page.
 #labels Featured
 
+----
+==SABSync 0.7.2 Released==
+UPDATE: 0.7.2 - Fixed a bug with renaming (for shows with illegal characters). Added support for Quality per show, see Quality.config for an example, config file has also been updated to have the quality.config file name there. TVnzb.com will still use the downloadQuality config option (saves you from having to add all your shows to the quality.config file if you use a TVnzb.com feed).
+
+UPDATE: 0.7.1 - Renaming now occurs as part of adding the NZB to the queue, speeding up the overall process.
+
+SABSync has been updated! It now supports RSS Feeds from NZBMatrix, NewzBin, NZBs.org and TVnzb.com, other feeds may also be supported, but are untested. 
+
+Episode Names are grabbed from TheTVDB.com (if it is not found the episode name will be "unknown"). Queue Items are renamed to "Show Name - 1x05 - Episode Name" to support downloads from NewzBin as well as using multiple sites that may have different naming conventions (Show.Name vs Show Name). 
+
+The config file has been updated to include downloadQuality (used for TVnzb.com feeds, since all shows are listed in one feed) and alias (name of the Alias.config file if changed from Default).
+These new change has not been added to SABSyncGUI yet.
+----
 ==TVConvert 0.2.1 Released==
 Added the ability to choose the HandBrakeCLI Preset to use, setup for iPhone & iPod Touch by default. Make sure you use "AND" (all caps) instead of "&" in the config (without quotes) as "&" is used in XML files (such as the config file). Notes on this are in the config file as well.
 ----
