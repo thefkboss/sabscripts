@@ -1,4 +1,4 @@
-#summary Copies TV Episodes to be Converted to the iPhone format
+#summary Copies TV Episodes to be Converted with HandBrake (Conversion is done with TVCovert)
 #labels Featured
 
 = Introduction =
