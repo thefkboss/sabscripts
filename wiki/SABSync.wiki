@@ -13,7 +13,7 @@ SABnzbd 0.5+ is required to use SABSync, due to the way the Queue Check is being
 
 
 == Config File ==
-  * tvRoot - The full path to your TV Shows
+  * tvRoot - The full path to your TV Shows, multiple paths can be set, separated by semi-colons.
   * tvTemplate - This is taken from the Series Sorting section of SABnzbd's Sorting Configuration (Copy and Paste the Sort String)
   * tvDailyTemplate - This is from the Date Sorting section of SABnzbd's Sorting Configuration (Again Copy and Paste the Sort String)
   * videoExt - The extensions that SABSync should consider to be video files (when checking on disk for needed episodes)
@@ -25,8 +25,10 @@ SABnzbd 0.5+ is required to use SABSync, due to the way the Queue Check is being
   * apiKey - API Key for SABnzbd
   * priority - The Priority that NZB's added through SABSync should have (Low =-1, Normal =0, High=1)
   * sabReplaceChars - True or False value, set to true if SABnzbd replaces Illegal characters or false if SABnzbd removes them instead
-  * rss - the name of the file that holds your Newzbin RSS Feeds (Full or Relative path)
-
+  * downloadQuality - Quality used for TVNzb.com, as SD/HD content is in the same feed
+  * rss - the name of the file that holds your RSS Feeds (Full or Relative path)
+  * alias = Name of the file that contains aliases for shows (to match TheTVDB/Folders on Disk)
+  * quality - Name of the file that contains Shows and the quality you want those shows in (if using different feeds with SD/HD content)
 
 == RSS.Config ==
 Feed Name|Feed URL - Name/URL separated by a '|' (Pipe)
