@@ -69,13 +69,23 @@ namespace SABSyncGUI
             this.statusStripLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnTestSab = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
+            this.btnAliasConfig = new System.Windows.Forms.Button();
+            this.lblAliasConfig = new System.Windows.Forms.Label();
+            this.txtAliasConfig = new System.Windows.Forms.TextBox();
+            this.btnQualityConfig = new System.Windows.Forms.Button();
+            this.lblQualityConfig = new System.Windows.Forms.Label();
+            this.txtQualityConfig = new System.Windows.Forms.TextBox();
+            this.chkVerboseLogging = new System.Windows.Forms.CheckBox();
+            this.chkDownloadPropers = new System.Windows.Forms.CheckBox();
+            this.lblDownloadQuality = new System.Windows.Forms.Label();
+            this.txtDownloadQuality = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // saveButton
             // 
-            this.saveButton.Location = new System.Drawing.Point(318, 467);
+            this.saveButton.Location = new System.Drawing.Point(318, 546);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 0;
@@ -90,7 +100,6 @@ namespace SABSyncGUI
             this.txtTvRoot.Name = "txtTvRoot";
             this.txtTvRoot.Size = new System.Drawing.Size(250, 20);
             this.txtTvRoot.TabIndex = 1;
-            this.txtTvRoot.TextChanged += new System.EventHandler(this.txtTvRoot_TextChanged);
             // 
             // lblTvRoot
             // 
@@ -100,9 +109,8 @@ namespace SABSyncGUI
             this.lblTvRoot.Size = new System.Drawing.Size(50, 13);
             this.lblTvRoot.TabIndex = 2;
             this.lblTvRoot.Text = "TV Root:";
-            this.lblTvRoot.MouseLeave += new System.EventHandler(this.statusBarClear);
-            this.lblTvRoot.Click += new System.EventHandler(this.label1_Click);
             this.lblTvRoot.MouseEnter += new System.EventHandler(this.lblTvRoot_MouseEnter);
+            this.lblTvRoot.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // tvRootBrowse
             // 
@@ -112,9 +120,9 @@ namespace SABSyncGUI
             this.tvRootBrowse.TabIndex = 3;
             this.tvRootBrowse.Text = "...";
             this.tvRootBrowse.UseVisualStyleBackColor = true;
-            this.tvRootBrowse.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.tvRootBrowse.Click += new System.EventHandler(this.tvRootBrowse_Click);
             this.tvRootBrowse.MouseEnter += new System.EventHandler(this.btnTvRootBrowse_MouseEnter);
+            this.tvRootBrowse.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // tvRootDialog
             // 
@@ -137,9 +145,8 @@ namespace SABSyncGUI
             this.lblTvTemplate.Size = new System.Drawing.Size(71, 13);
             this.lblTvTemplate.TabIndex = 5;
             this.lblTvTemplate.Text = "TV Template:";
-            this.lblTvTemplate.MouseLeave += new System.EventHandler(this.statusBarClear);
-            this.lblTvTemplate.Click += new System.EventHandler(this.lblTvTemplate_Click);
             this.lblTvTemplate.MouseEnter += new System.EventHandler(this.lblTvTemplate_MouseEnter);
+            this.lblTvTemplate.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // txtTvDailyTemplate
             // 
@@ -157,9 +164,8 @@ namespace SABSyncGUI
             this.label1.Size = new System.Drawing.Size(97, 13);
             this.label1.TabIndex = 7;
             this.label1.Text = "TV Daily Template:";
-            this.label1.MouseLeave += new System.EventHandler(this.statusBarClear);
-            this.label1.Click += new System.EventHandler(this.lblTvDailyTemplate_Click);
             this.label1.MouseEnter += new System.EventHandler(this.lblTvDailyTemplate_MouseEnter);
+            this.label1.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // groupBox1
             // 
@@ -179,7 +185,6 @@ namespace SABSyncGUI
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "SABnzbd Settings";
-            this.groupBox1.Enter += new System.EventHandler(this.grpSabSettings_Enter);
             // 
             // txtSabInfoPort
             // 
@@ -198,8 +203,8 @@ namespace SABSyncGUI
             this.lblSabInfoPort.Size = new System.Drawing.Size(29, 13);
             this.lblSabInfoPort.TabIndex = 16;
             this.lblSabInfoPort.Text = "Port:";
-            this.lblSabInfoPort.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblSabInfoPort.MouseEnter += new System.EventHandler(this.lblSabInfoPort_MouseEnter);
+            this.lblSabInfoPort.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // lblApiKey
             // 
@@ -209,8 +214,8 @@ namespace SABSyncGUI
             this.lblApiKey.Size = new System.Drawing.Size(48, 13);
             this.lblApiKey.TabIndex = 15;
             this.lblApiKey.Text = "API Key:";
-            this.lblApiKey.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblApiKey.MouseEnter += new System.EventHandler(this.lblApiKey_MouseEnter);
+            this.lblApiKey.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // lblPassword
             // 
@@ -220,8 +225,8 @@ namespace SABSyncGUI
             this.lblPassword.Size = new System.Drawing.Size(56, 13);
             this.lblPassword.TabIndex = 14;
             this.lblPassword.Text = "Password:";
-            this.lblPassword.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblPassword.MouseEnter += new System.EventHandler(this.lblPassword_MouseEnter);
+            this.lblPassword.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // txtApiKey
             // 
@@ -247,8 +252,8 @@ namespace SABSyncGUI
             this.lblUsername.Size = new System.Drawing.Size(58, 13);
             this.lblUsername.TabIndex = 11;
             this.lblUsername.Text = "Username:";
-            this.lblUsername.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblUsername.MouseEnter += new System.EventHandler(this.lblUsername_MouseEnter);
+            this.lblUsername.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // txtUsername
             // 
@@ -266,8 +271,8 @@ namespace SABSyncGUI
             this.lblSabInfoHost.Size = new System.Drawing.Size(58, 13);
             this.lblSabInfoHost.TabIndex = 9;
             this.lblSabInfoHost.Text = "Hostname:";
-            this.lblSabInfoHost.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblSabInfoHost.MouseEnter += new System.EventHandler(this.lblSabInfoHostname_MouseEnter);
+            this.lblSabInfoHost.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // txtSabInfoHost
             // 
@@ -293,8 +298,8 @@ namespace SABSyncGUI
             this.lblNzbDir.Size = new System.Drawing.Size(77, 13);
             this.lblNzbDir.TabIndex = 11;
             this.lblNzbDir.Text = "NZB Directory:";
-            this.lblNzbDir.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblNzbDir.MouseEnter += new System.EventHandler(this.lblNzbDir_MouseEnter);
+            this.lblNzbDir.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // nzbDirBrowse
             // 
@@ -304,9 +309,9 @@ namespace SABSyncGUI
             this.nzbDirBrowse.TabIndex = 12;
             this.nzbDirBrowse.Text = "...";
             this.nzbDirBrowse.UseVisualStyleBackColor = true;
-            this.nzbDirBrowse.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.nzbDirBrowse.Click += new System.EventHandler(this.nzbDirBrowse_Click);
             this.nzbDirBrowse.MouseEnter += new System.EventHandler(this.btnNzbDir_MouseEnter);
+            this.nzbDirBrowse.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // nzbDirDialog
             // 
@@ -329,8 +334,8 @@ namespace SABSyncGUI
             this.lblVideoExt.Size = new System.Drawing.Size(91, 13);
             this.lblVideoExt.TabIndex = 14;
             this.lblVideoExt.Text = "Video Extensions:";
-            this.lblVideoExt.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblVideoExt.MouseEnter += new System.EventHandler(this.lblVideoExt_MouseEnter);
+            this.lblVideoExt.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // txtPriority
             // 
@@ -348,8 +353,8 @@ namespace SABSyncGUI
             this.lblPriority.Size = new System.Drawing.Size(41, 13);
             this.lblPriority.TabIndex = 16;
             this.lblPriority.Text = "Priority:";
-            this.lblPriority.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblPriority.MouseEnter += new System.EventHandler(this.lblPriority_MouseEnter);
+            this.lblPriority.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // txtRssConfig
             // 
@@ -367,8 +372,8 @@ namespace SABSyncGUI
             this.lblRssConfig.Size = new System.Drawing.Size(84, 13);
             this.lblRssConfig.TabIndex = 18;
             this.lblRssConfig.Text = "RSS Config File:";
-            this.lblRssConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblRssConfig.MouseEnter += new System.EventHandler(this.lblRssConfig_MouseEnter);
+            this.lblRssConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // btnRssConfig
             // 
@@ -378,16 +383,16 @@ namespace SABSyncGUI
             this.btnRssConfig.TabIndex = 19;
             this.btnRssConfig.Text = "...";
             this.btnRssConfig.UseVisualStyleBackColor = true;
-            this.btnRssConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.btnRssConfig.Click += new System.EventHandler(this.btnRssConfig_Click);
             this.btnRssConfig.MouseEnter += new System.EventHandler(this.btnRssConfig_MouseEnter);
+            this.btnRssConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // txtIgnoreSeasons
             // 
             this.txtIgnoreSeasons.AcceptsReturn = true;
             this.txtIgnoreSeasons.BackColor = System.Drawing.SystemColors.Control;
             this.txtIgnoreSeasons.Cursor = System.Windows.Forms.Cursors.Default;
-            this.txtIgnoreSeasons.Location = new System.Drawing.Point(104, 364);
+            this.txtIgnoreSeasons.Location = new System.Drawing.Point(104, 419);
             this.txtIgnoreSeasons.Multiline = true;
             this.txtIgnoreSeasons.Name = "txtIgnoreSeasons";
             this.txtIgnoreSeasons.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -397,42 +402,42 @@ namespace SABSyncGUI
             // lblIgnoreSeasons
             // 
             this.lblIgnoreSeasons.AutoSize = true;
-            this.lblIgnoreSeasons.Location = new System.Drawing.Point(2, 367);
+            this.lblIgnoreSeasons.Location = new System.Drawing.Point(2, 422);
             this.lblIgnoreSeasons.Name = "lblIgnoreSeasons";
             this.lblIgnoreSeasons.Size = new System.Drawing.Size(96, 13);
             this.lblIgnoreSeasons.TabIndex = 21;
             this.lblIgnoreSeasons.Text = "Seasons to Ignore:";
-            this.lblIgnoreSeasons.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.lblIgnoreSeasons.MouseEnter += new System.EventHandler(this.lblIgnoreSeasons_MouseEnter);
+            this.lblIgnoreSeasons.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
             // chkReplaceChars
             // 
             this.chkReplaceChars.AutoSize = true;
-            this.chkReplaceChars.Location = new System.Drawing.Point(104, 443);
+            this.chkReplaceChars.Location = new System.Drawing.Point(104, 522);
             this.chkReplaceChars.Name = "chkReplaceChars";
             this.chkReplaceChars.Size = new System.Drawing.Size(120, 17);
             this.chkReplaceChars.TabIndex = 14;
             this.chkReplaceChars.Text = "Replace Characters";
             this.chkReplaceChars.UseVisualStyleBackColor = true;
+            this.chkReplaceChars.MouseEnter += new System.EventHandler(this.chkReplaceChars_MouseEnter);
             this.chkReplaceChars.MouseLeave += new System.EventHandler(this.statusBarClear);
-            this.chkReplaceChars.MouseEnter += new System.EventHandler(this.checkBoxSabReplace_MouseEnter);
             // 
             // lblPriorityDesc
             // 
             this.lblPriorityDesc.AutoSize = true;
-            this.lblPriorityDesc.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblPriorityDesc.ForeColor = System.Drawing.Color.MidnightBlue;
+            this.lblPriorityDesc.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblPriorityDesc.ForeColor = System.Drawing.Color.Black;
             this.lblPriorityDesc.Location = new System.Drawing.Point(137, 318);
             this.lblPriorityDesc.Name = "lblPriorityDesc";
-            this.lblPriorityDesc.Size = new System.Drawing.Size(149, 13);
+            this.lblPriorityDesc.Size = new System.Drawing.Size(180, 15);
             this.lblPriorityDesc.TabIndex = 23;
-            this.lblPriorityDesc.Text = "Low=-1 Normal=0 High=1";
+            this.lblPriorityDesc.Text = "Low = -1 | Normal = 0 | High = 1";
             // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusStripLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 500);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 575);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(404, 22);
             this.statusStrip1.TabIndex = 24;
@@ -447,7 +452,7 @@ namespace SABSyncGUI
             // 
             // btnTestSab
             // 
-            this.btnTestSab.Location = new System.Drawing.Point(12, 467);
+            this.btnTestSab.Location = new System.Drawing.Point(12, 546);
             this.btnTestSab.Name = "btnTestSab";
             this.btnTestSab.Size = new System.Drawing.Size(64, 23);
             this.btnTestSab.TabIndex = 25;
@@ -458,15 +463,120 @@ namespace SABSyncGUI
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(222, 467);
+            this.btnReset.Location = new System.Drawing.Point(222, 546);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(64, 23);
             this.btnReset.TabIndex = 26;
             this.btnReset.Text = "Reset";
             this.btnReset.UseVisualStyleBackColor = true;
-            this.btnReset.MouseLeave += new System.EventHandler(this.statusBarClear);
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
             this.btnReset.MouseEnter += new System.EventHandler(this.btnReset_MouseEnter);
+            this.btnReset.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // btnAliasConfig
+            // 
+            this.btnAliasConfig.Location = new System.Drawing.Point(361, 362);
+            this.btnAliasConfig.Name = "btnAliasConfig";
+            this.btnAliasConfig.Size = new System.Drawing.Size(24, 23);
+            this.btnAliasConfig.TabIndex = 29;
+            this.btnAliasConfig.Text = "...";
+            this.btnAliasConfig.UseVisualStyleBackColor = true;
+            this.btnAliasConfig.Click += new System.EventHandler(this.btnAliasConfig_Click);
+            this.btnAliasConfig.MouseEnter += new System.EventHandler(this.btnAliasConfig_MouseEnter);
+            this.btnAliasConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // lblAliasConfig
+            // 
+            this.lblAliasConfig.AutoSize = true;
+            this.lblAliasConfig.Location = new System.Drawing.Point(14, 372);
+            this.lblAliasConfig.Name = "lblAliasConfig";
+            this.lblAliasConfig.Size = new System.Drawing.Size(84, 13);
+            this.lblAliasConfig.TabIndex = 28;
+            this.lblAliasConfig.Text = "Alias Config File:";
+            this.lblAliasConfig.MouseEnter += new System.EventHandler(this.lblAliasConfig_MouseEnter);
+            this.lblAliasConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // txtAliasConfig
+            // 
+            this.txtAliasConfig.BackColor = System.Drawing.SystemColors.Control;
+            this.txtAliasConfig.Location = new System.Drawing.Point(105, 364);
+            this.txtAliasConfig.Name = "txtAliasConfig";
+            this.txtAliasConfig.Size = new System.Drawing.Size(250, 20);
+            this.txtAliasConfig.TabIndex = 27;
+            // 
+            // btnQualityConfig
+            // 
+            this.btnQualityConfig.Location = new System.Drawing.Point(361, 388);
+            this.btnQualityConfig.Name = "btnQualityConfig";
+            this.btnQualityConfig.Size = new System.Drawing.Size(24, 23);
+            this.btnQualityConfig.TabIndex = 32;
+            this.btnQualityConfig.Text = "...";
+            this.btnQualityConfig.UseVisualStyleBackColor = true;
+            this.btnQualityConfig.Click += new System.EventHandler(this.btnQualityConfig_Click);
+            this.btnQualityConfig.MouseEnter += new System.EventHandler(this.btnQualityConfig_MouseEnter);
+            this.btnQualityConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // lblQualityConfig
+            // 
+            this.lblQualityConfig.AutoSize = true;
+            this.lblQualityConfig.Location = new System.Drawing.Point(4, 397);
+            this.lblQualityConfig.Name = "lblQualityConfig";
+            this.lblQualityConfig.Size = new System.Drawing.Size(94, 13);
+            this.lblQualityConfig.TabIndex = 31;
+            this.lblQualityConfig.Text = "Quality Config File:";
+            this.lblQualityConfig.MouseEnter += new System.EventHandler(this.lblQualityConfig_MouseEnter);
+            this.lblQualityConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // txtQualityConfig
+            // 
+            this.txtQualityConfig.BackColor = System.Drawing.SystemColors.Control;
+            this.txtQualityConfig.Location = new System.Drawing.Point(105, 390);
+            this.txtQualityConfig.Name = "txtQualityConfig";
+            this.txtQualityConfig.Size = new System.Drawing.Size(250, 20);
+            this.txtQualityConfig.TabIndex = 30;
+            // 
+            // chkVerboseLogging
+            // 
+            this.chkVerboseLogging.AutoSize = true;
+            this.chkVerboseLogging.Location = new System.Drawing.Point(234, 522);
+            this.chkVerboseLogging.Name = "chkVerboseLogging";
+            this.chkVerboseLogging.Size = new System.Drawing.Size(106, 17);
+            this.chkVerboseLogging.TabIndex = 33;
+            this.chkVerboseLogging.Text = "Verbose Logging";
+            this.chkVerboseLogging.UseVisualStyleBackColor = true;
+            this.chkVerboseLogging.MouseEnter += new System.EventHandler(this.chkVerboseLogging_MouseEnter);
+            this.chkVerboseLogging.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // chkDownloadPropers
+            // 
+            this.chkDownloadPropers.AutoSize = true;
+            this.chkDownloadPropers.Location = new System.Drawing.Point(234, 499);
+            this.chkDownloadPropers.Name = "chkDownloadPropers";
+            this.chkDownloadPropers.Size = new System.Drawing.Size(127, 17);
+            this.chkDownloadPropers.TabIndex = 34;
+            this.chkDownloadPropers.Text = "Download PROPERs";
+            this.chkDownloadPropers.UseVisualStyleBackColor = true;
+            this.chkDownloadPropers.MouseEnter += new System.EventHandler(this.chkDownloadPropers_MouseEnter);
+            this.chkDownloadPropers.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // lblDownloadQuality
+            // 
+            this.lblDownloadQuality.AutoSize = true;
+            this.lblDownloadQuality.Location = new System.Drawing.Point(5, 503);
+            this.lblDownloadQuality.Name = "lblDownloadQuality";
+            this.lblDownloadQuality.Size = new System.Drawing.Size(93, 13);
+            this.lblDownloadQuality.TabIndex = 36;
+            this.lblDownloadQuality.Text = "Download Quality:";
+            this.lblDownloadQuality.MouseEnter += new System.EventHandler(this.lblDownloadQuality_MouseEnter);
+            this.lblDownloadQuality.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // txtDownloadQuality
+            // 
+            this.txtDownloadQuality.BackColor = System.Drawing.SystemColors.Control;
+            this.txtDownloadQuality.Location = new System.Drawing.Point(104, 496);
+            this.txtDownloadQuality.Name = "txtDownloadQuality";
+            this.txtDownloadQuality.Size = new System.Drawing.Size(120, 20);
+            this.txtDownloadQuality.TabIndex = 35;
             // 
             // SABSyncGUI
             // 
@@ -474,7 +584,17 @@ namespace SABSyncGUI
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Snow;
-            this.ClientSize = new System.Drawing.Size(404, 522);
+            this.ClientSize = new System.Drawing.Size(404, 597);
+            this.Controls.Add(this.lblDownloadQuality);
+            this.Controls.Add(this.txtDownloadQuality);
+            this.Controls.Add(this.chkDownloadPropers);
+            this.Controls.Add(this.chkVerboseLogging);
+            this.Controls.Add(this.btnQualityConfig);
+            this.Controls.Add(this.lblQualityConfig);
+            this.Controls.Add(this.txtQualityConfig);
+            this.Controls.Add(this.btnAliasConfig);
+            this.Controls.Add(this.lblAliasConfig);
+            this.Controls.Add(this.txtAliasConfig);
             this.Controls.Add(this.btnReset);
             this.Controls.Add(this.btnTestSab);
             this.Controls.Add(this.statusStrip1);
@@ -504,8 +624,7 @@ namespace SABSyncGUI
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "SABSyncGUI";
-            this.Text = Assembly.GetExecutingAssembly().GetName().Name + " v" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            this.Load += new System.EventHandler(this.SABSyncGUI_Load);
+            this.Text = "Microsoft.VisualStudio.Shell.Design v10.0.0.0";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
@@ -556,6 +675,16 @@ namespace SABSyncGUI
         private System.Windows.Forms.Label lblSabInfoPort;
         private System.Windows.Forms.Button btnTestSab;
         private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Button btnAliasConfig;
+        private System.Windows.Forms.Label lblAliasConfig;
+        private System.Windows.Forms.TextBox txtAliasConfig;
+        private System.Windows.Forms.Button btnQualityConfig;
+        private System.Windows.Forms.Label lblQualityConfig;
+        private System.Windows.Forms.TextBox txtQualityConfig;
+        private System.Windows.Forms.CheckBox chkVerboseLogging;
+        private System.Windows.Forms.CheckBox chkDownloadPropers;
+        private System.Windows.Forms.Label lblDownloadQuality;
+        private System.Windows.Forms.TextBox txtDownloadQuality;
 
     }
 }
