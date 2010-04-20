@@ -57,9 +57,31 @@ namespace SABSyncGUI
             chkReplaceChars.Checked = Convert.ToBoolean(Settings.SabReplaceChars);
             chkVerboseLogging.Checked = Convert.ToBoolean(Settings.VerboseLogging);
             chkDownloadPropers.Checked = Convert.ToBoolean(Settings.DownloadPropers);
+
+            //Get Priority as a String
+            string priority = Settings.Priority;
+
+            if (priority == "-1")
+                txtPriority.Text = "Low";
+
+            if (priority == "0")
+                txtPriority.Text = "Normal";
+
+            if (priority == "1")
+                txtPriority.Text = "High";
+
         }
 
-        private void btnSave_Click(object sender, EventArgs e)
+        private void SaveConfigFiles()
+        {
+            File.WriteAllText(txtRssConfig.Text, txtRssDotConfig.Text);
+            File.WriteAllText(txtAliasConfig.Text, txtAliasDotConfig.Text);
+            File.WriteAllText(txtQualityConfig.Text, txtQualityDotConfig.Text);
+
+            statusStripLabel.Text = "Config files have been saved!";
+        }
+
+        private void SaveGeneralSettings()
         {
             Settings.TvRootPath = txtTvRoot.Text;
             Settings.TvTemplate = txtTvTemplate.Text;
@@ -70,8 +92,7 @@ namespace SABSyncGUI
             Settings.SabnzbdInfo = SabInfoJoin(txtSabInfoHost.Text, txtSabInfoPort.Text);
             Settings.Username = txtUsername.Text;
             Settings.Password = txtPassword.Text;
-            Settings.ApiKey = txtApiKey.Text; 
-            Settings.Priority = txtPriority.Text;
+            Settings.ApiKey = txtApiKey.Text;
             Settings.RssConfig = txtRssConfig.Text;
             Settings.AliasConfig = txtAliasConfig.Text;
             Settings.QualityConfig = txtQualityConfig.Text;
@@ -79,7 +100,28 @@ namespace SABSyncGUI
             Settings.SabReplaceChars = Convert.ToString(chkReplaceChars.Checked);
             Settings.VerboseLogging = Convert.ToString(chkVerboseLogging.Checked);
             Settings.DownloadPropers = Convert.ToString(chkDownloadPropers.Checked);
+
+            //Save Priority
+            string priority = txtPriority.Text;
+
+            if (priority.ToLower() == "low")
+                Settings.Priority = "-1";
+
+            if (priority.ToLower() == "normal")
+                Settings.Priority = "0";
+
+            if (priority.ToLower() == "high")
+                Settings.Priority = "1";
+
+            else
+                Settings.Priority = "0";
+
             statusStripLabel.Text = "Settings have been saved!";
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            SaveGeneralSettings();
         }
 
         private static string TestConnection(string hostname, string port, string apiKey, string username, string password)
@@ -165,11 +207,12 @@ namespace SABSyncGUI
 
             if (!String.IsNullOrEmpty(tvRootDialog.SelectedPath))
             {
-                txtTvRoot.Text = tvRootDialog.SelectedPath;
-
-                //Settings.TvRootPath = tvRootText.Text;
-
-                result = true;
+                if (!txtTvRoot.Text.Contains(tvRootDialog.SelectedPath))
+                {
+                    txtTvRoot.Text = txtTvRoot.Text + ";" + tvRootDialog.SelectedPath;
+                    txtTvRoot.Text = txtTvRoot.Text.TrimStart(';', ' ').TrimEnd(';', ' ');
+                    result = true;
+                }
             }
 
             return result;
@@ -196,6 +239,11 @@ namespace SABSyncGUI
         private void btnTvRootBrowse_MouseEnter(object sender, EventArgs e)
         {
             statusStripLabel.Text = "Click to Browse for the TV Root Directory";
+        }
+
+        private void btnTvRootClear_Click(object sender, EventArgs e)
+        {
+            txtTvRoot.Text = null;
         }
 
         private void lblTvRoot_MouseEnter(object sender, EventArgs e)
@@ -362,6 +410,111 @@ namespace SABSyncGUI
         private void lblDownloadQuality_MouseEnter(object sender, EventArgs e)
         {
             statusStripLabel.Text = "Default Download Quality for Episodes - xvid;720p (one or both)";
+        }
+
+        private void txtAliasDotConfig_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void tabControl1(object sender, TabControlCancelEventArgs e)
+        {
+            if (e.TabPageIndex == 1) // activity log is at 2 (a zero based index)
+            {
+                txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
+                txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
+                txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
+            }
+        }
+        private void TabControl1_Selected(Object sender, TabControlEventArgs e)
+        {       
+            if (e.TabPageIndex == 1) // activity log is at 2 (a zero based index)
+            {
+                SaveGeneralSettings();
+
+                if (File.Exists(txtRssConfig.Text))
+                    txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
+                else
+                    File.Create(txtRssConfig.Text);
+
+                if (File.Exists(txtAliasConfig.Text))
+                    txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
+                else
+                    File.Create(txtAliasConfig.Text);
+                
+                if (File.Exists(txtQualityConfig.Text))
+                    txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
+                else
+                    File.Create(txtQualityConfig.Text);
+            }
+
+            if (e.TabPageIndex == 0)
+                SaveConfigFiles();
+        }
+
+        private void btnSaveConfig_Click(object sender, EventArgs e)
+        {
+            SaveConfigFiles();
+        }
+
+        private void btnResetConfig_Click(object sender, EventArgs e)
+        {
+            txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
+            txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
+            txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
+        }
+
+        private void lblRssDotConfig_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Name and URL, separated by a PIPE \"|\"";
+        }
+
+        private void lblAliasDotConfig_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Bad Name and Good Name, separated by a PIPE \"|\"";
+        }
+
+        private void lblQualityDotConfig_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Show Name and Wanted Quality, separated by a PIPE \"|\"";
+        }
+
+        private void btnSd_Click(object sender, EventArgs e)
+        {
+            if (!txtDownloadQuality.Text.Contains("xvid"))
+            {
+                txtDownloadQuality.Text = txtDownloadQuality.Text + ";" + "xvid";
+                txtDownloadQuality.Text = txtDownloadQuality.Text.TrimStart(';', ' ').TrimEnd(';', ' ');
+            }
+        }
+
+        private void btnHd_Click(object sender, EventArgs e)
+        {
+            if (!txtDownloadQuality.Text.Contains("720p"))
+            {
+                txtDownloadQuality.Text = txtDownloadQuality.Text + ";" + "720p";
+                txtDownloadQuality.Text = txtDownloadQuality.Text.TrimStart(';', ' ').TrimEnd(';', ' ');
+            }
+        }
+
+        private void btnClearDQ_Click(object sender, EventArgs e)
+        {
+            txtDownloadQuality.Text = null;
+        }
+
+        private void btnPriorityLow_Click(object sender, EventArgs e)
+        {
+            txtPriority.Text = "Low";
+        }
+
+        private void btnPriorityNormal_Click(object sender, EventArgs e)
+        {
+            txtPriority.Text = "Normal";
+        }
+
+        private void btnPriorityHigh_Click(object sender, EventArgs e)
+        {
+            txtPriority.Text = "High";
         }
     }
 }
