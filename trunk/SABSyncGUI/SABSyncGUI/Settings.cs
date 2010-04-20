@@ -81,10 +81,40 @@ namespace SABSyncGUI
             set { UpdateValue("rss", value); }
         }
 
+        internal static string AliasConfig
+        {
+            get { return GetConfigValue("alias", "", true); }
+            set { UpdateValue("alias", value); }
+        }
+
+        internal static string QualityConfig
+        {
+            get { return GetConfigValue("quality", "", true); }
+            set { UpdateValue("quality", value); }
+        }
+
+        internal static string DownloadQuality
+        {
+            get { return GetConfigValue("downloadQuality", "", true); }
+            set { UpdateValue("downloadQuality", value); }
+        }
+
         internal static string SabReplaceChars
         {
             get { return GetConfigValue("SabReplaceChars", "", true); }
             set { UpdateValue("SabReplaceChars", value); }
+        }
+
+        internal static string VerboseLogging
+        {
+            get { return GetConfigValue("verboseLogging", "", true); }
+            set { UpdateValue("verboseLogging", value); }
+        }
+
+        internal static string DownloadPropers
+        {
+            get { return GetConfigValue("downloadPropers", "", true); }
+            set { UpdateValue("downloadPropers", value); }
         }
 
         private static void UpdateValue(string key, object value)
