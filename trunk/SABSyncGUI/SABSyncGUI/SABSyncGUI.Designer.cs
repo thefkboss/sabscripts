@@ -79,13 +79,18 @@ namespace SABSyncGUI
             this.chkDownloadPropers = new System.Windows.Forms.CheckBox();
             this.lblDownloadQuality = new System.Windows.Forms.Label();
             this.txtDownloadQuality = new System.Windows.Forms.TextBox();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabGeneral = new System.Windows.Forms.TabPage();
+            this.tabConfigs = new System.Windows.Forms.TabPage();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabGeneral.SuspendLayout();
             this.SuspendLayout();
             // 
             // saveButton
             // 
-            this.saveButton.Location = new System.Drawing.Point(318, 546);
+            this.saveButton.Location = new System.Drawing.Point(317, 534);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 0;
@@ -96,7 +101,7 @@ namespace SABSyncGUI
             // txtTvRoot
             // 
             this.txtTvRoot.BackColor = System.Drawing.SystemColors.Control;
-            this.txtTvRoot.Location = new System.Drawing.Point(118, 19);
+            this.txtTvRoot.Location = new System.Drawing.Point(117, 7);
             this.txtTvRoot.Name = "txtTvRoot";
             this.txtTvRoot.Size = new System.Drawing.Size(250, 20);
             this.txtTvRoot.TabIndex = 1;
@@ -104,7 +109,7 @@ namespace SABSyncGUI
             // lblTvRoot
             // 
             this.lblTvRoot.AutoSize = true;
-            this.lblTvRoot.Location = new System.Drawing.Point(65, 26);
+            this.lblTvRoot.Location = new System.Drawing.Point(64, 14);
             this.lblTvRoot.Name = "lblTvRoot";
             this.lblTvRoot.Size = new System.Drawing.Size(50, 13);
             this.lblTvRoot.TabIndex = 2;
@@ -114,7 +119,7 @@ namespace SABSyncGUI
             // 
             // tvRootBrowse
             // 
-            this.tvRootBrowse.Location = new System.Drawing.Point(374, 17);
+            this.tvRootBrowse.Location = new System.Drawing.Point(373, 5);
             this.tvRootBrowse.Name = "tvRootBrowse";
             this.tvRootBrowse.Size = new System.Drawing.Size(24, 23);
             this.tvRootBrowse.TabIndex = 3;
@@ -132,7 +137,7 @@ namespace SABSyncGUI
             // txtTvTemplate
             // 
             this.txtTvTemplate.BackColor = System.Drawing.SystemColors.Control;
-            this.txtTvTemplate.Location = new System.Drawing.Point(118, 46);
+            this.txtTvTemplate.Location = new System.Drawing.Point(117, 34);
             this.txtTvTemplate.Name = "txtTvTemplate";
             this.txtTvTemplate.Size = new System.Drawing.Size(250, 20);
             this.txtTvTemplate.TabIndex = 2;
@@ -140,7 +145,7 @@ namespace SABSyncGUI
             // lblTvTemplate
             // 
             this.lblTvTemplate.AutoSize = true;
-            this.lblTvTemplate.Location = new System.Drawing.Point(44, 53);
+            this.lblTvTemplate.Location = new System.Drawing.Point(43, 41);
             this.lblTvTemplate.Name = "lblTvTemplate";
             this.lblTvTemplate.Size = new System.Drawing.Size(71, 13);
             this.lblTvTemplate.TabIndex = 5;
@@ -151,7 +156,7 @@ namespace SABSyncGUI
             // txtTvDailyTemplate
             // 
             this.txtTvDailyTemplate.BackColor = System.Drawing.SystemColors.Control;
-            this.txtTvDailyTemplate.Location = new System.Drawing.Point(118, 72);
+            this.txtTvDailyTemplate.Location = new System.Drawing.Point(117, 60);
             this.txtTvDailyTemplate.Name = "txtTvDailyTemplate";
             this.txtTvDailyTemplate.Size = new System.Drawing.Size(250, 20);
             this.txtTvDailyTemplate.TabIndex = 3;
@@ -159,7 +164,7 @@ namespace SABSyncGUI
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(15, 79);
+            this.label1.Location = new System.Drawing.Point(14, 67);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(97, 13);
             this.label1.TabIndex = 7;
@@ -179,7 +184,7 @@ namespace SABSyncGUI
             this.groupBox1.Controls.Add(this.txtUsername);
             this.groupBox1.Controls.Add(this.lblSabInfoHost);
             this.groupBox1.Controls.Add(this.txtSabInfoHost);
-            this.groupBox1.Location = new System.Drawing.Point(24, 136);
+            this.groupBox1.Location = new System.Drawing.Point(23, 124);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(365, 129);
             this.groupBox1.TabIndex = 8;
@@ -285,7 +290,7 @@ namespace SABSyncGUI
             // txtNzbDir
             // 
             this.txtNzbDir.BackColor = System.Drawing.SystemColors.Control;
-            this.txtNzbDir.Location = new System.Drawing.Point(104, 286);
+            this.txtNzbDir.Location = new System.Drawing.Point(103, 274);
             this.txtNzbDir.Name = "txtNzbDir";
             this.txtNzbDir.Size = new System.Drawing.Size(250, 20);
             this.txtNzbDir.TabIndex = 10;
@@ -293,7 +298,7 @@ namespace SABSyncGUI
             // lblNzbDir
             // 
             this.lblNzbDir.AutoSize = true;
-            this.lblNzbDir.Location = new System.Drawing.Point(21, 293);
+            this.lblNzbDir.Location = new System.Drawing.Point(20, 281);
             this.lblNzbDir.Name = "lblNzbDir";
             this.lblNzbDir.Size = new System.Drawing.Size(77, 13);
             this.lblNzbDir.TabIndex = 11;
@@ -303,7 +308,7 @@ namespace SABSyncGUI
             // 
             // nzbDirBrowse
             // 
-            this.nzbDirBrowse.Location = new System.Drawing.Point(360, 284);
+            this.nzbDirBrowse.Location = new System.Drawing.Point(359, 272);
             this.nzbDirBrowse.Name = "nzbDirBrowse";
             this.nzbDirBrowse.Size = new System.Drawing.Size(24, 23);
             this.nzbDirBrowse.TabIndex = 12;
@@ -321,7 +326,7 @@ namespace SABSyncGUI
             // txtVideoExt
             // 
             this.txtVideoExt.BackColor = System.Drawing.SystemColors.Control;
-            this.txtVideoExt.Location = new System.Drawing.Point(118, 98);
+            this.txtVideoExt.Location = new System.Drawing.Point(117, 86);
             this.txtVideoExt.Name = "txtVideoExt";
             this.txtVideoExt.Size = new System.Drawing.Size(250, 20);
             this.txtVideoExt.TabIndex = 4;
@@ -329,7 +334,7 @@ namespace SABSyncGUI
             // lblVideoExt
             // 
             this.lblVideoExt.AutoSize = true;
-            this.lblVideoExt.Location = new System.Drawing.Point(21, 105);
+            this.lblVideoExt.Location = new System.Drawing.Point(20, 93);
             this.lblVideoExt.Name = "lblVideoExt";
             this.lblVideoExt.Size = new System.Drawing.Size(91, 13);
             this.lblVideoExt.TabIndex = 14;
@@ -340,7 +345,7 @@ namespace SABSyncGUI
             // txtPriority
             // 
             this.txtPriority.BackColor = System.Drawing.SystemColors.Control;
-            this.txtPriority.Location = new System.Drawing.Point(104, 312);
+            this.txtPriority.Location = new System.Drawing.Point(103, 300);
             this.txtPriority.Name = "txtPriority";
             this.txtPriority.Size = new System.Drawing.Size(26, 20);
             this.txtPriority.TabIndex = 11;
@@ -348,7 +353,7 @@ namespace SABSyncGUI
             // lblPriority
             // 
             this.lblPriority.AutoSize = true;
-            this.lblPriority.Location = new System.Drawing.Point(57, 319);
+            this.lblPriority.Location = new System.Drawing.Point(56, 307);
             this.lblPriority.Name = "lblPriority";
             this.lblPriority.Size = new System.Drawing.Size(41, 13);
             this.lblPriority.TabIndex = 16;
@@ -359,7 +364,7 @@ namespace SABSyncGUI
             // txtRssConfig
             // 
             this.txtRssConfig.BackColor = System.Drawing.SystemColors.Control;
-            this.txtRssConfig.Location = new System.Drawing.Point(104, 338);
+            this.txtRssConfig.Location = new System.Drawing.Point(103, 326);
             this.txtRssConfig.Name = "txtRssConfig";
             this.txtRssConfig.Size = new System.Drawing.Size(250, 20);
             this.txtRssConfig.TabIndex = 12;
@@ -367,7 +372,7 @@ namespace SABSyncGUI
             // lblRssConfig
             // 
             this.lblRssConfig.AutoSize = true;
-            this.lblRssConfig.Location = new System.Drawing.Point(14, 345);
+            this.lblRssConfig.Location = new System.Drawing.Point(13, 333);
             this.lblRssConfig.Name = "lblRssConfig";
             this.lblRssConfig.Size = new System.Drawing.Size(84, 13);
             this.lblRssConfig.TabIndex = 18;
@@ -377,7 +382,7 @@ namespace SABSyncGUI
             // 
             // btnRssConfig
             // 
-            this.btnRssConfig.Location = new System.Drawing.Point(360, 336);
+            this.btnRssConfig.Location = new System.Drawing.Point(359, 324);
             this.btnRssConfig.Name = "btnRssConfig";
             this.btnRssConfig.Size = new System.Drawing.Size(24, 23);
             this.btnRssConfig.TabIndex = 19;
@@ -392,7 +397,7 @@ namespace SABSyncGUI
             this.txtIgnoreSeasons.AcceptsReturn = true;
             this.txtIgnoreSeasons.BackColor = System.Drawing.SystemColors.Control;
             this.txtIgnoreSeasons.Cursor = System.Windows.Forms.Cursors.Default;
-            this.txtIgnoreSeasons.Location = new System.Drawing.Point(104, 419);
+            this.txtIgnoreSeasons.Location = new System.Drawing.Point(103, 407);
             this.txtIgnoreSeasons.Multiline = true;
             this.txtIgnoreSeasons.Name = "txtIgnoreSeasons";
             this.txtIgnoreSeasons.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
@@ -402,7 +407,7 @@ namespace SABSyncGUI
             // lblIgnoreSeasons
             // 
             this.lblIgnoreSeasons.AutoSize = true;
-            this.lblIgnoreSeasons.Location = new System.Drawing.Point(2, 422);
+            this.lblIgnoreSeasons.Location = new System.Drawing.Point(1, 410);
             this.lblIgnoreSeasons.Name = "lblIgnoreSeasons";
             this.lblIgnoreSeasons.Size = new System.Drawing.Size(96, 13);
             this.lblIgnoreSeasons.TabIndex = 21;
@@ -413,7 +418,7 @@ namespace SABSyncGUI
             // chkReplaceChars
             // 
             this.chkReplaceChars.AutoSize = true;
-            this.chkReplaceChars.Location = new System.Drawing.Point(104, 522);
+            this.chkReplaceChars.Location = new System.Drawing.Point(103, 510);
             this.chkReplaceChars.Name = "chkReplaceChars";
             this.chkReplaceChars.Size = new System.Drawing.Size(120, 17);
             this.chkReplaceChars.TabIndex = 14;
@@ -427,7 +432,7 @@ namespace SABSyncGUI
             this.lblPriorityDesc.AutoSize = true;
             this.lblPriorityDesc.Font = new System.Drawing.Font("Calibri", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblPriorityDesc.ForeColor = System.Drawing.Color.Black;
-            this.lblPriorityDesc.Location = new System.Drawing.Point(137, 318);
+            this.lblPriorityDesc.Location = new System.Drawing.Point(136, 306);
             this.lblPriorityDesc.Name = "lblPriorityDesc";
             this.lblPriorityDesc.Size = new System.Drawing.Size(180, 15);
             this.lblPriorityDesc.TabIndex = 23;
@@ -437,7 +442,7 @@ namespace SABSyncGUI
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusStripLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 575);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 590);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(404, 22);
             this.statusStrip1.TabIndex = 24;
@@ -452,7 +457,7 @@ namespace SABSyncGUI
             // 
             // btnTestSab
             // 
-            this.btnTestSab.Location = new System.Drawing.Point(12, 546);
+            this.btnTestSab.Location = new System.Drawing.Point(11, 534);
             this.btnTestSab.Name = "btnTestSab";
             this.btnTestSab.Size = new System.Drawing.Size(64, 23);
             this.btnTestSab.TabIndex = 25;
@@ -463,7 +468,7 @@ namespace SABSyncGUI
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(222, 546);
+            this.btnReset.Location = new System.Drawing.Point(221, 534);
             this.btnReset.Name = "btnReset";
             this.btnReset.Size = new System.Drawing.Size(64, 23);
             this.btnReset.TabIndex = 26;
@@ -475,7 +480,7 @@ namespace SABSyncGUI
             // 
             // btnAliasConfig
             // 
-            this.btnAliasConfig.Location = new System.Drawing.Point(361, 362);
+            this.btnAliasConfig.Location = new System.Drawing.Point(360, 350);
             this.btnAliasConfig.Name = "btnAliasConfig";
             this.btnAliasConfig.Size = new System.Drawing.Size(24, 23);
             this.btnAliasConfig.TabIndex = 29;
@@ -488,7 +493,7 @@ namespace SABSyncGUI
             // lblAliasConfig
             // 
             this.lblAliasConfig.AutoSize = true;
-            this.lblAliasConfig.Location = new System.Drawing.Point(14, 372);
+            this.lblAliasConfig.Location = new System.Drawing.Point(13, 360);
             this.lblAliasConfig.Name = "lblAliasConfig";
             this.lblAliasConfig.Size = new System.Drawing.Size(84, 13);
             this.lblAliasConfig.TabIndex = 28;
@@ -499,14 +504,14 @@ namespace SABSyncGUI
             // txtAliasConfig
             // 
             this.txtAliasConfig.BackColor = System.Drawing.SystemColors.Control;
-            this.txtAliasConfig.Location = new System.Drawing.Point(105, 364);
+            this.txtAliasConfig.Location = new System.Drawing.Point(104, 352);
             this.txtAliasConfig.Name = "txtAliasConfig";
             this.txtAliasConfig.Size = new System.Drawing.Size(250, 20);
             this.txtAliasConfig.TabIndex = 27;
             // 
             // btnQualityConfig
             // 
-            this.btnQualityConfig.Location = new System.Drawing.Point(361, 388);
+            this.btnQualityConfig.Location = new System.Drawing.Point(360, 376);
             this.btnQualityConfig.Name = "btnQualityConfig";
             this.btnQualityConfig.Size = new System.Drawing.Size(24, 23);
             this.btnQualityConfig.TabIndex = 32;
@@ -519,7 +524,7 @@ namespace SABSyncGUI
             // lblQualityConfig
             // 
             this.lblQualityConfig.AutoSize = true;
-            this.lblQualityConfig.Location = new System.Drawing.Point(4, 397);
+            this.lblQualityConfig.Location = new System.Drawing.Point(3, 385);
             this.lblQualityConfig.Name = "lblQualityConfig";
             this.lblQualityConfig.Size = new System.Drawing.Size(94, 13);
             this.lblQualityConfig.TabIndex = 31;
@@ -530,7 +535,7 @@ namespace SABSyncGUI
             // txtQualityConfig
             // 
             this.txtQualityConfig.BackColor = System.Drawing.SystemColors.Control;
-            this.txtQualityConfig.Location = new System.Drawing.Point(105, 390);
+            this.txtQualityConfig.Location = new System.Drawing.Point(104, 378);
             this.txtQualityConfig.Name = "txtQualityConfig";
             this.txtQualityConfig.Size = new System.Drawing.Size(250, 20);
             this.txtQualityConfig.TabIndex = 30;
@@ -538,7 +543,7 @@ namespace SABSyncGUI
             // chkVerboseLogging
             // 
             this.chkVerboseLogging.AutoSize = true;
-            this.chkVerboseLogging.Location = new System.Drawing.Point(234, 522);
+            this.chkVerboseLogging.Location = new System.Drawing.Point(233, 510);
             this.chkVerboseLogging.Name = "chkVerboseLogging";
             this.chkVerboseLogging.Size = new System.Drawing.Size(106, 17);
             this.chkVerboseLogging.TabIndex = 33;
@@ -550,7 +555,7 @@ namespace SABSyncGUI
             // chkDownloadPropers
             // 
             this.chkDownloadPropers.AutoSize = true;
-            this.chkDownloadPropers.Location = new System.Drawing.Point(234, 499);
+            this.chkDownloadPropers.Location = new System.Drawing.Point(233, 487);
             this.chkDownloadPropers.Name = "chkDownloadPropers";
             this.chkDownloadPropers.Size = new System.Drawing.Size(127, 17);
             this.chkDownloadPropers.TabIndex = 34;
@@ -562,7 +567,7 @@ namespace SABSyncGUI
             // lblDownloadQuality
             // 
             this.lblDownloadQuality.AutoSize = true;
-            this.lblDownloadQuality.Location = new System.Drawing.Point(5, 503);
+            this.lblDownloadQuality.Location = new System.Drawing.Point(4, 491);
             this.lblDownloadQuality.Name = "lblDownloadQuality";
             this.lblDownloadQuality.Size = new System.Drawing.Size(93, 13);
             this.lblDownloadQuality.TabIndex = 36;
@@ -573,10 +578,75 @@ namespace SABSyncGUI
             // txtDownloadQuality
             // 
             this.txtDownloadQuality.BackColor = System.Drawing.SystemColors.Control;
-            this.txtDownloadQuality.Location = new System.Drawing.Point(104, 496);
+            this.txtDownloadQuality.Location = new System.Drawing.Point(103, 484);
             this.txtDownloadQuality.Name = "txtDownloadQuality";
             this.txtDownloadQuality.Size = new System.Drawing.Size(120, 20);
             this.txtDownloadQuality.TabIndex = 35;
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabGeneral);
+            this.tabControl1.Controls.Add(this.tabConfigs);
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(405, 587);
+            this.tabControl1.TabIndex = 37;
+            // 
+            // tabGeneral
+            // 
+            this.tabGeneral.Controls.Add(this.txtTvTemplate);
+            this.tabGeneral.Controls.Add(this.lblDownloadQuality);
+            this.tabGeneral.Controls.Add(this.saveButton);
+            this.tabGeneral.Controls.Add(this.txtDownloadQuality);
+            this.tabGeneral.Controls.Add(this.txtTvRoot);
+            this.tabGeneral.Controls.Add(this.chkDownloadPropers);
+            this.tabGeneral.Controls.Add(this.lblTvRoot);
+            this.tabGeneral.Controls.Add(this.chkVerboseLogging);
+            this.tabGeneral.Controls.Add(this.tvRootBrowse);
+            this.tabGeneral.Controls.Add(this.btnQualityConfig);
+            this.tabGeneral.Controls.Add(this.lblTvTemplate);
+            this.tabGeneral.Controls.Add(this.lblQualityConfig);
+            this.tabGeneral.Controls.Add(this.txtTvDailyTemplate);
+            this.tabGeneral.Controls.Add(this.txtQualityConfig);
+            this.tabGeneral.Controls.Add(this.label1);
+            this.tabGeneral.Controls.Add(this.btnAliasConfig);
+            this.tabGeneral.Controls.Add(this.groupBox1);
+            this.tabGeneral.Controls.Add(this.lblAliasConfig);
+            this.tabGeneral.Controls.Add(this.txtNzbDir);
+            this.tabGeneral.Controls.Add(this.txtAliasConfig);
+            this.tabGeneral.Controls.Add(this.lblNzbDir);
+            this.tabGeneral.Controls.Add(this.btnReset);
+            this.tabGeneral.Controls.Add(this.nzbDirBrowse);
+            this.tabGeneral.Controls.Add(this.btnTestSab);
+            this.tabGeneral.Controls.Add(this.txtVideoExt);
+            this.tabGeneral.Controls.Add(this.lblVideoExt);
+            this.tabGeneral.Controls.Add(this.lblPriorityDesc);
+            this.tabGeneral.Controls.Add(this.txtPriority);
+            this.tabGeneral.Controls.Add(this.chkReplaceChars);
+            this.tabGeneral.Controls.Add(this.lblPriority);
+            this.tabGeneral.Controls.Add(this.lblIgnoreSeasons);
+            this.tabGeneral.Controls.Add(this.txtRssConfig);
+            this.tabGeneral.Controls.Add(this.txtIgnoreSeasons);
+            this.tabGeneral.Controls.Add(this.lblRssConfig);
+            this.tabGeneral.Controls.Add(this.btnRssConfig);
+            this.tabGeneral.Location = new System.Drawing.Point(4, 22);
+            this.tabGeneral.Name = "tabGeneral";
+            this.tabGeneral.Padding = new System.Windows.Forms.Padding(3);
+            this.tabGeneral.Size = new System.Drawing.Size(397, 561);
+            this.tabGeneral.TabIndex = 0;
+            this.tabGeneral.Text = "General Config";
+            this.tabGeneral.UseVisualStyleBackColor = true;
+            // 
+            // tabConfigs
+            // 
+            this.tabConfigs.Location = new System.Drawing.Point(4, 22);
+            this.tabConfigs.Name = "tabConfigs";
+            this.tabConfigs.Padding = new System.Windows.Forms.Padding(3);
+            this.tabConfigs.Size = new System.Drawing.Size(397, 561);
+            this.tabConfigs.TabIndex = 1;
+            this.tabConfigs.Text = "Config Files";
+            this.tabConfigs.UseVisualStyleBackColor = true;
             // 
             // SABSyncGUI
             // 
@@ -584,43 +654,9 @@ namespace SABSyncGUI
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Snow;
-            this.ClientSize = new System.Drawing.Size(404, 597);
-            this.Controls.Add(this.lblDownloadQuality);
-            this.Controls.Add(this.txtDownloadQuality);
-            this.Controls.Add(this.chkDownloadPropers);
-            this.Controls.Add(this.chkVerboseLogging);
-            this.Controls.Add(this.btnQualityConfig);
-            this.Controls.Add(this.lblQualityConfig);
-            this.Controls.Add(this.txtQualityConfig);
-            this.Controls.Add(this.btnAliasConfig);
-            this.Controls.Add(this.lblAliasConfig);
-            this.Controls.Add(this.txtAliasConfig);
-            this.Controls.Add(this.btnReset);
-            this.Controls.Add(this.btnTestSab);
+            this.ClientSize = new System.Drawing.Size(404, 612);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.lblPriorityDesc);
-            this.Controls.Add(this.chkReplaceChars);
-            this.Controls.Add(this.lblIgnoreSeasons);
-            this.Controls.Add(this.txtIgnoreSeasons);
-            this.Controls.Add(this.btnRssConfig);
-            this.Controls.Add(this.lblRssConfig);
-            this.Controls.Add(this.txtRssConfig);
-            this.Controls.Add(this.lblPriority);
-            this.Controls.Add(this.txtPriority);
-            this.Controls.Add(this.lblVideoExt);
-            this.Controls.Add(this.txtVideoExt);
-            this.Controls.Add(this.nzbDirBrowse);
-            this.Controls.Add(this.lblNzbDir);
-            this.Controls.Add(this.txtNzbDir);
-            this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.txtTvDailyTemplate);
-            this.Controls.Add(this.lblTvTemplate);
-            this.Controls.Add(this.txtTvTemplate);
-            this.Controls.Add(this.tvRootBrowse);
-            this.Controls.Add(this.lblTvRoot);
-            this.Controls.Add(this.txtTvRoot);
-            this.Controls.Add(this.saveButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "SABSyncGUI";
@@ -629,6 +665,9 @@ namespace SABSyncGUI
             this.groupBox1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
+            this.tabControl1.ResumeLayout(false);
+            this.tabGeneral.ResumeLayout(false);
+            this.tabGeneral.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -685,6 +724,9 @@ namespace SABSyncGUI
         private System.Windows.Forms.CheckBox chkDownloadPropers;
         private System.Windows.Forms.Label lblDownloadQuality;
         private System.Windows.Forms.TextBox txtDownloadQuality;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabGeneral;
+        private System.Windows.Forms.TabPage tabConfigs;
 
     }
 }
