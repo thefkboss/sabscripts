@@ -27,111 +27,30 @@ namespace TVConvert
                 string[] filesToConvert = Directory.GetFiles(_tempDir, fileExtSearch); //Get all files from tempDir
                 foreach (string fileToConvert in filesToConvert) //Foreach file found, run HandBrake + Atomic Parsley
                 {
-
                     string fileNameToConvert = Path.GetFileNameWithoutExtension(fileToConvert);
 
-                    string[] fileNameSplit = fileNameToConvert.Split('-'); //Break apart File Name
-                    string showName = null;
-                    int seasonNumber = 0;
-                    int episodeNumber = 0;
-                    string episodeName = null;
+                    string showName = GetShowName(fileNameToConvert);
+                    int seasonNumber = GetSeasonNumber(fileNameToConvert);
+                    int episodeNumber = GetEpisodeNumber(fileNameToConvert);
+                    string episodeName = GetEpisodeName(fileNameToConvert);
 
-                    if (fileNameSplit.Length == 3)
+                    if (showName != null && seasonNumber > 0 && episodeNumber > 0 && episodeName != null)
                     {
-                        showName = fileNameSplit[0].Trim();
-                        string seasonEpisode = fileNameSplit[1].Trim();
-                        episodeName = fileNameSplit[2].Trim();
-
-                        if (seasonEpisode.Contains("x"))
-                        {
-                            string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                            Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                            Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
-                        }
-
-                        else if (seasonEpisode.Contains("S") && seasonEpisode.Contains("E"))
-                        {
-                            string[] seasonEpisodeSplit = seasonEpisode.Split('E');
-                            seasonEpisodeSplit[0].Replace("S", "");
-                            Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                            Int32.TryParse(seasonEpisodeSplit[1], out seasonNumber);
-                        }
-
+                        Log("Running Handbrake on: " + fileToConvert);
                         string outputFile = RunHandbrake(fileToConvert, fileNameToConvert);
+                        Log("Deleting: " + fileToConvert);
                         File.Delete(fileToConvert);
+                        Log("Running Atomic Parsley on: " + outputFile);
                         RunAtomicParsley(showName, seasonNumber, episodeNumber, episodeName, outputFile);
-                    }
-
-                    if (fileNameSplit.Length == 4)
-                    {
-                        if (Regex.IsMatch(fileNameSplit[1], @"\d{1,2}x\d{1,2}") || Regex.IsMatch(fileNameSplit[1], @"S\d{1,2}E\d{1,2}"))
-                        {
-                            showName = fileNameSplit[0].Trim();
-                            string seasonEpisode = fileNameSplit[1];
-                            episodeName = fileNameSplit[2] + fileNameSplit[3];
-                            episodeName.Trim();
-
-                            if (seasonEpisode.Contains("x"))
-                            {
-                                string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
-                            }
-
-                            else if (seasonEpisode.Contains("S") && seasonEpisode.Contains("E"))
-                            {
-                                string[] seasonEpisodeSplit = seasonEpisode.Split('E');
-                                seasonEpisodeSplit[0].Replace("S", "");
-                                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                                Int32.TryParse(seasonEpisodeSplit[1], out seasonNumber);
-                            }
-
-                            string outputFile = RunHandbrake(fileToConvert, fileNameToConvert);
-                            File.Delete(fileToConvert);
-                            RunAtomicParsley(showName, seasonNumber, episodeNumber, episodeName, outputFile);
-                        }
-
-                        else if (Regex.IsMatch(fileNameSplit[2], @"\d{1,2}x\d{1,2}") || Regex.IsMatch(fileNameSplit[2], @"S\d{1,2}E\d{1,2}"))
-                        {
-                            showName = fileNameSplit[0] + fileNameSplit[1];
-                            showName.Trim();
-                            string seasonEpisode = fileNameSplit[2];
-                            episodeName = fileNameSplit[3].Trim();
-
-                            if (seasonEpisode.Contains("x"))
-                            {
-                                string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-                                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
-                            }
-
-                            else if (seasonEpisode.Contains("S") && seasonEpisode.Contains("E"))
-                            {
-                                string[] seasonEpisodeSplit = seasonEpisode.Split('E');
-                                seasonEpisodeSplit[0].Replace("S", "");
-                                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                                Int32.TryParse(seasonEpisodeSplit[1], out seasonNumber);
-                            }
-
-                            string outputFile = RunHandbrake(fileToConvert, fileNameToConvert);
-                            File.Delete(fileToConvert);
-                            RunAtomicParsley(showName, seasonNumber, episodeNumber, episodeName, outputFile);
-                        }
-
-                        else
-                        {
-                            //Run HandBrake, no Atomic Parsley
-                            Console.WriteLine("Unsupported Format");
-                            RunHandbrake(fileToConvert, fileNameToConvert);
-                            File.Delete(fileToConvert);
-                        }
                     }
 
                     else
                     {
                         //Run HandBrake, no Atomic Parsley
-                        Console.WriteLine("Unsupported Formart");
+                        Log("Unable to get episode specific information for: " + fileToConvert);
+                        Log("Running Handbrake on: " + fileToConvert);
                         RunHandbrake(fileToConvert, fileNameToConvert);
+                        Log("Deleting: " + fileToConvert);
                         File.Delete(fileToConvert);
                     }
                 }
@@ -182,38 +101,113 @@ namespace TVConvert
 
         private static string GetShowName(string fileName)
         {
+            string showName = null;
             string[] titleSplitSs = null;
             string[] titleSplitX = null;
-            string[] titleSplitDaily = null;
 
-            string patternMulti = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
-            string pattern = @"S(?<Season>(?:\d{1,2}))E(?<Episode>(?:\d{1,2}))";
-            string patternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
 
-            Match titleMatchMulti = Regex.Match(title, patternMulti);
+            Match titleMatchSs = Regex.Match(fileName, patternSs);
 
-            if (titleMatchMulti.Success)
+            if (titleMatchSs.Success)
             {
-                return fileName;
+                titleSplitSs = Regex.Split(fileName, patternSs);
+
+                showName = titleSplitSs[0].TrimEnd('.', ' ', '-', '_');
+                return showName;
             }
 
-            return fileName;
+            Match titleMatchX = Regex.Match(fileName, patternX);
+
+            if (titleMatchX.Success)
+            {
+                titleSplitX = Regex.Split(fileName, patternX);
+                showName = titleSplitX[0].TrimEnd('.', ' ', '-', '_');
+                return showName;
+            }
+            return showName;
         }
 
         private static int GetSeasonNumber(string fileName)
         {
-            return 0;
+            int seasonNumber = 0;
+
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
+
+            Match titleMatchSs = Regex.Match(fileName, patternSs);
+
+            if (titleMatchSs.Success)
+            {
+                Int32.TryParse(titleMatchSs.Groups["Season"].Value, out seasonNumber);
+                return seasonNumber;
+            }
+
+            Match titleMatchX = Regex.Match(fileName, patternX);
+
+            if (titleMatchX.Success)
+            {
+                Int32.TryParse(titleMatchX.Groups["Season"].Value, out seasonNumber);
+                return seasonNumber;
+            }
+            return seasonNumber;
         }
 
         private static int GetEpisodeNumber(string fileName)
         {
-            return 0;
-        }
+            int episodeNumber = 0;
 
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
+
+            Match titleMatchSs = Regex.Match(fileName, patternSs);
+
+            if (titleMatchSs.Success)
+            {
+                Int32.TryParse(titleMatchSs.Groups["Episode"].Value, out episodeNumber);
+                return episodeNumber;
+            }
+
+            Match titleMatchX = Regex.Match(fileName, patternX);
+
+            if (titleMatchX.Success)
+            {
+                Int32.TryParse(titleMatchX.Groups["Episode"].Value, out episodeNumber);
+                return episodeNumber;
+            }
+            return episodeNumber;
+        }
 
         private static string GetEpisodeName(string fileName)
         {
-            return fileName;
+            string episodeName = null;
+
+            string[] titleSplitSs = null;
+            string[] titleSplitX = null;
+
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
+
+            Match titleMatchSs = Regex.Match(fileName, patternSs);
+
+            if (titleMatchSs.Success)
+            {
+                titleSplitSs = Regex.Split(fileName, patternSs);
+
+                episodeName = titleSplitSs[3].TrimEnd('.', ' ', '-', '_').TrimStart('.', ' ', '-', '_');
+                return episodeName;
+            }
+
+            Match titleMatchX = Regex.Match(fileName, patternX);
+
+            if (titleMatchX.Success)
+            {
+                titleSplitX = Regex.Split(fileName, patternX);
+                episodeName = titleSplitX[3].TrimEnd('.', ' ', '-', '_').TrimStart('.', ' ', '-', '_');
+                return episodeName;
+            }
+            return null;
         }
 
         private static void Log(string message)
