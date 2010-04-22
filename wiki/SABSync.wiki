@@ -27,8 +27,10 @@ SABnzbd 0.5+ is required to use SABSync, due to the way the Queue Check is being
   * sabReplaceChars - True or False value, set to true if SABnzbd replaces Illegal characters or false if SABnzbd removes them instead
   * downloadQuality - Quality used for TVNzb.com, as SD/HD content is in the same feed
   * rss - the name of the file that holds your RSS Feeds (Full or Relative path)
-  * alias = Name of the file that contains aliases for shows (to match TheTVDB/Folders on Disk)
+  * alias - Name of the file that contains aliases for shows (to match TheTVDB/Folders on Disk)
   * quality - Name of the file that contains Shows and the quality you want those shows in (if using different feeds with SD/HD content)
+  * verboseLogging - Enables additional logging for better diagnosis
+  * deleteLogs - Deletes logs older than X days (Setting to 0 (zero) will not delete them.
 
 == RSS.Config ==
 Feed Name|Feed URL - Name/URL, separated by a '|' (Pipe)
