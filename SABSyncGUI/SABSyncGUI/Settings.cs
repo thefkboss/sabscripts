@@ -117,6 +117,12 @@ namespace SABSyncGUI
             set { UpdateValue("downloadPropers", value); }
         }
 
+        internal static string DeleteLogs
+        {
+            get { return GetConfigValue("deleteLogs", "", true); }
+            set { UpdateValue("deleteLogs", value); }
+        }
+
         private static void UpdateValue(string key, object value)
         {
             Config.AppSettings.Settings.Remove(key);
