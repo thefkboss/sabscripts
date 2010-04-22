@@ -54,6 +54,7 @@ namespace SABSyncGUI
             txtAliasConfig.Text = Settings.AliasConfig;
             txtQualityConfig.Text = Settings.QualityConfig;
             txtDownloadQuality.Text = Settings.DownloadQuality;
+            txtDeleteLogs.Text = Settings.DeleteLogs;
             chkReplaceChars.Checked = Convert.ToBoolean(Settings.SabReplaceChars);
             chkVerboseLogging.Checked = Convert.ToBoolean(Settings.VerboseLogging);
             chkDownloadPropers.Checked = Convert.ToBoolean(Settings.DownloadPropers);
@@ -74,11 +75,19 @@ namespace SABSyncGUI
 
         private void SaveConfigFiles()
         {
-            File.WriteAllText(txtRssConfig.Text, txtRssDotConfig.Text);
-            File.WriteAllText(txtAliasConfig.Text, txtAliasDotConfig.Text);
-            File.WriteAllText(txtQualityConfig.Text, txtQualityDotConfig.Text);
+            try
+            {
+                File.WriteAllText(txtRssConfig.Text, txtRssDotConfig.Text);
+                File.WriteAllText(txtAliasConfig.Text, txtAliasDotConfig.Text);
+                File.WriteAllText(txtQualityConfig.Text, txtQualityDotConfig.Text);
 
-            statusStripLabel.Text = "Config files have been saved!";
+                statusStripLabel.Text = "Config files have been saved!";
+            }
+
+            catch
+            {
+                statusStripLabel.Text = "Error saving config files...";
+            }
         }
 
         private void SaveGeneralSettings()
@@ -100,6 +109,7 @@ namespace SABSyncGUI
             Settings.SabReplaceChars = Convert.ToString(chkReplaceChars.Checked);
             Settings.VerboseLogging = Convert.ToString(chkVerboseLogging.Checked);
             Settings.DownloadPropers = Convert.ToString(chkDownloadPropers.Checked);
+            Settings.DeleteLogs = txtDeleteLogs.Text;
 
             //Save Priority
             string priority = txtPriority.Text;
@@ -421,35 +431,62 @@ namespace SABSyncGUI
         {
             if (e.TabPageIndex == 1) // activity log is at 2 (a zero based index)
             {
-                txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
-                txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
-                txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
+                //txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
+                //txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
+                //txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
             }
         }
+
         private void TabControl1_Selected(Object sender, TabControlEventArgs e)
-        {       
+        {
+            if (e.TabPageIndex == 0)
+                SaveConfigFiles();
+
             if (e.TabPageIndex == 1) // activity log is at 2 (a zero based index)
             {
                 SaveGeneralSettings();
 
+                lblRssDotConfig.Text = txtRssConfig.Text + ":";
+                lblAliasDotConfig.Text = txtAliasConfig.Text + ":";
+                lblQualityDotConfig.Text = txtQualityConfig.Text + ":";
+
                 if (File.Exists(txtRssConfig.Text))
                     txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
+
                 else
-                    File.Create(txtRssConfig.Text);
+                {
+                    StreamWriter SW;
+                    SW = File.CreateText(txtRssConfig.Text);
+                    SW.WriteLine("Name|URL");
+                    SW.Close();
+                    txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
+                }
 
                 if (File.Exists(txtAliasConfig.Text))
                     txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
+
                 else
-                    File.Create(txtAliasConfig.Text);
+                {
+                    StreamWriter SW;
+                    SW = File.CreateText(txtAliasConfig.Text);
+                    SW.WriteLine("Scene Name|TheTVDB Name");
+                    SW.Close();
+                    txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
+                }
                 
                 if (File.Exists(txtQualityConfig.Text))
                     txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
-                else
-                    File.Create(txtQualityConfig.Text);
-            }
 
-            if (e.TabPageIndex == 0)
-                SaveConfigFiles();
+                else
+                {
+                    StreamWriter SW;
+                    SW = File.CreateText(txtQualityConfig.Text);
+                    SW.WriteLine("Show Name|720p");
+                    SW.WriteLine("Show Name|xvid");
+                    SW.Close();
+                    txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
+                }
+            }
         }
 
         private void btnSaveConfig_Click(object sender, EventArgs e)
@@ -515,6 +552,26 @@ namespace SABSyncGUI
         private void btnPriorityHigh_Click(object sender, EventArgs e)
         {
             txtPriority.Text = "High";
+        }
+
+        private void lblDeleteLogs_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Delete Logs after X days";
+        }
+
+        private void btn30Days_Click(object sender, EventArgs e)
+        {
+            txtDeleteLogs.Text = "30";
+        }
+
+        private void btn60Days_Click(object sender, EventArgs e)
+        {
+            txtDeleteLogs.Text = "60";
+        }
+
+        private void btn120Days_Click(object sender, EventArgs e)
+        {
+            txtDeleteLogs.Text = "120";
         }
     }
 }

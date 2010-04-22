@@ -80,6 +80,16 @@ namespace SABSyncGUI
             this.txtDownloadQuality = new System.Windows.Forms.TextBox();
             this.tabControlGUI = new System.Windows.Forms.TabControl();
             this.tabGeneral = new System.Windows.Forms.TabPage();
+            this.btn120Days = new System.Windows.Forms.Button();
+            this.btn60Days = new System.Windows.Forms.Button();
+            this.btn30Days = new System.Windows.Forms.Button();
+            this.txtDeleteLogs = new System.Windows.Forms.TextBox();
+            this.lblDeleteLogs = new System.Windows.Forms.Label();
+            this.btnPriorityHigh = new System.Windows.Forms.Button();
+            this.btnPriorityNormal = new System.Windows.Forms.Button();
+            this.btnPriorityLow = new System.Windows.Forms.Button();
+            this.btnTvRootClear = new System.Windows.Forms.Button();
+            this.btnClearDQ = new System.Windows.Forms.Button();
             this.btnHd = new System.Windows.Forms.Button();
             this.btnSd = new System.Windows.Forms.Button();
             this.tabConfigs = new System.Windows.Forms.TabPage();
@@ -91,11 +101,6 @@ namespace SABSyncGUI
             this.lblAliasDotConfig = new System.Windows.Forms.Label();
             this.txtRssDotConfig = new System.Windows.Forms.TextBox();
             this.lblRssDotConfig = new System.Windows.Forms.Label();
-            this.btnClearDQ = new System.Windows.Forms.Button();
-            this.btnTvRootClear = new System.Windows.Forms.Button();
-            this.btnPriorityLow = new System.Windows.Forms.Button();
-            this.btnPriorityNormal = new System.Windows.Forms.Button();
-            this.btnPriorityHigh = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.tabControlGUI.SuspendLayout();
@@ -105,7 +110,7 @@ namespace SABSyncGUI
             // 
             // saveButton
             // 
-            this.saveButton.Location = new System.Drawing.Point(356, 560);
+            this.saveButton.Location = new System.Drawing.Point(357, 560);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 0;
@@ -204,7 +209,7 @@ namespace SABSyncGUI
             this.groupBox1.Controls.Add(this.txtSabInfoHost);
             this.groupBox1.Location = new System.Drawing.Point(21, 124);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(440, 129);
+            this.groupBox1.Size = new System.Drawing.Size(425, 129);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "SABnzbd Settings";
@@ -213,16 +218,16 @@ namespace SABSyncGUI
             // 
             this.txtSabInfoPort.BackColor = System.Drawing.SystemColors.Control;
             this.txtSabInfoPort.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtSabInfoPort.Location = new System.Drawing.Point(372, 19);
+            this.txtSabInfoPort.Location = new System.Drawing.Point(359, 19);
             this.txtSabInfoPort.MaxLength = 5;
             this.txtSabInfoPort.Name = "txtSabInfoPort";
-            this.txtSabInfoPort.Size = new System.Drawing.Size(53, 22);
+            this.txtSabInfoPort.Size = new System.Drawing.Size(51, 22);
             this.txtSabInfoPort.TabIndex = 6;
             // 
             // lblSabInfoPort
             // 
             this.lblSabInfoPort.AutoSize = true;
-            this.lblSabInfoPort.Location = new System.Drawing.Point(337, 26);
+            this.lblSabInfoPort.Location = new System.Drawing.Point(324, 26);
             this.lblSabInfoPort.Name = "lblSabInfoPort";
             this.lblSabInfoPort.Size = new System.Drawing.Size(29, 13);
             this.lblSabInfoPort.TabIndex = 16;
@@ -258,7 +263,7 @@ namespace SABSyncGUI
             this.txtApiKey.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtApiKey.Location = new System.Drawing.Point(104, 97);
             this.txtApiKey.Name = "txtApiKey";
-            this.txtApiKey.Size = new System.Drawing.Size(321, 22);
+            this.txtApiKey.Size = new System.Drawing.Size(306, 22);
             this.txtApiKey.TabIndex = 9;
             // 
             // txtPassword
@@ -267,7 +272,7 @@ namespace SABSyncGUI
             this.txtPassword.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtPassword.Location = new System.Drawing.Point(104, 71);
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.Size = new System.Drawing.Size(321, 22);
+            this.txtPassword.Size = new System.Drawing.Size(306, 22);
             this.txtPassword.TabIndex = 8;
             // 
             // lblUsername
@@ -287,7 +292,7 @@ namespace SABSyncGUI
             this.txtUsername.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtUsername.Location = new System.Drawing.Point(104, 45);
             this.txtUsername.Name = "txtUsername";
-            this.txtUsername.Size = new System.Drawing.Size(321, 22);
+            this.txtUsername.Size = new System.Drawing.Size(306, 22);
             this.txtUsername.TabIndex = 7;
             // 
             // lblSabInfoHost
@@ -307,7 +312,7 @@ namespace SABSyncGUI
             this.txtSabInfoHost.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtSabInfoHost.Location = new System.Drawing.Point(104, 19);
             this.txtSabInfoHost.Name = "txtSabInfoHost";
-            this.txtSabInfoHost.Size = new System.Drawing.Size(226, 22);
+            this.txtSabInfoHost.Size = new System.Drawing.Size(214, 22);
             this.txtSabInfoHost.TabIndex = 5;
             // 
             // txtNzbDir
@@ -474,7 +479,7 @@ namespace SABSyncGUI
             // 
             // btnTestSab
             // 
-            this.btnTestSab.Location = new System.Drawing.Point(45, 560);
+            this.btnTestSab.Location = new System.Drawing.Point(45, 563);
             this.btnTestSab.Name = "btnTestSab";
             this.btnTestSab.Size = new System.Drawing.Size(64, 23);
             this.btnTestSab.TabIndex = 25;
@@ -616,6 +621,11 @@ namespace SABSyncGUI
             // 
             // tabGeneral
             // 
+            this.tabGeneral.Controls.Add(this.btn120Days);
+            this.tabGeneral.Controls.Add(this.btn60Days);
+            this.tabGeneral.Controls.Add(this.btn30Days);
+            this.tabGeneral.Controls.Add(this.txtDeleteLogs);
+            this.tabGeneral.Controls.Add(this.lblDeleteLogs);
             this.tabGeneral.Controls.Add(this.btnPriorityHigh);
             this.tabGeneral.Controls.Add(this.btnPriorityNormal);
             this.tabGeneral.Controls.Add(this.btnPriorityLow);
@@ -665,6 +675,118 @@ namespace SABSyncGUI
             this.tabGeneral.Text = "General Config";
             this.tabGeneral.UseVisualStyleBackColor = true;
             // 
+            // btn120Days
+            // 
+            this.btn120Days.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn120Days.Location = new System.Drawing.Point(403, 533);
+            this.btn120Days.Margin = new System.Windows.Forms.Padding(0);
+            this.btn120Days.Name = "btn120Days";
+            this.btn120Days.Size = new System.Drawing.Size(29, 20);
+            this.btn120Days.TabIndex = 48;
+            this.btn120Days.Text = "120";
+            this.btn120Days.UseVisualStyleBackColor = true;
+            this.btn120Days.Click += new System.EventHandler(this.btn120Days_Click);
+            // 
+            // btn60Days
+            // 
+            this.btn60Days.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn60Days.Location = new System.Drawing.Point(378, 533);
+            this.btn60Days.Margin = new System.Windows.Forms.Padding(0);
+            this.btn60Days.Name = "btn60Days";
+            this.btn60Days.Size = new System.Drawing.Size(23, 20);
+            this.btn60Days.TabIndex = 47;
+            this.btn60Days.Text = "60";
+            this.btn60Days.UseVisualStyleBackColor = true;
+            this.btn60Days.Click += new System.EventHandler(this.btn60Days_Click);
+            // 
+            // btn30Days
+            // 
+            this.btn30Days.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn30Days.Location = new System.Drawing.Point(353, 533);
+            this.btn30Days.Margin = new System.Windows.Forms.Padding(0);
+            this.btn30Days.Name = "btn30Days";
+            this.btn30Days.Size = new System.Drawing.Size(23, 20);
+            this.btn30Days.TabIndex = 46;
+            this.btn30Days.Text = "30";
+            this.btn30Days.UseVisualStyleBackColor = true;
+            this.btn30Days.Click += new System.EventHandler(this.btn30Days_Click);
+            // 
+            // txtDeleteLogs
+            // 
+            this.txtDeleteLogs.BackColor = System.Drawing.SystemColors.Control;
+            this.txtDeleteLogs.Font = new System.Drawing.Font("Calibri", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtDeleteLogs.Location = new System.Drawing.Point(318, 532);
+            this.txtDeleteLogs.MaxLength = 4;
+            this.txtDeleteLogs.Name = "txtDeleteLogs";
+            this.txtDeleteLogs.Size = new System.Drawing.Size(30, 22);
+            this.txtDeleteLogs.TabIndex = 45;
+            // 
+            // lblDeleteLogs
+            // 
+            this.lblDeleteLogs.AutoSize = true;
+            this.lblDeleteLogs.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDeleteLogs.Location = new System.Drawing.Point(247, 538);
+            this.lblDeleteLogs.Name = "lblDeleteLogs";
+            this.lblDeleteLogs.Size = new System.Drawing.Size(67, 13);
+            this.lblDeleteLogs.TabIndex = 44;
+            this.lblDeleteLogs.Text = "Delete Logs:";
+            this.lblDeleteLogs.MouseEnter += new System.EventHandler(this.lblDeleteLogs_MouseEnter);
+            this.lblDeleteLogs.MouseLeave += new System.EventHandler(this.statusBarClear);
+            // 
+            // btnPriorityHigh
+            // 
+            this.btnPriorityHigh.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPriorityHigh.Location = new System.Drawing.Point(324, 301);
+            this.btnPriorityHigh.Name = "btnPriorityHigh";
+            this.btnPriorityHigh.Size = new System.Drawing.Size(52, 20);
+            this.btnPriorityHigh.TabIndex = 43;
+            this.btnPriorityHigh.Text = "High";
+            this.btnPriorityHigh.UseVisualStyleBackColor = true;
+            this.btnPriorityHigh.Click += new System.EventHandler(this.btnPriorityHigh_Click);
+            // 
+            // btnPriorityNormal
+            // 
+            this.btnPriorityNormal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPriorityNormal.Location = new System.Drawing.Point(263, 301);
+            this.btnPriorityNormal.Name = "btnPriorityNormal";
+            this.btnPriorityNormal.Size = new System.Drawing.Size(52, 20);
+            this.btnPriorityNormal.TabIndex = 42;
+            this.btnPriorityNormal.Text = "Normal";
+            this.btnPriorityNormal.UseVisualStyleBackColor = true;
+            this.btnPriorityNormal.Click += new System.EventHandler(this.btnPriorityNormal_Click);
+            // 
+            // btnPriorityLow
+            // 
+            this.btnPriorityLow.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPriorityLow.Location = new System.Drawing.Point(202, 301);
+            this.btnPriorityLow.Name = "btnPriorityLow";
+            this.btnPriorityLow.Size = new System.Drawing.Size(52, 20);
+            this.btnPriorityLow.TabIndex = 41;
+            this.btnPriorityLow.Text = "Low";
+            this.btnPriorityLow.UseVisualStyleBackColor = true;
+            this.btnPriorityLow.Click += new System.EventHandler(this.btnPriorityLow_Click);
+            // 
+            // btnTvRootClear
+            // 
+            this.btnTvRootClear.Location = new System.Drawing.Point(392, 6);
+            this.btnTvRootClear.Name = "btnTvRootClear";
+            this.btnTvRootClear.Size = new System.Drawing.Size(54, 23);
+            this.btnTvRootClear.TabIndex = 40;
+            this.btnTvRootClear.Text = "Clear";
+            this.btnTvRootClear.UseVisualStyleBackColor = true;
+            this.btnTvRootClear.Click += new System.EventHandler(this.btnTvRootClear_Click);
+            // 
+            // btnClearDQ
+            // 
+            this.btnClearDQ.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnClearDQ.Location = new System.Drawing.Point(311, 485);
+            this.btnClearDQ.Name = "btnClearDQ";
+            this.btnClearDQ.Size = new System.Drawing.Size(120, 20);
+            this.btnClearDQ.TabIndex = 39;
+            this.btnClearDQ.Text = "Clear Quality";
+            this.btnClearDQ.UseVisualStyleBackColor = true;
+            this.btnClearDQ.Click += new System.EventHandler(this.btnClearDQ_Click);
+            // 
             // btnHd
             // 
             this.btnHd.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -701,7 +823,7 @@ namespace SABSyncGUI
             this.tabConfigs.Location = new System.Drawing.Point(4, 22);
             this.tabConfigs.Name = "tabConfigs";
             this.tabConfigs.Padding = new System.Windows.Forms.Padding(3);
-            this.tabConfigs.Size = new System.Drawing.Size(396, 560);
+            this.tabConfigs.Size = new System.Drawing.Size(484, 589);
             this.tabConfigs.TabIndex = 1;
             this.tabConfigs.Text = "Config Files";
             this.tabConfigs.UseVisualStyleBackColor = true;
@@ -804,60 +926,6 @@ namespace SABSyncGUI
             this.lblRssDotConfig.MouseEnter += new System.EventHandler(this.lblRssDotConfig_MouseEnter);
             this.lblRssDotConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
-            // btnClearDQ
-            // 
-            this.btnClearDQ.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnClearDQ.Location = new System.Drawing.Point(311, 485);
-            this.btnClearDQ.Name = "btnClearDQ";
-            this.btnClearDQ.Size = new System.Drawing.Size(120, 20);
-            this.btnClearDQ.TabIndex = 39;
-            this.btnClearDQ.Text = "Clear Quality";
-            this.btnClearDQ.UseVisualStyleBackColor = true;
-            this.btnClearDQ.Click += new System.EventHandler(this.btnClearDQ_Click);
-            // 
-            // btnTvRootClear
-            // 
-            this.btnTvRootClear.Location = new System.Drawing.Point(392, 6);
-            this.btnTvRootClear.Name = "btnTvRootClear";
-            this.btnTvRootClear.Size = new System.Drawing.Size(54, 23);
-            this.btnTvRootClear.TabIndex = 40;
-            this.btnTvRootClear.Text = "Clear";
-            this.btnTvRootClear.UseVisualStyleBackColor = true;
-            this.btnTvRootClear.Click += new System.EventHandler(this.btnTvRootClear_Click);
-            // 
-            // btnPriorityLow
-            // 
-            this.btnPriorityLow.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPriorityLow.Location = new System.Drawing.Point(202, 301);
-            this.btnPriorityLow.Name = "btnPriorityLow";
-            this.btnPriorityLow.Size = new System.Drawing.Size(52, 20);
-            this.btnPriorityLow.TabIndex = 41;
-            this.btnPriorityLow.Text = "Low";
-            this.btnPriorityLow.UseVisualStyleBackColor = true;
-            this.btnPriorityLow.Click += new System.EventHandler(this.btnPriorityLow_Click);
-            // 
-            // btnPriorityNormal
-            // 
-            this.btnPriorityNormal.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPriorityNormal.Location = new System.Drawing.Point(263, 301);
-            this.btnPriorityNormal.Name = "btnPriorityNormal";
-            this.btnPriorityNormal.Size = new System.Drawing.Size(52, 20);
-            this.btnPriorityNormal.TabIndex = 42;
-            this.btnPriorityNormal.Text = "Normal";
-            this.btnPriorityNormal.UseVisualStyleBackColor = true;
-            this.btnPriorityNormal.Click += new System.EventHandler(this.btnPriorityNormal_Click);
-            // 
-            // btnPriorityHigh
-            // 
-            this.btnPriorityHigh.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnPriorityHigh.Location = new System.Drawing.Point(324, 301);
-            this.btnPriorityHigh.Name = "btnPriorityHigh";
-            this.btnPriorityHigh.Size = new System.Drawing.Size(52, 20);
-            this.btnPriorityHigh.TabIndex = 43;
-            this.btnPriorityHigh.Text = "High";
-            this.btnPriorityHigh.UseVisualStyleBackColor = true;
-            this.btnPriorityHigh.Click += new System.EventHandler(this.btnPriorityHigh_Click);
-            // 
             // SABSyncGUI
             // 
             this.AcceptButton = this.saveButton;
@@ -870,7 +938,7 @@ namespace SABSyncGUI
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.Name = "SABSyncGUI";
-            this.Text = "Microsoft.VisualStudio.Shell.Design v10.0.0.0";
+            this.Text = "SABSync 0.3.5";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
@@ -953,6 +1021,11 @@ namespace SABSyncGUI
         private System.Windows.Forms.Button btnPriorityLow;
         private System.Windows.Forms.Button btnPriorityHigh;
         private System.Windows.Forms.Button btnPriorityNormal;
+        private System.Windows.Forms.TextBox txtDeleteLogs;
+        private System.Windows.Forms.Label lblDeleteLogs;
+        private System.Windows.Forms.Button btn30Days;
+        private System.Windows.Forms.Button btn60Days;
+        private System.Windows.Forms.Button btn120Days;
 
     }
 }
