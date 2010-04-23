@@ -101,11 +101,29 @@ namespace SABSyncGUI
             this.lblAliasDotConfig = new System.Windows.Forms.Label();
             this.txtRssDotConfig = new System.Windows.Forms.TextBox();
             this.lblRssDotConfig = new System.Windows.Forms.Label();
+            this.tabSchedule = new System.Windows.Forms.TabPage();
+            this.btnCreateTask = new System.Windows.Forms.Button();
+            this.lblCreateTask = new System.Windows.Forms.Label();
+            this.lblRepeatTask = new System.Windows.Forms.Label();
+            this.numMinutes = new System.Windows.Forms.NumericUpDown();
+            this.lblMinutes = new System.Windows.Forms.Label();
+            this.chkVisbile = new System.Windows.Forms.CheckBox();
+            this.txtResult = new System.Windows.Forms.TextBox();
+            this.lblResult = new System.Windows.Forms.Label();
+            this.btnTestSabSync = new System.Windows.Forms.Button();
+            this.lblOutput = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.lblWinUsername = new System.Windows.Forms.Label();
+            this.lblWinPassword = new System.Windows.Forms.Label();
+            this.txtWinUsername = new System.Windows.Forms.TextBox();
+            this.txtWinPassword = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.tabControlGUI.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.tabConfigs.SuspendLayout();
+            this.tabSchedule.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numMinutes)).BeginInit();
             this.SuspendLayout();
             // 
             // saveButton
@@ -612,6 +630,7 @@ namespace SABSyncGUI
             // 
             this.tabControlGUI.Controls.Add(this.tabGeneral);
             this.tabControlGUI.Controls.Add(this.tabConfigs);
+            this.tabControlGUI.Controls.Add(this.tabSchedule);
             this.tabControlGUI.Location = new System.Drawing.Point(2, 2);
             this.tabControlGUI.Name = "tabControlGUI";
             this.tabControlGUI.SelectedIndex = 0;
@@ -926,6 +945,198 @@ namespace SABSyncGUI
             this.lblRssDotConfig.MouseEnter += new System.EventHandler(this.lblRssDotConfig_MouseEnter);
             this.lblRssDotConfig.MouseLeave += new System.EventHandler(this.statusBarClear);
             // 
+            // tabSchedule
+            // 
+            this.tabSchedule.Controls.Add(this.txtWinPassword);
+            this.tabSchedule.Controls.Add(this.txtWinUsername);
+            this.tabSchedule.Controls.Add(this.lblWinPassword);
+            this.tabSchedule.Controls.Add(this.lblWinUsername);
+            this.tabSchedule.Controls.Add(this.lblOutput);
+            this.tabSchedule.Controls.Add(this.textBox1);
+            this.tabSchedule.Controls.Add(this.btnTestSabSync);
+            this.tabSchedule.Controls.Add(this.lblResult);
+            this.tabSchedule.Controls.Add(this.txtResult);
+            this.tabSchedule.Controls.Add(this.chkVisbile);
+            this.tabSchedule.Controls.Add(this.lblMinutes);
+            this.tabSchedule.Controls.Add(this.numMinutes);
+            this.tabSchedule.Controls.Add(this.lblRepeatTask);
+            this.tabSchedule.Controls.Add(this.lblCreateTask);
+            this.tabSchedule.Controls.Add(this.btnCreateTask);
+            this.tabSchedule.Location = new System.Drawing.Point(4, 22);
+            this.tabSchedule.Name = "tabSchedule";
+            this.tabSchedule.Padding = new System.Windows.Forms.Padding(3);
+            this.tabSchedule.Size = new System.Drawing.Size(484, 589);
+            this.tabSchedule.TabIndex = 2;
+            this.tabSchedule.Text = "Schedule Task";
+            this.tabSchedule.UseVisualStyleBackColor = true;
+            // 
+            // btnCreateTask
+            // 
+            this.btnCreateTask.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnCreateTask.Location = new System.Drawing.Point(171, 155);
+            this.btnCreateTask.Name = "btnCreateTask";
+            this.btnCreateTask.Size = new System.Drawing.Size(114, 28);
+            this.btnCreateTask.TabIndex = 0;
+            this.btnCreateTask.Text = "Create Task";
+            this.btnCreateTask.UseVisualStyleBackColor = true;
+            this.btnCreateTask.Click += new System.EventHandler(this.btnCreateTask_Click);
+            // 
+            // lblCreateTask
+            // 
+            this.lblCreateTask.AutoSize = true;
+            this.lblCreateTask.Font = new System.Drawing.Font("Microsoft Sans Serif", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCreateTask.Location = new System.Drawing.Point(6, 3);
+            this.lblCreateTask.Name = "lblCreateTask";
+            this.lblCreateTask.Size = new System.Drawing.Size(265, 31);
+            this.lblCreateTask.TabIndex = 1;
+            this.lblCreateTask.Text = "Schedule SABSync";
+            // 
+            // lblRepeatTask
+            // 
+            this.lblRepeatTask.AutoSize = true;
+            this.lblRepeatTask.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblRepeatTask.Location = new System.Drawing.Point(8, 59);
+            this.lblRepeatTask.Name = "lblRepeatTask";
+            this.lblRepeatTask.Size = new System.Drawing.Size(170, 20);
+            this.lblRepeatTask.TabIndex = 2;
+            this.lblRepeatTask.Text = "Repeat Task Every: ";
+            // 
+            // numMinutes
+            // 
+            this.numMinutes.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.numMinutes.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.numMinutes.Location = new System.Drawing.Point(171, 53);
+            this.numMinutes.Maximum = new decimal(new int[] {
+            1440,
+            0,
+            0,
+            0});
+            this.numMinutes.Minimum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.numMinutes.Name = "numMinutes";
+            this.numMinutes.Size = new System.Drawing.Size(59, 26);
+            this.numMinutes.TabIndex = 3;
+            this.numMinutes.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.numMinutes.Value = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            // 
+            // lblMinutes
+            // 
+            this.lblMinutes.AutoSize = true;
+            this.lblMinutes.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMinutes.Location = new System.Drawing.Point(236, 63);
+            this.lblMinutes.Name = "lblMinutes";
+            this.lblMinutes.Size = new System.Drawing.Size(54, 16);
+            this.lblMinutes.TabIndex = 4;
+            this.lblMinutes.Text = "Minutes";
+            // 
+            // chkVisbile
+            // 
+            this.chkVisbile.AutoSize = true;
+            this.chkVisbile.Checked = true;
+            this.chkVisbile.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkVisbile.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkVisbile.Location = new System.Drawing.Point(312, 61);
+            this.chkVisbile.Name = "chkVisbile";
+            this.chkVisbile.Size = new System.Drawing.Size(136, 20);
+            this.chkVisbile.TabIndex = 5;
+            this.chkVisbile.Text = "Console Visible";
+            this.chkVisbile.UseVisualStyleBackColor = true;
+            // 
+            // txtResult
+            // 
+            this.txtResult.Location = new System.Drawing.Point(6, 210);
+            this.txtResult.Multiline = true;
+            this.txtResult.Name = "txtResult";
+            this.txtResult.Size = new System.Drawing.Size(470, 84);
+            this.txtResult.TabIndex = 6;
+            // 
+            // lblResult
+            // 
+            this.lblResult.AutoSize = true;
+            this.lblResult.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblResult.Location = new System.Drawing.Point(8, 187);
+            this.lblResult.Name = "lblResult";
+            this.lblResult.Size = new System.Drawing.Size(66, 20);
+            this.lblResult.TabIndex = 7;
+            this.lblResult.Text = "Result:";
+            // 
+            // btnTestSabSync
+            // 
+            this.btnTestSabSync.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnTestSabSync.Location = new System.Drawing.Point(170, 310);
+            this.btnTestSabSync.Name = "btnTestSabSync";
+            this.btnTestSabSync.Size = new System.Drawing.Size(116, 28);
+            this.btnTestSabSync.TabIndex = 8;
+            this.btnTestSabSync.Text = "Test SABSync";
+            this.btnTestSabSync.UseVisualStyleBackColor = true;
+            this.btnTestSabSync.Click += new System.EventHandler(this.btnTestSabSync_Click);
+            // 
+            // lblOutput
+            // 
+            this.lblOutput.AutoSize = true;
+            this.lblOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblOutput.Location = new System.Drawing.Point(9, 345);
+            this.lblOutput.Name = "lblOutput";
+            this.lblOutput.Size = new System.Drawing.Size(69, 20);
+            this.lblOutput.TabIndex = 10;
+            this.lblOutput.Text = "Output:";
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(7, 368);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBox1.Size = new System.Drawing.Size(470, 215);
+            this.textBox1.TabIndex = 9;
+            // 
+            // lblWinUsername
+            // 
+            this.lblWinUsername.AutoSize = true;
+            this.lblWinUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWinUsername.Location = new System.Drawing.Point(10, 91);
+            this.lblWinUsername.Name = "lblWinUsername";
+            this.lblWinUsername.Size = new System.Drawing.Size(83, 16);
+            this.lblWinUsername.TabIndex = 11;
+            this.lblWinUsername.Text = "Username:";
+            // 
+            // lblWinPassword
+            // 
+            this.lblWinPassword.AutoSize = true;
+            this.lblWinPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWinPassword.Location = new System.Drawing.Point(13, 120);
+            this.lblWinPassword.Name = "lblWinPassword";
+            this.lblWinPassword.Size = new System.Drawing.Size(80, 16);
+            this.lblWinPassword.TabIndex = 12;
+            this.lblWinPassword.Text = "Password:";
+            // 
+            // txtWinUsername
+            // 
+            this.txtWinUsername.Location = new System.Drawing.Point(100, 91);
+            this.txtWinUsername.Name = "txtWinUsername";
+            this.txtWinUsername.Size = new System.Drawing.Size(185, 20);
+            this.txtWinUsername.TabIndex = 13;
+            // 
+            // txtWinPassword
+            // 
+            this.txtWinPassword.Location = new System.Drawing.Point(99, 120);
+            this.txtWinPassword.Name = "txtWinPassword";
+            this.txtWinPassword.PasswordChar = '*';
+            this.txtWinPassword.Size = new System.Drawing.Size(186, 20);
+            this.txtWinPassword.TabIndex = 14;
+            this.txtWinPassword.UseSystemPasswordChar = true;
+            // 
             // SABSyncGUI
             // 
             this.AcceptButton = this.saveButton;
@@ -948,6 +1159,9 @@ namespace SABSyncGUI
             this.tabGeneral.PerformLayout();
             this.tabConfigs.ResumeLayout(false);
             this.tabConfigs.PerformLayout();
+            this.tabSchedule.ResumeLayout(false);
+            this.tabSchedule.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numMinutes)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1026,6 +1240,22 @@ namespace SABSyncGUI
         private System.Windows.Forms.Button btn30Days;
         private System.Windows.Forms.Button btn60Days;
         private System.Windows.Forms.Button btn120Days;
+        private System.Windows.Forms.TabPage tabSchedule;
+        private System.Windows.Forms.Label lblRepeatTask;
+        private System.Windows.Forms.Label lblCreateTask;
+        private System.Windows.Forms.Button btnCreateTask;
+        private System.Windows.Forms.NumericUpDown numMinutes;
+        private System.Windows.Forms.Label lblMinutes;
+        private System.Windows.Forms.TextBox txtResult;
+        private System.Windows.Forms.CheckBox chkVisbile;
+        private System.Windows.Forms.Label lblResult;
+        private System.Windows.Forms.Label lblOutput;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button btnTestSabSync;
+        private System.Windows.Forms.TextBox txtWinPassword;
+        private System.Windows.Forms.TextBox txtWinUsername;
+        private System.Windows.Forms.Label lblWinPassword;
+        private System.Windows.Forms.Label lblWinUsername;
 
     }
 }

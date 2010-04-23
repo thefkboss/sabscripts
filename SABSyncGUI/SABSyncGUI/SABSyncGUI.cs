@@ -9,6 +9,7 @@ using System.Net;
 using System.Xml;
 using System.IO;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace SABSyncGUI
 {
@@ -572,6 +573,79 @@ namespace SABSyncGUI
         private void btn120Days_Click(object sender, EventArgs e)
         {
             txtDeleteLogs.Text = "120";
+        }
+
+        private void btnCreateTask_Click(object sender, EventArgs e)
+        {
+            string user = null;
+            if (txtWinUsername.Text == null)
+                user = System.Security.Principal.WindowsIdentity.GetCurrent().ToString();
+
+            else
+                user = txtWinUsername.Text;
+
+            string password = txtWinPassword.Text;
+
+            if (chkVisbile.Checked)
+            {
+                FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSync.exe");
+                string time = numMinutes.Value.ToString();
+                string arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + "/rp " + password;
+
+                // Start the child process.
+                Process proc = new Process();
+                // Redirect the output stream of the child process.
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.FileName = "schtasks.exe";
+                proc.StartInfo.Arguments = arguments;
+                proc.Start();
+                string output = proc.StandardOutput.ReadToEnd();
+                string error = proc.StandardError.ReadToEnd();
+                txtResult.Text = output + Environment.NewLine + error;
+                proc.WaitForExit();
+            }
+
+            else
+            {
+                FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSyncHide.exe");
+                string time = numMinutes.Value.ToString();
+                string arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + "/rp " + password;
+
+                // Start the child process.
+                Process proc = new Process();
+                // Redirect the output stream of the child process.
+                proc.StartInfo.UseShellExecute = false;
+                proc.StartInfo.RedirectStandardOutput = true;
+                proc.StartInfo.RedirectStandardError = true;
+                proc.StartInfo.FileName = "schtasks.exe";
+                proc.StartInfo.Arguments = arguments;
+                proc.Start();
+                string output = proc.StandardOutput.ReadToEnd();
+                string error = proc.StandardError.ReadToEnd();
+                txtResult.Text = output + Environment.NewLine + error;
+                proc.WaitForExit();
+            }
+        }
+
+        private void btnTestSabSync_Click(object sender, EventArgs e)
+        {
+            string arguments = "/Run /tn SABSync";
+
+            // Start the child process.
+            Process proc = new Process();
+            // Redirect the output stream of the child process.
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.FileName = "schtasks.exe";
+            proc.StartInfo.Arguments = arguments;
+            proc.Start();
+            string output = proc.StandardOutput.ReadToEnd();
+            string error = proc.StandardError.ReadToEnd();
+            txtResult.Text = output + Environment.NewLine + error;
+            proc.WaitForExit();
         }
     }
 }
