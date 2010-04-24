@@ -31,7 +31,6 @@ namespace Movies
             string moviePath = args[0]; //Get moviePath from first CMD Line argument
             string movieNameSab = args[2]; //Get movieName from third CMD Line argument
 
-
             string movieFilename = _movieDir + "\\" + movieNameSab + ".avi";
                 //Create movieFilename from movieDir + movieName
             string hdMovieMkvFilename = _hdMovieDir + "\\" + movieNameSab + ".mkv";
