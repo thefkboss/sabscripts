@@ -428,22 +428,12 @@ namespace SABSyncGUI
 
         }
 
-        private void tabControl1(object sender, TabControlCancelEventArgs e)
-        {
-            if (e.TabPageIndex == 1) // activity log is at 2 (a zero based index)
-            {
-                //txtRssDotConfig.Text = File.ReadAllText(txtRssConfig.Text);
-                //txtAliasDotConfig.Text = File.ReadAllText(txtAliasConfig.Text);
-                //txtQualityDotConfig.Text = File.ReadAllText(txtQualityConfig.Text);
-            }
-        }
-
         private void TabControl1_Selected(Object sender, TabControlEventArgs e)
         {
-            if (e.TabPageIndex == 0)
+            if (e.TabPageIndex != 1) //Save Config Files
                 SaveConfigFiles();
 
-            if (e.TabPageIndex == 1) // activity log is at 2 (a zero based index)
+            if (e.TabPageIndex != 0)  //Save General Settings & Create Config Files
             {
                 SaveGeneralSettings();
 
@@ -577,56 +567,61 @@ namespace SABSyncGUI
 
         private void btnCreateTask_Click(object sender, EventArgs e)
         {
-            string user = null;
-            if (txtWinUsername.Text == null)
-                user = System.Security.Principal.WindowsIdentity.GetCurrent().ToString();
-
-            else
-                user = txtWinUsername.Text;
-
-            string password = txtWinPassword.Text;
-
-            if (chkVisbile.Checked)
+            try
             {
-                FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSync.exe");
-                string time = numMinutes.Value.ToString();
-                string arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + "/rp " + password;
+                string user = null;
 
-                // Start the child process.
-                Process proc = new Process();
-                // Redirect the output stream of the child process.
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.RedirectStandardError = true;
-                proc.StartInfo.FileName = "schtasks.exe";
-                proc.StartInfo.Arguments = arguments;
-                proc.Start();
-                string output = proc.StandardOutput.ReadToEnd();
-                string error = proc.StandardError.ReadToEnd();
-                txtResult.Text = output + Environment.NewLine + error;
-                proc.WaitForExit();
+                int time = Convert.ToInt32(numMinutes.Value);
+
+                if (time < 15)
+                    time = 15;
+
+                if (txtWinUsername.Text.Length == 0)
+                    user = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+
+                else
+                    user = txtWinUsername.Text;
+
+                string password = txtWinPassword.Text;
+                int majorVersion = Convert.ToInt32(Environment.OSVersion.Version.Major.ToString());
+                string arguments = null;
+
+                if (chkVisbile.Checked)
+                {
+                    FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSync.exe");
+
+                    if (majorVersion < 6)
+                        arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
+
+                    else
+                        arguments = "/create /v1 /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
+
+                    txtResult.Text = CreateTask(arguments);
+                }
+
+                else
+                {
+                    FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSyncHide.exe");
+
+                    if (majorVersion < 6)
+                        arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
+
+                    else
+                        arguments = "/create /v1 /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
+
+                    txtResult.Text = CreateTask(arguments);
+                }
             }
 
-            else
+            catch (Exception exc)
             {
-                FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSyncHide.exe");
-                string time = numMinutes.Value.ToString();
-                string arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + "/rp " + password;
-
-                // Start the child process.
-                Process proc = new Process();
-                // Redirect the output stream of the child process.
-                proc.StartInfo.UseShellExecute = false;
-                proc.StartInfo.RedirectStandardOutput = true;
-                proc.StartInfo.RedirectStandardError = true;
-                proc.StartInfo.FileName = "schtasks.exe";
-                proc.StartInfo.Arguments = arguments;
-                proc.Start();
-                string output = proc.StandardOutput.ReadToEnd();
-                string error = proc.StandardError.ReadToEnd();
-                txtResult.Text = output + Environment.NewLine + error;
-                proc.WaitForExit();
+                txtResult.Text = "An Error occurred creating the task: " + exc;
             }
+        }
+
+        private void btnCreateTask_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Press to Create a Scheduled Task for SABSync";
         }
 
         private void btnTestSabSync_Click(object sender, EventArgs e)
@@ -645,6 +640,66 @@ namespace SABSyncGUI
             string output = proc.StandardOutput.ReadToEnd();
             string error = proc.StandardError.ReadToEnd();
             txtResult.Text = output + Environment.NewLine + error;
+            proc.WaitForExit();
+        }
+
+        private void btnTestSabSync_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Press to test the SABSync Scheduled Task";
+        }
+
+        private static string CreateTask(string arguments)
+        {
+            // Start the child process.
+            Process proc = new Process();
+            // Redirect the output stream of the child process.
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.FileName = "schtasks.exe";
+            proc.StartInfo.Arguments = arguments;
+            proc.Start();
+            string output = proc.StandardOutput.ReadToEnd();
+            string error = proc.StandardError.ReadToEnd();
+            string result = output + Environment.NewLine + error;
+            proc.WaitForExit();
+
+            return result;
+        }
+
+        private void chkVisbile_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Should the Console Window be visible when the scheduled task runs?";
+        }
+
+        private void lblWinUsername_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Windows Username to run Scheduled Task under";
+        }
+
+        private void lblWinPassword_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "Password for Windows Username to run Scheduled Task under";
+        }
+
+        private void lblRepeatTask_MouseEnter(object sender, EventArgs e)
+        {
+            statusStripLabel.Text = "How often should the scheduled task run?";
+        }
+
+        private void btnRunSabSync_Click(object sender, EventArgs e)
+        {
+            // Start the child process.
+            Process proc = new Process();
+            // Redirect the output stream of the child process.
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.FileName = "SABSync.exe";
+            proc.Start();
+            string output = proc.StandardOutput.ReadToEnd();
+            string error = proc.StandardError.ReadToEnd();
+            txtOutput.Text = output + Environment.NewLine + error;
             proc.WaitForExit();
         }
     }
