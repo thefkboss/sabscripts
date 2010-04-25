@@ -462,7 +462,15 @@ namespace Movies
         private static void Log(string message)
         {
             Console.WriteLine(message);
-            File.AppendAllText(_logFile, message + "\n");
+
+            try
+            {
+                using (StreamWriter sw = File.AppendText(_logFile))
+                {
+                    sw.WriteLine(message);
+                }
+            }
+            catch { }
         }
     }
 }
