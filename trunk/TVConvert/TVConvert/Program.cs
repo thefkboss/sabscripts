@@ -3,6 +3,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 namespace TVConvert
 {
@@ -20,6 +21,12 @@ namespace TVConvert
 
         static void Main(string[] args)
         {
+            Stopwatch sw = Stopwatch.StartNew();
+            Log("#######################################################################");
+            Log("Start Time: " + DateTime.Now);
+            
+            List<string> convertedFiles = new List<string>();
+
             string[] videoExt = _videoExt.Split(';');
             foreach (string e in videoExt)
             {
@@ -42,6 +49,7 @@ namespace TVConvert
                         File.Delete(fileToConvert);
                         Log("Running Atomic Parsley on: " + outputFile);
                         RunAtomicParsley(showName, seasonNumber, episodeNumber, episodeName, outputFile);
+                        convertedFiles.Add(outputFile);
                     }
 
                     else
@@ -49,12 +57,25 @@ namespace TVConvert
                         //Run HandBrake, no Atomic Parsley
                         Log("Unable to get episode specific information for: " + fileToConvert);
                         Log("Running Handbrake on: " + fileToConvert);
-                        RunHandbrake(fileToConvert, fileNameToConvert);
+                        string outputFile = RunHandbrake(fileToConvert, fileNameToConvert);
                         Log("Deleting: " + fileToConvert);
                         File.Delete(fileToConvert);
+                        convertedFiles.Add(outputFile);
                     }
                 }
             }
+            sw.Stop();
+
+            if (convertedFiles.Count != 0)
+                Log("-----------------------------------------------------------------------");
+
+            foreach (var c in convertedFiles)
+            {
+                Log("Converted file: " + c);
+            }
+
+            Log("Number of files converted: " + convertedFiles.Count);
+            Log("Process successfully completed. Duration {0:##.#}s", sw.Elapsed.TotalSeconds);
         }
 
         private static string RunHandbrake(string inputFile, string inputFileName)
@@ -67,7 +88,7 @@ namespace TVConvert
             return outputFile;
         }
 
-        private static string RunAtomicParsley(string showName, int seasonNumber, int episodeNumber, string episodeName, string outputFile)
+        private static void RunAtomicParsley(string showName, int seasonNumber, int episodeNumber, string episodeName, string outputFile)
         {
             if (_episodeNameFormat.Contains("none")) //If only episode name should be in episode name field
             {
@@ -96,7 +117,7 @@ namespace TVConvert
                 string atomicParsleyFile = _atomicParsleyLocation + "\\AtomicParsley.exe"; //Create string for path + AtomicParsley.exe
                 Process.Start(atomicParsleyFile, atomicParsleyCommands).WaitForExit(); //Run AtomicParsley and Wait for Exit
             }
-            return outputFile;
+            return;
         }
 
         private static string GetShowName(string fileName)
@@ -105,7 +126,7 @@ namespace TVConvert
             string[] titleSplitSs = null;
             string[] titleSplitX = null;
 
-            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<Episode>(?:\d{1,2}))";
             string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
 
             Match titleMatchSs = Regex.Match(fileName, patternSs);
@@ -133,7 +154,7 @@ namespace TVConvert
         {
             int seasonNumber = 0;
 
-            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<Episode>(?:\d{1,2}))";
             string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
 
             Match titleMatchSs = Regex.Match(fileName, patternSs);
@@ -158,7 +179,7 @@ namespace TVConvert
         {
             int episodeNumber = 0;
 
-            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<Episode>(?:\d{1,2}))";
             string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
 
             Match titleMatchSs = Regex.Match(fileName, patternSs);
@@ -186,7 +207,7 @@ namespace TVConvert
             string[] titleSplitSs = null;
             string[] titleSplitX = null;
 
-            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))E(?<EpisodeTwo>(?:\d{1,2}))";
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<Episode>(?:\d{1,2}))";
             string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
 
             Match titleMatchSs = Regex.Match(fileName, patternSs);
@@ -223,7 +244,7 @@ namespace TVConvert
             catch { }
         }
 
-        private static void Log(string message, params object[] para)
+        internal static void Log(string message, params object[] para)
         {
 
             Log(String.Format(message, para));
