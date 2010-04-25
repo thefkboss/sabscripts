@@ -3,13 +3,14 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
  
 namespace TVMove
 {
     class Program
     {
         private static bool _updateXbmc = Convert.ToBoolean(ConfigurationManager.AppSettings["updateXbmc"]); //Get updateXbmc Bool from App.Config
-        private static string _filenameTemplate = ConfigurationManager.AppSettings["filenameTemplate"]; //Get _tvTemplate from app.config
         private static string _videoExt = ConfigurationManager.AppSettings["videoExt"]; //Get _tvTemplate from app.config
         private static string _logDir = ConfigurationManager.AppSettings["logDir"]; //Log Directory  from Config File
         private static string _logFile = _logDir + @"\TVMove.txt"; // Log File
@@ -20,77 +21,86 @@ namespace TVMove
 
             string tempDir = ConfigurationManager.AppSettings["tempDir"]; //Temp Directory from Config File
             string shows = ConfigurationManager.AppSettings["shows"]; // TV Shows from Config File
-            shows = shows.ToLower(); //Convert Shows from user to Lower-Case (SABnzbd may have odd Case structure)
 
             string showPath = args[0]; //Get showPath from first CMD Line Argument
             string showInfo = args[2]; //Get showName from third CMD Line Argument
-            string[] fileNameArray = showInfo.Split('-'); //Split showInfo into sections
 
             string showName = null;
-            string seasonEpisode = null;
-            string episodeName = null;
+            string[] titleSplitSs = null;
+            string[] titleSplitX = null;
             int seasonNumber = 0;
             int episodeNumber = 0;
 
-            Log(Environment.NewLine);
+            //Log(Environment.NewLine);
             Log("#######################################################################");
-            Log("Show Name is: " + showName);
+            Log("Start Time: " + DateTime.Now);
+            Log("Show Info from SAB is: " + showInfo);
             Log("Show Path is: " + showPath);
 
-            if (fileNameArray.Length == 3)
+            string patternX = @"(?<Season>(?:\d{1,2}))[xX](?<Episode>(?:\d{1,2}))";
+            string patternSs = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<Episode>(?:\d{1,2}))";
+
+            Match titleMatchX = Regex.Match(showInfo, patternX);
+            Match titleMatchSs = Regex.Match(showInfo, patternSs);
+
+            if (titleMatchX.Success)
             {
-                showName = fileNameArray[0].Trim(); //Show Name is first string in fileNameArray
-                seasonEpisode = fileNameArray[1].Trim(); //Show Number (Season + Episode) is the second string  in fileNameArray
-                episodeName = fileNameArray[2].Trim(); //Episode Title is the third string in fileNameArray
-                string[] seasonEpisodeSplit = seasonEpisode.Split('x'); //Split showNumber
-                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
+                titleSplitX = Regex.Split(showInfo, patternX);
+                showName = titleSplitX[0].TrimEnd('.', ' ', '-', '_');
+
+                Int32.TryParse(titleMatchX.Groups["Season"].Value, out seasonNumber);
+                Int32.TryParse(titleMatchX.Groups["Episode"].Value, out episodeNumber);
             }
 
-            if (fileNameArray.Length == 4)
+            else if (titleMatchSs.Success)
             {
-                if (fileNameArray[1].Contains("x"))
-                {
-                    showName = fileNameArray[0].Trim();
-                    seasonEpisode = fileNameArray[1].Trim();
-                    episodeName = fileNameArray[2] + fileNameArray[3];
-                    episodeName.Trim();
-                }
+                titleSplitSs = Regex.Split(showInfo, patternSs);
+                showName = titleSplitSs[0].TrimEnd('.', ' ', '-', '_');
 
-                else if (fileNameArray[2].Contains("x"))
-                {
-                    showName = fileNameArray[0] + fileNameArray[1];
-                    showName.Trim();
-                    seasonEpisode = fileNameArray[2].Trim();
-                    episodeName = fileNameArray[3].Trim();
-                }
-
-                else
-                    Log("Un-supported Episode");
-
-                string[] seasonEpisodeSplit = seasonEpisode.Split('x');
-
-                Int32.TryParse(seasonEpisodeSplit[0], out seasonNumber);
-                Int32.TryParse(seasonEpisodeSplit[1], out episodeNumber);
+                Int32.TryParse(titleMatchSs.Groups["Season"].Value, out seasonNumber);
+                Int32.TryParse(titleMatchSs.Groups["Episode"].Value, out episodeNumber);
             }
-            string fileNameNoExt = GetFilename(showName, seasonNumber, episodeNumber, episodeName);
 
-            if (shows.Contains(showName.ToLower()))
+            else
+            {
+                Log("Episode formatting is unsupported");
+                return;
+            }
+
+            showName = showName.Replace('.', ' ');
+            Log("Show Name is: " + showName);
+
+            //Create list for formats (less code... I hope)
+            List<string> formats = new List<string>();
+
+            //Create Strings for addional searching for episodes and add to formats List
+            formats.Add("*" + seasonNumber + "x" + episodeNumber.ToString("D2") + "*");
+            formats.Add("*" + "S" + seasonNumber.ToString("D2") + "E" + episodeNumber.ToString("D2") + "*");
+            formats.Add("*" + seasonNumber + episodeNumber.ToString("D2") + "*");
+
+            if (shows.ToLower().Contains(showName.ToLower()))
             {
                 Log("Show is wanted: " + showName);
-                string[] videoExtLoop = _videoExt.Split(';');
-                foreach (string e in videoExtLoop)
+
+                foreach (var format in formats)
                 {
-                    string testFilePath = showPath + "\\" + fileNameNoExt + e;
-                    if (File.Exists(testFilePath))
+                    foreach (var ext in _videoExt)
                     {
-                        string fileFullPath = showPath + "\\" + fileNameNoExt + e; //Path to downloaded file as based on path (from SAB) + fileName
-                        string fileTempPath = tempDir + "\\" + fileNameNoExt + e; //Path to temp file as supplied by user + fileName
-                        File.Copy(fileFullPath, fileTempPath, true); //Copy file to tempDir
-                        Log("Show was Copied to: " + tempDir + fileNameNoExt + e);
+                        var matchingFiles = Directory.GetFiles(showPath, format + ext);
+
+                        if (matchingFiles.Length != 0)
+                        {
+                            Log("Episode Found, copying: " + matchingFiles[0]);
+                            string destFileName = Path.GetFileName(matchingFiles[0]);
+                            string destinationFile = tempDir + "\\" + destFileName;
+                            File.Copy(matchingFiles[0], destinationFile, true);
+                            Log("Episode copied to: " + destinationFile);
+                        }
+
                     }
                 }
             }
+
             if (_updateXbmc)
             {
                 Log("Attempting to Update XBMC");
@@ -98,39 +108,7 @@ namespace TVMove
             }
             //Console.ReadKey();
         }
-
-        private static string GetFilename(string showName, int seasonNumber, int episodeNumber, string episodeName)
-        {
-            string snReplace = showName;
-            string sDotNReplace = showName.Replace(' ', '.');
-            string sUnderNReplace = showName.Replace(' ', '_');
-
-            string enReplace = episodeName;
-            string eDotNReplace = episodeName.Replace(' ', '.');
-            string eUnderNReplace = episodeName.Replace(' ', '_');
-
-            string zeroSReplace = String.Format("{0:00}", seasonNumber);
-            string sReplace = Convert.ToString(seasonNumber);
-            string zeroEReplace = String.Format("{0:00}", episodeNumber);
-            string eReplace = Convert.ToString(episodeNumber);
-
-            string path = _filenameTemplate;
-
-            path = path.Replace(".%ext", "");
-            path = path.Replace("%sn", snReplace);
-            path = path.Replace("%s.n", sDotNReplace);
-            path = path.Replace("%s_n", sUnderNReplace);
-            path = path.Replace("%en", enReplace);
-            path = path.Replace("%e.n", eDotNReplace);
-            path = path.Replace("%e_n", eUnderNReplace);
-            path = path.Replace("%0s", zeroSReplace);
-            path = path.Replace("%s", sReplace);
-            path = path.Replace("%0e", zeroEReplace);
-            path = path.Replace("%e", eReplace);
-
-            return path;
-        }
-
+        
         private static string UpdateXbmc(string showPath, string showInfo)
         {
             bool xbmcOsWindows = Convert.ToBoolean(ConfigurationManager.AppSettings["xbmcOsWindows"]);
@@ -194,12 +172,6 @@ namespace TVMove
                 }
             }
             catch { }
-        }
-
-        private static void Log(string message, params object[] para)
-        {
-
-            Log(String.Format(message, para));
         }
     }
 }
