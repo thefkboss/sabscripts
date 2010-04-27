@@ -101,9 +101,7 @@
     <Compile Include="TvDb.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="App.config" />
     <None Include="Alias.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
