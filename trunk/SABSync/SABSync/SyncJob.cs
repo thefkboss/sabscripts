@@ -17,6 +17,7 @@ namespace SABSync
 
         private SyncJobConfig Config { get; set; }
 
+
         public SyncJob()
         {
             Config = new SyncJobConfig();
@@ -36,7 +37,11 @@ namespace SABSync
                     RssFeed feed = RssFeed.Read(feedInfo.Url);
                     foreach (RssItem item in feed.Channels[0].Items)
                     {
-                        ProcessRssItem(feed.Url, item);
+                        if (IsFiltered(item)) 
+                            continue;
+
+                        NzbInfo nzb = ParseNzbInfo(feed, item);
+                        QueueIfWanted(nzb);
                     }
                 }
 
@@ -49,79 +54,47 @@ namespace SABSync
             }
         }
 
-        private void ProcessRssItem(string url, RssItem item)
+        private bool IsFiltered(RssItem item)
         {
             if (item.Title.EndsWith("(Passworded)", StringComparison.InvariantCultureIgnoreCase))
             {
                 Log("Skipping Passworded Report {0}", item.Title);
-                return;
+                return true;
             }
+            return false;
+        }
 
-            Int64 reportId = 0;
-            string nzbId = null;
-            string rssTitle = null;
-            string nzbSite = null;
-            string downloadLink = null;
-
-            string urlLower = url.ToLower();
-
-            if (urlLower.Contains("newzbin.com"))
+        private NzbInfo ParseNzbInfo(RssFeed feed, RssItem item)
+        {
+            NzbSite site = GetNzbSite(feed.Url.ToLower());
+            return new NzbInfo 
             {
-                reportId = Convert.ToInt64(Regex.Match(item.Link.AbsolutePath, @"\d{7,10}").Value);
-                rssTitle = item.Title;
-                nzbSite = "newzbin";
-            }
+                Id = Regex.Match(item.Link.ToString(), site.Pattern).Value,
+                Title = item.Title,
+                Site = site.Name,
+                Link = item.Link.ToString().Replace("&", "%26")
+            };
+        }
 
-            else if (urlLower.Contains("nzbs.org"))
-            {
-                nzbId = Regex.Match(item.Link.ToString(), @"\d{5,10}").Value;
-                rssTitle = item.Title;
-                nzbSite = "nzbsDotOrg";
-                downloadLink = item.Link.ToString();
-                downloadLink = downloadLink.Replace("&", "%26");
-            }
+        // TODO: use HttpUtility.ParseQueryString();
+        // https://nzbmatrix.com/api-nzb-download.php?id=626526
+        private NzbSite GetNzbSite(string url)
+        {
+            foreach (var site in Config.NzbSites)
+                if (url.Contains(site.Url))
+                    return site;
+            return new NzbSite {Name = "unknown", Pattern = @"\d{6,10}"};
+        }
 
-            else if (urlLower.Contains("tvnzb.com"))
-            {
-                nzbId = Regex.Match(item.Link.ToString(), @"\d{5,10}").Value;
-                rssTitle = item.Title;
-                nzbSite = "tvnzb";
-                downloadLink = item.Link.ToString();
-                downloadLink = downloadLink.Replace("&", "%26");
-            }
+        private void QueueIfWanted(NzbInfo nzb)
+        {
+            var reportId = Convert.ToInt64(nzb.Id);
+            var rssTitle = nzb.Title;
+            var nzbSite = nzb.Site;
+            var nzbId = nzb.Id;
+            var downloadLink = nzb.Link;
 
-            else if (urlLower.Contains("nzbmatrix.com"))
-            {
-                // TODO: use HttpUtility.ParseQueryString();
-                // https://nzbmatrix.com/api-nzb-download.php?id=626526
-                nzbId = Regex.Match(item.Link.ToString(), @"\d{6,10}").Value;
-                rssTitle = item.Title;
-                nzbSite = "nzbmatrix";
-                downloadLink = item.Link.ToString();
-                downloadLink = downloadLink.Replace("&", "%26");
-            }
-
-            else if (urlLower.Contains("nzbsrus.com"))
-            {
-                nzbId = Regex.Match(item.Link.ToString(), @"\d{6,10}").Value;
-                rssTitle = item.Title;
-                nzbSite = "nzbsrus";
-                downloadLink = item.Link.ToString();
-                downloadLink = downloadLink.Replace("&", "%26");
-            }
-
-            else
-            {
-                nzbId = Regex.Match(item.Link.ToString(), @"\d{6,10}").Value;
-                rssTitle = item.Title;
-                nzbSite = "unknown";
-                downloadLink = item.Link.ToString();
-                downloadLink = downloadLink.Replace("&", "%26");
-            }
-
-            //Check if Show is Wanted
-
-            if (nzbSite == "newzbin")
+            if (nzb.Site == "newzbin")
             {
                 if (IsEpisodeWanted(rssTitle, reportId))
                 {
@@ -262,21 +235,26 @@ namespace SABSync
             string zeroEReplace = String.Format("{0:00}", episodeNumber);
             string eReplace = Convert.ToString(episodeNumber);
 
-            string fileName = Path.GetFileName(tvDir + "\\" + Config.TvTemplate);
+            string fileMask = Path.GetFileName(tvDir + "\\" + Config.TvTemplate);
 
-            fileName = fileName.Replace(".%ext", "");
-            fileName = fileName.Replace("%en", "*");
-            fileName = fileName.Replace("%e.n", "*");
-            fileName = fileName.Replace("%e_n", "*");
-            fileName = fileName.Replace("%sn", "*");
-            fileName = fileName.Replace("%s.n", "*");
-            fileName = fileName.Replace("%s_n", "*");
-            fileName = fileName.Replace("%0s", zeroSReplace);
-            fileName = fileName.Replace("%s", sReplace);
-            fileName = fileName.Replace("%0e", zeroEReplace);
-            fileName = fileName.Replace("%e", eReplace);
+            fileMask = fileMask.Replace(".%ext", "");
+            fileMask = fileMask.Replace("%en", "*");
+            fileMask = fileMask.Replace("%e.n", "*");
+            fileMask = fileMask.Replace("%e_n", "*");
+            fileMask = fileMask.Replace("%sn", "*");
+            fileMask = fileMask.Replace("%s.n", "*");
+            fileMask = fileMask.Replace("%s_n", "*");
+            fileMask = fileMask.Replace("%0s", zeroSReplace);
+            fileMask = fileMask.Replace("%s", sReplace);
+            fileMask = fileMask.Replace("%0e", zeroEReplace);
+            fileMask = fileMask.Replace("%e", eReplace);
 
-            return fileName;
+            //Trim fileMask down to just season and episode file mask (for shows that do not have episode name) ie. [*S01E01*] instead of [* - S01E01 - *]
+            fileMask = fileMask.TrimEnd(' ', '*', '.', '-', '_');
+            fileMask = fileMask.TrimStart(' ', '*', '.', '-', '_');
+            fileMask = "*" + fileMask + "*";
+
+            return fileMask;
         }
 
         private string GetEpisodeDir(string showName, int year, int month, int day, DirectoryInfo tvDir)
@@ -307,11 +285,6 @@ namespace SABSync
             path = path.Replace("%0d", zeroDReplace);
             path = path.Replace("%d", dReplace);
 
-            //Trim path down to just season and episode file mask (for shows that do not have episode name) ie. [*S01E01*] instead of [* - S01E01 - *]
-            path = path.TrimEnd(' ', '*', '.', '-', '_');
-            path = path.TrimStart(' ', '*', '.', '-', '_');
-            path = "*" + path + "*";
-
             return path;
         } //Ends GetDailyShowNamingScheme
 
@@ -340,6 +313,11 @@ namespace SABSync
             fileMask = fileMask.Replace("%m", mReplace);
             fileMask = fileMask.Replace("%0d", zeroDReplace);
             fileMask = fileMask.Replace("%d", dReplace);
+
+            //Trim fileMask down to just year/month/day (for shows that do not have episode name) ie. [*2010-01-25*] instead of [* - 2010-01-25 - *]
+            fileMask = fileMask.TrimEnd(' ', '*', '.', '-', '_');
+            fileMask = fileMask.TrimStart(' ', '*', '.', '-', '_');
+            fileMask = "*" + fileMask + "*";
 
             return fileMask;
         } //Ends GetDailyShowNamingScheme
