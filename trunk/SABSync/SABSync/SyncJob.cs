@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -13,14 +12,7 @@ namespace SABSync
     public class SyncJob
     {
         private readonly Logger _logger = new Logger();
-        private DirectoryInfo _nzbDir;
-        private string _ignoreSeasons;
-        private string _tvTemplate;
-        private string _tvDailyTemplate;
         private List<string> _wantedShowNames = new List<string>();
-        private bool _sabReplaceChars;
-        private bool _downloadPropers;
-        private string[] _downloadQuality;
         private readonly List<string> Queued = new List<string>();
         private readonly List<string> Summary = new List<string>();
 
@@ -35,10 +27,10 @@ namespace SABSync
         {
             try
             {
-                LoadConfig();
-                
+                LoadWantedShows();
+
                 Log("Watching {0} shows", _wantedShowNames.Count);
-                Log("_ignoreSeasons: {0}", _ignoreSeasons);
+                Log("IgnoreSeasons: {0}", Config.IgnoreSeasons);
 
                 foreach (FeedInfo feedInfo in Config.Feeds)
                 {
@@ -58,29 +50,6 @@ namespace SABSync
                 Log(ex.Message, true);
                 Log(ex.ToString(), true);
             }
-        }
-
-        private void LoadConfig()
-        {
-            Log("Loading configuration...");
-
-            LoadWantedShows();
-
-            _ignoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"]; //Get _ignoreSeasons from app.config
-
-            _tvTemplate = ConfigurationManager.AppSettings["tvTemplate"]; //Get _tvTemplate from app.config
-            if (String.IsNullOrEmpty(_tvTemplate))
-                throw new ApplicationException("Undefined tvTemplate");
-
-            _tvDailyTemplate = ConfigurationManager.AppSettings["tvDailyTemplate"];
-            if (String.IsNullOrEmpty(_tvDailyTemplate))
-                throw new ApplicationException("tvDailyTemplate");
-
-            _sabReplaceChars = Convert.ToBoolean(ConfigurationManager.AppSettings["sabReplaceChars"]); //Get sabReplaceChars from app.config
-            _downloadQuality = ConfigurationManager.AppSettings["downloadQuality"].Trim(';', ' ').Split(';'); //Get _downloadQuality from app.config
-            _downloadPropers = Convert.ToBoolean(ConfigurationManager.AppSettings["downloadPropers"]); //Get downloadProper from app.config
-
-            _nzbDir = new DirectoryInfo(ConfigurationManager.AppSettings["nzbDir"]); //Get _nzbDir from app.config
         }
 
         private void LoadWantedShows()
@@ -195,9 +164,9 @@ namespace SABSync
             else if (nzbSite == "tvnzb")
             {
                 bool qualityWanted = false;
-                for (int i = 0; i < _downloadQuality.Length; i++)
+                for (int i = 0; i < Config.DownloadQuality.Length; i++)
                 {
-                    if (rssTitle.ToLower().Contains(_downloadQuality[i]))
+                    if (rssTitle.ToLower().Contains(Config.DownloadQuality[i]))
                         qualityWanted = true;
                 }
 
@@ -235,9 +204,9 @@ namespace SABSync
             else
             {
                 bool qualityWanted = false;
-                for (int i = 0; i < _downloadQuality.Length; i++)
+                for (int i = 0; i < Config.DownloadQuality.Length; i++)
                 {
-                    if (rssTitle.ToLower().Contains(_downloadQuality[i]))
+                    if (rssTitle.ToLower().Contains(Config.DownloadQuality[i]))
                         qualityWanted = true;
                 }
 
@@ -290,7 +259,7 @@ namespace SABSync
             string zeroEReplace = String.Format("{0:00}", episodeNumber);
             string eReplace = Convert.ToString(episodeNumber);
 
-            string path = Path.GetDirectoryName(tvDir + "\\" + _tvTemplate);
+            string path = Path.GetDirectoryName(tvDir + "\\" + Config.TvTemplate);
 
             path = path.Replace(".%ext", "");
             path = path.Replace("%sn", snReplace);
@@ -314,7 +283,7 @@ namespace SABSync
             string zeroEReplace = String.Format("{0:00}", episodeNumber);
             string eReplace = Convert.ToString(episodeNumber);
 
-            string fileName = Path.GetFileName(tvDir + "\\" + _tvTemplate);
+            string fileName = Path.GetFileName(tvDir + "\\" + Config.TvTemplate);
 
             fileName = fileName.Replace(".%ext", "");
             fileName = fileName.Replace("%en", "*");
@@ -336,7 +305,7 @@ namespace SABSync
             if (Config.VerboseLogging)
                 Log("Building string for Episode Dir");
 
-            string path = Path.GetDirectoryName(tvDir + "\\" + _tvDailyTemplate);
+            string path = Path.GetDirectoryName(tvDir + "\\" + Config.TvDailyTemplate);
 
             showName = CleanString(showName);
 
@@ -372,7 +341,7 @@ namespace SABSync
             if (Config.VerboseLogging)
                 Log("Building string for Episode File Mask");
 
-            string fileMask = Path.GetFileName(tvDir + "\\" + _tvDailyTemplate);
+            string fileMask = Path.GetFileName(tvDir + "\\" + Config.TvDailyTemplate);
 
             string yearReplace = Convert.ToString(year);
             string zeroMReplace = String.Format("{0:00}", month);
@@ -404,7 +373,7 @@ namespace SABSync
 
             for (int i = 0; i < badCharacters.Length; i++)
             {
-                if (_sabReplaceChars)
+                if (Config.SabReplaceChars)
                 {
                     result = result.Replace(badCharacters[i], goodCharacters[i]);
                 }
@@ -426,7 +395,7 @@ namespace SABSync
 
             for (int i = 0; i < badCharacters.Length; i++)
             {
-                if (_sabReplaceChars)
+                if (Config.SabReplaceChars)
                 {
                     result = result.Replace(badCharacters[i], goodCharacters[i]);
                 }
@@ -664,7 +633,7 @@ namespace SABSync
 
                     bool needProper = false;
 
-                    if (_downloadPropers && title.Contains("PROPER"))
+                    if (Config.DownloadPropers && title.Contains("PROPER"))
                     {
                         if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                             needProper = true;
@@ -728,7 +697,7 @@ namespace SABSync
                     if (!IsQualityWanted(showName, title))
                         return false;
 
-                    if (_downloadPropers && title.Contains("PROPER"))
+                    if (Config.DownloadPropers && title.Contains("PROPER"))
                     {
                         if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                             needProper = true;
@@ -791,7 +760,7 @@ namespace SABSync
                     if (!IsQualityWanted(showName, title))
                         return false;
 
-                    if (_downloadPropers && title.Contains("PROPER"))
+                    if (Config.DownloadPropers && title.Contains("PROPER"))
                     {
                         if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                             needProper = true;
@@ -853,7 +822,7 @@ namespace SABSync
                     if (!IsQualityWanted(showName, title))
                         return false;
 
-                    if (_downloadPropers && title.Contains("PROPER"))
+                    if (Config.DownloadPropers && title.Contains("PROPER"))
                     {
                         if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                             needProper = true;
@@ -947,9 +916,9 @@ namespace SABSync
 
         private bool IsSeasonIgnored(string showName, int seasonNumber)
         {
-            if (_ignoreSeasons.Contains(showName))
+            if (Config.IgnoreSeasons.Contains(showName))
             {
-                string[] showsSeasonIgnore = _ignoreSeasons.Trim(';', ' ').Split(';');
+                string[] showsSeasonIgnore = Config.IgnoreSeasons.Trim(';', ' ').Split(';');
                 foreach (string showSeasonIgnore in showsSeasonIgnore)
                 {
                     if (Config.VerboseLogging)
@@ -968,7 +937,7 @@ namespace SABSync
                         } //End if seasonNumber Less than or Equal to seasonIgnore
                     } //Ends if showNameIgnore equals showName
                 } //Ends foreach loop for showsSeasonIgnore
-            } //Ends if _ignoreSeasons contains showName
+            } //Ends if Config.IgnoreSeasons contains showName
             return false; //If Show Name is not being ignored or that season is not ignored return false
         } //Ends IsSeasonIgnored
 
@@ -987,7 +956,7 @@ namespace SABSync
                 }
             }
 
-            foreach (var quality in _downloadQuality)
+            foreach (var quality in Config.DownloadQuality)
             {
                 if (rssTitle.ToLower().Contains(quality.ToLower()))
                 {
@@ -1003,7 +972,7 @@ namespace SABSync
         {
             try
             {
-                string queueRssUrl = String.Format(Config.SABRequest, "mode=queue&output=xml");
+                string queueRssUrl = String.Format(Config.SabRequest, "mode=queue&output=xml");
                 string fetchName = String.Format("fetching msgid {0} from www.newzbin.com", reportId);
 
                 XmlTextReader queueRssReader = new XmlTextReader(queueRssUrl);
@@ -1057,7 +1026,7 @@ namespace SABSync
             {
                 Log("Checking Queue for: [{0}] or [{1}]", rssTitle, rssTitleFix);
 
-                string queueRssUrl = String.Format(Config.SABRequest, "mode=queue&output=xml");
+                string queueRssUrl = String.Format(Config.SabRequest, "mode=queue&output=xml");
 
                 XmlTextReader queueRssReader = new XmlTextReader(queueRssUrl);
                 XmlDocument queueRssDoc = new XmlDocument();
@@ -1116,12 +1085,12 @@ namespace SABSync
         private bool InNzbArchive(string rssTitle)
         {
             Log("Checking for Imported NZB for [{0}]", rssTitle);
-            //return !File.Exists(_nzbDir + "\\" + rssTitle + ".nzb.gz");
+            //return !File.Exists(Config.NzbDir + "\\" + rssTitle + ".nzb.gz");
 
             string nzbFileName = rssTitle.TrimEnd('.');
             nzbFileName = CleanString(nzbFileName);
 
-            if (File.Exists(_nzbDir + "\\" + nzbFileName + ".nzb.gz"))
+            if (File.Exists(Config.NzbDir + "\\" + nzbFileName + ".nzb.gz"))
             {
                 Log("Episode in archive: " + nzbFileName + ".nzb.gz", true);
                 return true;
@@ -1133,7 +1102,7 @@ namespace SABSync
         private bool InNzbArchive(string rssTitle, string rssTitleFix)
         {
             Log("Checking for Imported NZB for [{0}] or [{1}]", rssTitle, rssTitleFix);
-            //return !File.Exists(_nzbDir + "\\" + rssTitle + ".nzb.gz");
+            //return !File.Exists(Config.NzbDir + "\\" + rssTitle + ".nzb.gz");
 
             string nzbFileName = rssTitle.TrimEnd('.');
             nzbFileName = CleanString(nzbFileName);
@@ -1144,21 +1113,21 @@ namespace SABSync
             string nzbFileNameFix = rssTitleFix.TrimEnd('.');
             nzbFileNameFix = CleanString(nzbFileNameFix);
 
-            foreach (var file in Directory.GetFiles(_nzbDir.ToString(), "*.nzb.gz"))
+            foreach (var file in Directory.GetFiles(Config.NzbDir.ToString(), "*.nzb.gz"))
             {
                 string foundFile = file.Replace(".nzb.gz", "");
                 foundFile = foundFile.Replace('.', ' ');
                 foundFile = foundFile.Replace('-', ' ');
                 foundFile = foundFile.Replace('_', ' ');
 
-                if (foundFile == _nzbDir.ToString().TrimEnd('\\').Replace('/', '\\') + "\\" + nzbFileName)
+                if (foundFile == Config.NzbDir.ToString().TrimEnd('\\').Replace('/', '\\') + "\\" + nzbFileName)
                 {
                     Log("Episode in archive: '{0}'", true, nzbFileName + ".nzb.gz");
                     return true;
                 }
             }
 
-            if (File.Exists(_nzbDir + "\\" + nzbFileNameFix + ".nzb.gz"))
+            if (File.Exists(Config.NzbDir + "\\" + nzbFileNameFix + ".nzb.gz"))
             {
                 Log("Episode in archive: " + nzbFileName + ".nzb.gz", true);
                 return true;
@@ -1169,7 +1138,7 @@ namespace SABSync
 
         private string AddToQueue(Int64 reportId)
         {
-            string nzbFileDownload = String.Format(Config.SABRequest, "mode=addid&name=" + reportId);
+            string nzbFileDownload = String.Format(Config.SabRequest, "mode=addid&name=" + reportId);
             Log("Adding report [{0}] to the queue.", reportId);
             WebClient client = new WebClient();
             string response = client.DownloadString(nzbFileDownload).Replace("\n", String.Empty);
@@ -1181,7 +1150,7 @@ namespace SABSync
         {
             titleFix = CleanString(titleFix);
             titleFix = CleanUrlString(titleFix);
-            string nzbFileDownload = String.Format(Config.SABRequest, "mode=addurl&name=" + downloadLink + "&cat=tv&nzbname=" + titleFix);
+            string nzbFileDownload = String.Format(Config.SabRequest, "mode=addurl&name=" + downloadLink + "&cat=tv&nzbname=" + titleFix);
             Log("DEBUG: " + nzbFileDownload);
             Log("Adding report [{0}] to the queue.", rssTitle);
             WebClient client = new WebClient();
@@ -1358,7 +1327,7 @@ namespace SABSync
 
         internal void Log(string message, params object[] para)
         {
-            Log(String.Format(message, para));
+            _logger.Log(message, para);
         }
 
         internal void Log(string message, bool showInSummary)
