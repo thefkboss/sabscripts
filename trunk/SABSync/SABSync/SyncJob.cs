@@ -546,10 +546,6 @@ namespace SABSync
 
             try
             {
-                if (title.Length > 80)
-                {
-                    title = title.Substring(0, 79);
-                }
                 string[] titleSplitX = null;
 
                 string patternMulti = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))[Ee](?<EpisodeTwo>(?:\d{1,2}))";
