@@ -34,12 +34,14 @@ namespace SABSync
             TvTemplate = ConfigurationManager.AppSettings["tvTemplate"];
             if (string.IsNullOrEmpty(TvTemplate))
                 throw new ApplicationException("Configuration missing: tvTemplate");
+            MyShows = GetMyShows();
         }
 
         public bool DownloadPropers { get; set; }
         public string[] DownloadQuality { get; set; }
         public IList<FeedInfo> Feeds { get; set; }
         public string IgnoreSeasons { get; set; }
+        public IList<string> MyShows { get; set; }
         public DirectoryInfo NzbDir { get; set; }
         public string SabRequest { get; set; }
         public bool SabReplaceChars { get; set; }
@@ -50,6 +52,26 @@ namespace SABSync
         public string TvTemplate { get; set; }
         public bool VerboseLogging { get; set; }
         public string[] VideoExt { get; set; }
+
+        private IList<string> GetMyShows()
+        {
+            var list = new List<string>();
+            foreach (DirectoryInfo rootFolder in TvRootFolders)
+            {
+                if (VerboseLogging)
+                    Log.Log("TVRoot Directory: {0}", rootFolder);
+
+                foreach (var show in rootFolder.GetDirectories())
+                {
+                    if (VerboseLogging)
+                        Log.Log("Adding show to wanted shows list: " + show);
+
+                    if (!list.Contains(show.ToString()))
+                        list.Add(show.ToString());
+                }
+            }
+            return list;
+        }
 
         private static string GetSabRequest()
         {

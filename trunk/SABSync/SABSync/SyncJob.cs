@@ -12,7 +12,6 @@ namespace SABSync
     public class SyncJob
     {
         private readonly Logger _logger = new Logger();
-        private List<string> _wantedShowNames = new List<string>();
         private readonly List<string> Queued = new List<string>();
         private readonly List<string> Summary = new List<string>();
 
@@ -27,9 +26,7 @@ namespace SABSync
         {
             try
             {
-                LoadWantedShows();
-
-                Log("Watching {0} shows", _wantedShowNames.Count);
+                Log("Watching {0} shows", Config.MyShows.Count);
                 Log("IgnoreSeasons: {0}", Config.IgnoreSeasons);
 
                 foreach (FeedInfo feedInfo in Config.Feeds)
@@ -49,24 +46,6 @@ namespace SABSync
             {
                 Log(ex.Message, true);
                 Log(ex.ToString(), true);
-            }
-        }
-
-        private void LoadWantedShows()
-        {
-            foreach (DirectoryInfo rootFolder in Config.TvRootFolders)
-            {
-                if (Config.VerboseLogging)
-                    Log("TVRoot Directory: {0}", rootFolder);
-
-                foreach (var show in rootFolder.GetDirectories())
-                {
-                    if (Config.VerboseLogging)
-                        Log("Adding show to wanted shows list: " + show);
-
-                    if (!_wantedShowNames.Contains(show.ToString()))
-                        _wantedShowNames.Add(show.ToString());
-                }
             }
         }
 
@@ -410,7 +389,7 @@ namespace SABSync
 
         private bool IsShowWanted(string showName)
         {
-            foreach (var di in _wantedShowNames)
+            foreach (var di in Config.MyShows)
             {
                 if (string.Equals(di, CleanString(showName),
                     StringComparison.InvariantCultureIgnoreCase))
