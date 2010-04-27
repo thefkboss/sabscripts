@@ -1,47 +1,32 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Xml;
 
 namespace SABSync
 {
     class TvRage
     {
+        private static readonly Logger logger = new Logger();
+
         internal static string CheckTvRage(string showName, int seasonNumber, int episodeNumber)
         {
-            try
-            {
-                string episodeName = "unknown";
-                string seriesId = GetShowId(showName);
+            string episodeName = "unknown";
+            string seriesId = GetShowId(showName);
 
-                if (seriesId != null)
-                    episodeName = GetEpisodeName(seriesId, seasonNumber, episodeNumber);
+            if (seriesId != null)
+                episodeName = GetEpisodeName(seriesId, seasonNumber, episodeNumber);
 
-                return episodeName;
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            return episodeName;
         }
 
         internal static string CheckTvRage(string showName, int year, int month, int day)
         {
-            try
-            {
-                string episodeName = "unknown";
-                string seriesId = GetShowId(showName);
+            string episodeName = "unknown";
+            string seriesId = GetShowId(showName);
 
-                if (seriesId != null)
-                    episodeName = GetEpisodeName(seriesId, year, month, day);
+            if (seriesId != null)
+                episodeName = GetEpisodeName(seriesId, year, month, day);
 
-                return episodeName;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            return episodeName;
         }
 
         internal static string GetShowId(string showName)
@@ -52,8 +37,8 @@ namespace SABSync
             {
                 string url = "http://services.tvrage.com/feeds/search.php?show=" + showName;
 
-                XmlTextReader tvRageRssReader = new XmlTextReader(url);
-                XmlDocument tvRageRssDoc = new XmlDocument();
+                var tvRageRssReader = new XmlTextReader(url);
+                var tvRageRssDoc = new XmlDocument();
                 tvRageRssDoc.Load(tvRageRssReader);
 
                 var data = tvRageRssDoc.GetElementsByTagName(@"Results");
@@ -64,13 +49,13 @@ namespace SABSync
 
                     if (show.Count == 0)
                     {
-                        Program.Log("No Series Found");
+                        logger.Log("No Series Found");
                         return showId;
                     }
 
                     foreach (var s in show)
                     {
-                        XmlElement tvRageElement = (XmlElement)s;
+                        var tvRageElement = (XmlElement)s;
 
                         string tvRageShowName = tvRageElement.GetElementsByTagName("SeriesName")[0].InnerText.ToLower();
 
@@ -79,18 +64,15 @@ namespace SABSync
                             showId = tvRageElement.GetElementsByTagName("showid")[0].InnerText.ToLower();
                             return showId;
                         }
-
-                        else
-                            continue;
                     }
-                    XmlElement tvRageElementLast = (XmlElement)show.Item(0);
+                    var tvRageElementLast = (XmlElement)show.Item(0);
                     showId = tvRageElementLast.GetElementsByTagName("showid")[0].InnerText.ToLower();
                     return showId;
                 }
             }
             catch (Exception ex)
             {
-                Program.Log("An Error has occurred while get the Series ID: " + ex);
+                logger.Log("An Error has occurred while get the Series ID: " + ex);
             }
             return null;
         }
