@@ -23,12 +23,12 @@ namespace SABSync
             ShowAliases = GetShowAliases();
             ShowQualities = GetShowQualities();
             VideoExt = Settings["videoExt"].Trim(';', ' ').Split(';');
-            NzbDir = new DirectoryInfo(ConfigurationManager.AppSettings["nzbDir"]);
-            DownloadPropers = Convert.ToBoolean(ConfigurationManager.AppSettings["downloadPropers"]);
-            DownloadQuality = ConfigurationManager.AppSettings["downloadQuality"].Trim(';', ' ').Split(';');
-            SabReplaceChars = Convert.ToBoolean(ConfigurationManager.AppSettings["sabReplaceChars"]);
-            IgnoreSeasons = ConfigurationManager.AppSettings["ignoreSeasons"];
-            TvDailyTemplate = ConfigurationManager.AppSettings["tvDailyTemplate"];
+            NzbDir = new DirectoryInfo(Settings["nzbDir"]);
+            DownloadPropers = Convert.ToBoolean(Settings["downloadPropers"]);
+            DownloadQuality = Settings["downloadQuality"].Trim(';', ' ').Split(';');
+            SabReplaceChars = Convert.ToBoolean(Settings["sabReplaceChars"]);
+            IgnoreSeasons = Settings["ignoreSeasons"];
+            TvDailyTemplate = Settings["tvDailyTemplate"];
             if (string.IsNullOrEmpty(TvDailyTemplate))
                 throw new ApplicationException("Configuration missing: tvDailyTemplate");
             TvTemplate = ConfigurationManager.AppSettings["tvTemplate"];
@@ -81,7 +81,7 @@ namespace SABSync
             {
                 new NzbSite {Name = "newzbin", Url = "newzbin.com", Pattern = @"\d{7,10}"},
                 new NzbSite {Name = "nzbsDotOrg", Url = "nzbs.org", Pattern = @"\d{5,10}"},
-                new NzbSite {Name = "tvnzb", Url = "tvnzb.com", Pattern = @"\d{5,10}"},
+                new NzbSite {Name = "tvnzb", Url = "tvnzb.com", Pattern = @"\d{5,10}", UseQuality = true},
                 new NzbSite {Name = "nzbmatrix", Url = "nzbmatrix.com", Pattern = @"\d{6,10}"},
                 new NzbSite {Name = "nzbsrus", Url = "nzbsrus.com", Pattern = @"\d{6,10}"},
             };
