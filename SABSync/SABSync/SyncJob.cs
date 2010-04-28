@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -16,7 +17,6 @@ namespace SABSync
         private readonly List<string> Summary = new List<string>();
 
         private SyncJobConfig Config { get; set; }
-
 
         public SyncJob()
         {
@@ -37,10 +37,14 @@ namespace SABSync
                     RssFeed feed = RssFeed.Read(feedInfo.Url);
                     foreach (RssItem item in feed.Channels[0].Items)
                     {
-                        if (IsFiltered(item)) 
+                        NzbInfo nzb = ParseNzbInfo(feed, item);
+
+                        if (IsPassworded(nzb)) 
                             continue;
 
-                        NzbInfo nzb = ParseNzbInfo(feed, item);
+                        if (!IsValidQuality(nzb))
+                            continue;
+
                         QueueIfWanted(nzb);
                     }
                 }
@@ -54,11 +58,11 @@ namespace SABSync
             }
         }
 
-        private bool IsFiltered(RssItem item)
+        private bool IsPassworded(NzbInfo nzb)
         {
-            if (item.Title.EndsWith("(Passworded)", StringComparison.InvariantCultureIgnoreCase))
+            if (nzb.Title.EndsWith("(Passworded)", StringComparison.InvariantCultureIgnoreCase))
             {
-                Log("Skipping Passworded Report {0}", item.Title);
+                Log("Skipping Passworded Report {0}", nzb.Title);
                 return true;
             }
             return false;
@@ -88,90 +92,27 @@ namespace SABSync
 
         private void QueueIfWanted(NzbInfo nzb)
         {
-            var reportId = Convert.ToInt64(nzb.Id);
-            var rssTitle = nzb.Title;
-            var nzbSite = nzb.Site;
-            var nzbId = nzb.Id;
-            var downloadLink = nzb.Link;
-
             if (nzb.Site == "newzbin")
             {
-                if (IsEpisodeWanted(rssTitle, reportId))
-                {
-                    string queueResponse = AddToQueue(reportId);
-                    Queued.Add(rssTitle + ": " + queueResponse);
-                }
+                var reportId = Convert.ToInt64(nzb.Id);
+                if (IsEpisodeWanted(nzb.Title, reportId))
+                    Queued.Add(nzb.Title + ": " + AddToQueue(reportId));
+                return;
             }
 
-            else if (nzbSite == "nzbsDotOrg")
-            {
-                if (IsEpisodeWanted(rssTitle, nzbId))
-                {
-                    string titleFix = GetTitleFix(rssTitle);
-                    string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                    Queued.Add(titleFix + ": " + queueResponse);
-                }
-            }
+            if (!IsEpisodeWanted(nzb.Title, nzb.Id)) 
+                return;
+            
+            string titleFix = GetTitleFix(nzb.Title);
+            Queued.Add(nzb.Title + ": " + AddToQueue(nzb.Title, nzb.Link, titleFix));
+        }
 
-            else if (nzbSite == "tvnzb")
-            {
-                bool qualityWanted = false;
-                for (int i = 0; i < Config.DownloadQuality.Length; i++)
-                {
-                    if (rssTitle.ToLower().Contains(Config.DownloadQuality[i]))
-                        qualityWanted = true;
-                }
-
-                if (qualityWanted)
-                {
-                    if (IsEpisodeWanted(rssTitle, nzbId))
-                    {
-                        string titleFix = GetTitleFix(rssTitle);
-                        string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                        Queued.Add(titleFix + ": " + queueResponse);
-                    }
-                }
-            }
-
-            else if (nzbSite == "nzbmatrix")
-            {
-                if (IsEpisodeWanted(rssTitle, nzbId))
-                {
-                    string titleFix = GetTitleFix(rssTitle);
-                    string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                    Queued.Add(titleFix + ": " + queueResponse);
-                }
-            }
-
-            else if (nzbSite == "nzbsrus")
-            {
-                if (IsEpisodeWanted(rssTitle, nzbId))
-                {
-                    string titleFix = GetTitleFix(rssTitle);
-                    string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                    Queued.Add(titleFix + ": " + queueResponse);
-                }
-            }
-
-            else
-            {
-                bool qualityWanted = false;
-                for (int i = 0; i < Config.DownloadQuality.Length; i++)
-                {
-                    if (rssTitle.ToLower().Contains(Config.DownloadQuality[i]))
-                        qualityWanted = true;
-                }
-
-                if (qualityWanted)
-                {
-                    if (IsEpisodeWanted(rssTitle, nzbId))
-                    {
-                        string titleFix = GetTitleFix(rssTitle);
-                        string queueResponse = AddToQueue(rssTitle, downloadLink, titleFix);
-                        Queued.Add(rssTitle + ": " + queueResponse);
-                    }
-                }
-            }
+        private bool IsValidQuality(NzbInfo nzb)
+        {
+            bool useDownloadQuality = !new[] {"nzbmatrix", "nzbsrus", "nzbsDotOrg", "newzbin"}.Contains(nzb.Site);
+            if (useDownloadQuality) 
+                return Config.DownloadQuality.Any(quality => nzb.Title.ToLower().Contains(quality));
+            return true;
         }
 
         private void LogSummary()
