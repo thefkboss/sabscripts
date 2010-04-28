@@ -16,13 +16,6 @@ namespace SABSync
         private readonly List<string> Queued = new List<string>();
         private readonly List<string> Summary = new List<string>();
 
-        private SyncJobConfig Config { get; set; }
-
-        public SyncJob()
-        {
-            Config = new SyncJobConfig();
-        }
-
         public void Start()
         {
             try

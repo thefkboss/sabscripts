@@ -57,7 +57,7 @@
     <Compile Include="ShowAlias.cs" />
     <Compile Include="ShowQuality.cs" />
     <Compile Include="SyncJob.cs" />
-    <Compile Include="SyncJobConfig.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="TvDb.cs" />
     <Compile Include="TvRage.cs" />
   </ItemGroup>
