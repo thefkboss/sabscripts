@@ -48,7 +48,7 @@ namespace SABSync
 
         private static NzbInfo ParseNzbInfo(RssFeed feed, RssItem item)
         {
-            NzbSite site = GetNzbSite(feed.Url.ToLower());
+            NzbSite site = NzbSite.Parse(feed.Url.ToLower());
             return new NzbInfo
             {
                 Id = site.ParseId(item.Link.ToString()),
@@ -56,16 +56,6 @@ namespace SABSync
                 Site = site,
                 Link = item.Link.ToString().Replace("&", "%26")
             };
-        }
-
-        // TODO: use HttpUtility.ParseQueryString();
-        // https://nzbmatrix.com/api-nzb-download.php?id=626526
-        private static NzbSite GetNzbSite(string url)
-        {
-            foreach (var site in Config.NzbSites)
-                if (url.Contains(site.Url))
-                    return site;
-            return new NzbSite { Name = "unknown", Pattern = @"\d{6,10}", UseQuality = true};
         }
 
         private void QueueIfWanted(NzbInfo nzb)
