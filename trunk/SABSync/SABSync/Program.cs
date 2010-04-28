@@ -36,6 +36,7 @@ namespace SABSync
             catch (Exception e)
             {
                 logger.Log("Error: {0}", e.Message);
+                logger.Log(e.ToString());
             }
         }
     }

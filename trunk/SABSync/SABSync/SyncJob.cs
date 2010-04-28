@@ -18,67 +18,59 @@ namespace SABSync
 
         public void Start()
         {
-            try
-            {
-                Log("Watching {0} shows", Config.MyShows.Count);
-                Log("IgnoreSeasons: {0}", Config.IgnoreSeasons);
+            Log("Watching {0} shows", Config.MyShows.Count);
+            Log("IgnoreSeasons: {0}", Config.IgnoreSeasons);
 
-                foreach (FeedInfo feedInfo in Config.Feeds)
+            foreach (FeedInfo feedInfo in Config.Feeds)
+            {
+                Log("Downloading feed {0} from {1}", feedInfo.Name, feedInfo.Url);
+
+                RssFeed feed = RssFeed.Read(feedInfo.Url);
+                foreach (RssItem item in feed.Channels[0].Items)
                 {
-                    Log("Downloading feed {0} from {1}", feedInfo.Name, feedInfo.Url);
+                    NzbInfo nzb = ParseNzbInfo(feed, item);
 
-                    RssFeed feed = RssFeed.Read(feedInfo.Url);
-                    foreach (RssItem item in feed.Channels[0].Items)
+                    if (nzb.IsPassworded())
                     {
-                        NzbInfo nzb = ParseNzbInfo(feed, item);
-
-                        if (nzb.IsPassworded())
-                        {
-                            Log("Skipping Passworded Report {0}", nzb.Title);
-                            continue;
-                        }
-
-                        if (!nzb.IsValidQuality())
-                            continue;
-
-                        QueueIfWanted(nzb);
+                        Log("Skipping Passworded Report {0}", nzb.Title);
+                        continue;
                     }
-                }
 
-                LogSummary();
+                    if (!nzb.IsValidQuality())
+                        continue;
+
+                    QueueIfWanted(nzb);
+                }
             }
-            catch (Exception ex)
-            {
-                Log(ex.Message, true);
-                Log(ex.ToString(), true);
-            }
+
+            LogSummary();
         }
 
-        private NzbInfo ParseNzbInfo(RssFeed feed, RssItem item)
+        private static NzbInfo ParseNzbInfo(RssFeed feed, RssItem item)
         {
             NzbSite site = GetNzbSite(feed.Url.ToLower());
             return new NzbInfo
             {
-                Id = Regex.Match(item.Link.ToString(), site.Pattern).Value,
+                Id = site.ParseId(item.Link.ToString()),
                 Title = item.Title,
-                Site = site.Name,
+                Site = site,
                 Link = item.Link.ToString().Replace("&", "%26")
             };
         }
 
         // TODO: use HttpUtility.ParseQueryString();
         // https://nzbmatrix.com/api-nzb-download.php?id=626526
-        private NzbSite GetNzbSite(string url)
+        private static NzbSite GetNzbSite(string url)
         {
             foreach (var site in Config.NzbSites)
                 if (url.Contains(site.Url))
                     return site;
-            return new NzbSite { Name = "unknown", Pattern = @"\d{6,10}" };
+            return new NzbSite { Name = "unknown", Pattern = @"\d{6,10}", UseQuality = true};
         }
 
         private void QueueIfWanted(NzbInfo nzb)
         {
-            if (nzb.Site == "newzbin")
+            if (nzb.Site.Name == "newzbin")
             {
                 var reportId = Convert.ToInt64(nzb.Id);
                 if (IsEpisodeWanted(nzb.Title, reportId))
