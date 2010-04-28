@@ -32,10 +32,13 @@ namespace SABSync
                     {
                         NzbInfo nzb = ParseNzbInfo(feed, item);
 
-                        if (IsPassworded(nzb)) 
+                        if (nzb.IsPassworded())
+                        {
+                            Log("Skipping Passworded Report {0}", nzb.Title);
                             continue;
+                        }
 
-                        if (!IsValidQuality(nzb))
+                        if (!nzb.IsValidQuality())
                             continue;
 
                         QueueIfWanted(nzb);
@@ -51,20 +54,10 @@ namespace SABSync
             }
         }
 
-        private bool IsPassworded(NzbInfo nzb)
-        {
-            if (nzb.Title.EndsWith("(Passworded)", StringComparison.InvariantCultureIgnoreCase))
-            {
-                Log("Skipping Passworded Report {0}", nzb.Title);
-                return true;
-            }
-            return false;
-        }
-
         private NzbInfo ParseNzbInfo(RssFeed feed, RssItem item)
         {
             NzbSite site = GetNzbSite(feed.Url.ToLower());
-            return new NzbInfo 
+            return new NzbInfo
             {
                 Id = Regex.Match(item.Link.ToString(), site.Pattern).Value,
                 Title = item.Title,
@@ -80,7 +73,7 @@ namespace SABSync
             foreach (var site in Config.NzbSites)
                 if (url.Contains(site.Url))
                     return site;
-            return new NzbSite {Name = "unknown", Pattern = @"\d{6,10}"};
+            return new NzbSite { Name = "unknown", Pattern = @"\d{6,10}" };
         }
 
         private void QueueIfWanted(NzbInfo nzb)
@@ -93,19 +86,11 @@ namespace SABSync
                 return;
             }
 
-            if (!IsEpisodeWanted(nzb.Title, nzb.Id)) 
+            if (!IsEpisodeWanted(nzb.Title, nzb.Id))
                 return;
-            
+
             string titleFix = GetTitleFix(nzb.Title);
             Queued.Add(nzb.Title + ": " + AddToQueue(nzb.Title, nzb.Link, titleFix));
-        }
-
-        private bool IsValidQuality(NzbInfo nzb)
-        {
-            bool useDownloadQuality = !new[] {"nzbmatrix", "nzbsrus", "nzbsDotOrg", "newzbin"}.Contains(nzb.Site);
-            if (useDownloadQuality) 
-                return Config.DownloadQuality.Any(quality => nzb.Title.ToLower().Contains(quality));
-            return true;
         }
 
         private void LogSummary()
