@@ -8,12 +8,12 @@ using System.IO;
 
 namespace SABSync
 {
-    public class SyncJobConfig
+    public static class Config
     {
         private static readonly Logger Log = new Logger();
         private static readonly NameValueCollection Settings = ConfigurationManager.AppSettings;
 
-        public SyncJobConfig()
+        static Config()
         {
             Log.Log("Loading configuration...");
             TvRootFolders = GetTvRootFolders();
@@ -38,24 +38,24 @@ namespace SABSync
             NzbSites = GetNzbSites();
         }
 
-        public bool DownloadPropers { get; set; }
-        public string[] DownloadQuality { get; set; }
-        public IList<FeedInfo> Feeds { get; set; }
-        public string IgnoreSeasons { get; set; }
-        public IList<string> MyShows { get; set; }
-        public DirectoryInfo NzbDir { get; set; }
-        public IList<NzbSite> NzbSites { get; set; }
-        public string SabRequest { get; set; }
-        public bool SabReplaceChars { get; set; }
-        public IList<ShowAlias> ShowAliases { get; set; }
-        public IList<ShowQuality> ShowQualities { get; set; }
-        public string TvDailyTemplate { get; set; }
-        public IList<DirectoryInfo> TvRootFolders { get; set; }
-        public string TvTemplate { get; set; }
-        public bool VerboseLogging { get; set; }
-        public string[] VideoExt { get; set; }
+        public static bool DownloadPropers { get; set; }
+        public static string[] DownloadQuality { get; set; }
+        public static IList<FeedInfo> Feeds { get; set; }
+        public static string IgnoreSeasons { get; set; }
+        public static IList<string> MyShows { get; set; }
+        public static DirectoryInfo NzbDir { get; set; }
+        public static IList<NzbSite> NzbSites { get; set; }
+        public static string SabRequest { get; set; }
+        public static bool SabReplaceChars { get; set; }
+        public static IList<ShowAlias> ShowAliases { get; set; }
+        public static IList<ShowQuality> ShowQualities { get; set; }
+        public static string TvDailyTemplate { get; set; }
+        public static IList<DirectoryInfo> TvRootFolders { get; set; }
+        public static string TvTemplate { get; set; }
+        public static bool VerboseLogging { get; set; }
+        public static string[] VideoExt { get; set; }
 
-        private IList<string> GetMyShows()
+        private static IList<string> GetMyShows()
         {
             var list = new List<string>();
             foreach (DirectoryInfo rootFolder in TvRootFolders)
@@ -75,7 +75,7 @@ namespace SABSync
             return list;
         }
 
-        private IList<NzbSite> GetNzbSites()
+        private static IList<NzbSite> GetNzbSites()
         {
             return new List<NzbSite>
             {
