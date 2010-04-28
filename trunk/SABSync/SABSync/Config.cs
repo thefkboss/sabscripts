@@ -35,7 +35,6 @@ namespace SABSync
             if (string.IsNullOrEmpty(TvTemplate))
                 throw new ApplicationException("Configuration missing: tvTemplate");
             MyShows = GetMyShows();
-            NzbSites = GetNzbSites();
         }
 
         public static bool DownloadPropers { get; set; }
@@ -73,18 +72,6 @@ namespace SABSync
                 }
             }
             return list;
-        }
-
-        private static IList<NzbSite> GetNzbSites()
-        {
-            return new List<NzbSite>
-            {
-                new NzbSite {Name = "newzbin", Url = "newzbin.com", Pattern = @"\d{7,10}"},
-                new NzbSite {Name = "nzbsDotOrg", Url = "nzbs.org", Pattern = @"\d{5,10}"},
-                new NzbSite {Name = "tvnzb", Url = "tvnzb.com", Pattern = @"\d{5,10}", UseQuality = true},
-                new NzbSite {Name = "nzbmatrix", Url = "nzbmatrix.com", Pattern = @"\d{6,10}"},
-                new NzbSite {Name = "nzbsrus", Url = "nzbsrus.com", Pattern = @"\d{6,10}"},
-            };
         }
 
         private static string GetSabRequest()
