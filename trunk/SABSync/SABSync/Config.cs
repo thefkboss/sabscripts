@@ -43,7 +43,6 @@ namespace SABSync
         public static string IgnoreSeasons { get; set; }
         public static IList<string> MyShows { get; set; }
         public static DirectoryInfo NzbDir { get; set; }
-        public static IList<NzbSite> NzbSites { get; set; }
         public static string SabRequest { get; set; }
         public static bool SabReplaceChars { get; set; }
         public static IList<ShowAlias> ShowAliases { get; set; }

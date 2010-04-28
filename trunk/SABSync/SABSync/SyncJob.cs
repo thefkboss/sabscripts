@@ -60,19 +60,25 @@ namespace SABSync
 
         private void QueueIfWanted(NzbInfo nzb)
         {
+            var sab = new SabService();
+            string queueResponse;
+
             if (nzb.Site.Name == "newzbin")
             {
-                var reportId = Convert.ToInt64(nzb.Id);
-                if (IsEpisodeWanted(nzb.Title, reportId))
-                    Queued.Add(nzb.Title + ": " + AddToQueue(reportId));
-                return;
+                if (!IsEpisodeWanted(nzb.Title, Convert.ToInt64(nzb.Id)))
+                    return;
+                queueResponse = sab.AddByNewzbinId(nzb);
+            }
+            else
+            {
+                if (!IsEpisodeWanted(nzb.Title, nzb.Id))
+                    return;
+                nzb.Title = GetTitleFix(nzb.Title);
+                queueResponse = sab.AddByUrl(nzb);
             }
 
-            if (!IsEpisodeWanted(nzb.Title, nzb.Id))
-                return;
-
-            string titleFix = GetTitleFix(nzb.Title);
-            Queued.Add(nzb.Title + ": " + AddToQueue(nzb.Title, nzb.Link, titleFix));
+            // TODO: check if Queued.Add need unfixed Title (was previously)
+            Queued.Add(string.Format("{0}: {1}", nzb.Title, queueResponse));
         }
 
         private void LogSummary()
@@ -223,33 +229,11 @@ namespace SABSync
             return fileMask;
         } //Ends GetDailyShowNamingScheme
 
-        private string CleanString(string name)
+        private static string CleanString(string name)
         {
             string result = name;
             string[] badCharacters = { "\\", "/", "<", ">", "?", "*", ":", "|", "\"" };
             string[] goodCharacters = { "+", "+", "{", "}", "!", "@", "-", "#", "`" };
-
-            for (int i = 0; i < badCharacters.Length; i++)
-            {
-                if (Config.SabReplaceChars)
-                {
-                    result = result.Replace(badCharacters[i], goodCharacters[i]);
-                }
-                else
-                {
-                    result = result.Replace(badCharacters[i], "");
-                }
-            }
-
-            return result.Trim();
-        }
-
-        private string CleanUrlString(string name)
-        {
-            string result = name;
-            string[] badCharacters = { "%", "<", ">", "#", "{", "}", "|", "\\", "^", "`", "[", "]", "`", ";", "/", "?", ":", "@", "=", "&", "$" };
-            string[] goodCharacters = { "%25", "%3C", "%3E", "%23", "%7B", "%7D", "%7C", "%5C", "%5E", "%7E", "%5B", "%5D", "%60", "%3B", "%2F", "%3F", "%3A", "%40", "%3D", "%26", "%24" };
-
 
             for (int i = 0; i < badCharacters.Length; i++)
             {
@@ -989,29 +973,6 @@ namespace SABSync
 
             return false;
         }
-
-        private string AddToQueue(Int64 reportId)
-        {
-            string nzbFileDownload = String.Format(Config.SabRequest, "mode=addid&name=" + reportId);
-            Log("Adding report [{0}] to the queue.", reportId);
-            WebClient client = new WebClient();
-            string response = client.DownloadString(nzbFileDownload).Replace("\n", String.Empty);
-            Log("Queue Response: [{0}]", response);
-            return response;
-        } // Ends AddToQueue
-
-        private string AddToQueue(string rssTitle, string downloadLink, string titleFix)
-        {
-            titleFix = CleanString(titleFix);
-            titleFix = CleanUrlString(titleFix);
-            string nzbFileDownload = String.Format(Config.SabRequest, "mode=addurl&name=" + downloadLink + "&cat=tv&nzbname=" + titleFix);
-            Log("DEBUG: " + nzbFileDownload);
-            Log("Adding report [{0}] to the queue.", rssTitle);
-            WebClient client = new WebClient();
-            string response = client.DownloadString(nzbFileDownload).Replace("\n", String.Empty);
-            Log("Queue Response: [{0}]", response);
-            return response;
-        } //Ends AddToQueue (Non-Newzbin)
 
         private string ShowAlias(string showName)
         {
