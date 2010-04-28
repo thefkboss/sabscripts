@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace SABSync.Tests
@@ -15,26 +16,75 @@ namespace SABSync.Tests
             new NzbSite {Name = "nzbsrus", Url = "nzbsrus.com", Pattern = @"\d{6,10}"},
         };
 
-        [Test]
-        public void SiteUsesQuality_IsValidQuality_ReturnsTrue()
+        private NzbSite TvNzbSite
         {
-            var qualities = new[] { "xvid" };
-            var nzb = new NzbInfo(_sites, qualities)
+            get { return _sites.Single(s => s.Name == "tvnzb"); }
+        }
+
+        private NzbSite NzbMatrixSite
+        {
+            get { return _sites.Single(s => s.Name == "nzbmatrix"); }
+        }
+
+        [Test]
+        public void IsValidQuality_SiteDoesNotUseQuality_ReturnsTrue()
+        {
+            var qualities = new[] {"xvid"};
+            var nzb = new NzbInfo(qualities)
             {
-                Site = "tvnzb",
+                Site = NzbMatrixSite,
+                Title = "Show S01E01 Episode 720p",
+            };
+
+            Expect(nzb.IsValidQuality(), Is.True);
+        }
+
+        [Test]
+        public void IsValidQuality_SiteNullInvalidQuality_ReturnsFalse()
+        {
+            var qualities = new[] {"xvid"};
+            var nzb = new NzbInfo(qualities)
+            {
+                Site = null,
+                Title = "Show S01E01 Episode 720p",
+            };
+
+            Expect(nzb.IsValidQuality(), Is.False);
+        }
+
+        [Test]
+        public void IsValidQuality_SiteNullValidQuality_ReturnsTrue()
+        {
+            var qualities = new[] {"xvid"};
+            var nzb = new NzbInfo(qualities)
+            {
+                Site = null,
                 Title = "Show S01E01 Episode Xvid",
             };
-            
+
             Expect(nzb.IsValidQuality(), Is.True);
         }
 
         [Test]
-        public void SiteUsesQuality_IsInvalidQuality_ReturnsFalse()
+        public void IsValidQuality_SiteUsesQualityMultiQualityValidQuality_ReturnsTrue()
         {
-            var qualities = new[] { "xvid" };
-            var nzb = new NzbInfo(_sites, qualities)
+            var qualities = new[] {"xvid", "720p"};
+            var nzb = new NzbInfo(qualities)
             {
-                Site = "tvnzb",
+                Site = TvNzbSite,
+                Title = "Show S01E01 Episode 720p",
+            };
+
+            Expect(nzb.IsValidQuality(), Is.True);
+        }
+
+        [Test]
+        public void IsValidQuality_SiteUsesQualityInvalidQuality_ReturnsFalse()
+        {
+            var qualities = new[] {"xvid"};
+            var nzb = new NzbInfo(qualities)
+            {
+                Site = TvNzbSite,
                 Title = "Show S01E01 Episode 720p",
             };
 
@@ -42,51 +92,12 @@ namespace SABSync.Tests
         }
 
         [Test]
-        public void SiteUsesQualityMultipleQualities_IsValidQuality_ReturnsTrue()
+        public void IsValidQuality_SiteUsesQualityValidQuality_ReturnsTrue()
         {
-            var qualities = new[] { "xvid", "720p" };
-            var nzb = new NzbInfo(_sites, qualities)
+            var qualities = new[] {"xvid"};
+            var nzb = new NzbInfo(qualities)
             {
-                Site = "tvnzb",
-                Title = "Show S01E01 Episode 720p",
-            };
-
-            Expect(nzb.IsValidQuality(), Is.True);
-        }
-
-        [Test]
-        public void SiteDoesNotUseQuality_IsAnyQuality_ReturnsTrue()
-        {
-            var qualities = new[] { "xvid" };
-            var nzb = new NzbInfo(_sites, qualities)
-            {
-                Site = "nzbmatrix",
-                Title = "Show S01E01 Episode 720p",
-            };
-
-            Expect(nzb.IsValidQuality(), Is.True);
-        }
-
-        [Test]
-        public void SiteNotFound_IsInvalidQuality_ReturnsFalse()
-        {
-            var qualities = new[] { "xvid" };
-            var nzb = new NzbInfo(_sites, qualities)
-            {
-                Site = "unknown",
-                Title = "Show S01E01 Episode 720p",
-            };
-
-            Expect(nzb.IsValidQuality(), Is.False);
-        }
-
-        [Test]
-        public void SiteNotFound_IsValidQuality_ReturnsTrue()
-        {
-            var qualities = new[] { "xvid" };
-            var nzb = new NzbInfo(_sites, qualities)
-            {
-                Site = "unknown",
+                Site = TvNzbSite,
                 Title = "Show S01E01 Episode Xvid",
             };
 
