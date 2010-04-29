@@ -424,279 +424,258 @@ namespace SABSync
             return false;
         }
 
+        private const string PatternS01E01E02 = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))[Ee](?<EpisodeTwo>(?:\d{1,2}))";
+
+        private bool IsEpWantedS01E01E02(Match match, string title, string nzbId)
+        {
+            string[] titleSplitMulti = Regex.Split(title, PatternS01E01E02);
+            string showName = titleSplitMulti[0].Replace('.', ' ');
+            showName = showName.TrimEnd();
+            showName = ShowAlias(showName);
+
+            int seasonNumber = 0;
+            int episodeNumberOne = 0;
+            int episodeNumberTwo = 0;
+
+            Int32.TryParse(match.Groups["Season"].Value, out seasonNumber);
+            Int32.TryParse(match.Groups["EpisodeOne"].Value, out episodeNumberOne);
+            Int32.TryParse(match.Groups["EpisodeTwo"].Value, out episodeNumberTwo);
+
+            if (!IsShowWanted(showName))
+                return false;
+
+            if (IsSeasonIgnored(showName, seasonNumber))
+                return false;
+
+            if (!IsQualityWanted(showName, title))
+                return false;
+
+            string episodeOneName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumberOne);
+            string episodeTwoName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumberTwo);
+            string titleFix = showName + " - " + seasonNumber + "x" + episodeNumberOne.ToString("D2") + "-" + seasonNumber + "x" + episodeNumberTwo.ToString("D2") + " - " + episodeOneName + " & " + episodeTwoName;
+
+            bool needProper = false;
+
+            if (Config.DownloadPropers && title.Contains("PROPER"))
+            {
+                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                    needProper = true;
+            }
+
+
+            foreach (var tvDir in Config.TvRootFolders)
+            {
+                string dir = GetEpisodeDir(showName, seasonNumber, episodeNumberOne, tvDir);
+                string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumberOne, tvDir);
+
+                if (needProper)
+                    DeleteForProper(dir, fileMask);
+
+                if (IsOnDisk(dir, fileMask))
+                    return false;
+
+                if (IsOnDisk(dir, seasonNumber, episodeNumberOne))
+                    return false;
+            }
+
+            if (IsInQueue(title, titleFix, nzbId))
+                return false;
+
+            if (InNzbArchive(title, titleFix))
+                return false;
+
+            if (IsQueued(titleFix))
+                return false;
+
+            return true;
+        }
+
+        private const string PatternS01E01 = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<Episode>(?:\d{1,2}))";
+        private const string Pattern1x01 = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
+        private const string PatternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
+
+        public class Show
+        {
+            public string Name { get; set; }
+            public int Season { get; set; }
+            public int Episode { get; set; }
+        }
+
+        private bool IsEpWantedS01E01(Match match, string title, string nzbId)
+        {
+            string showName = ShowAlias(Regex.Split(title, PatternS01E01)[0].Replace('.', ' ').TrimEnd());
+            int seasonNumber, episodeNumber;
+            int.TryParse(match.Groups["Season"].Value, out seasonNumber);
+            int.TryParse(match.Groups["Episode"].Value, out episodeNumber);
+
+            if (!IsShowWanted(showName))
+                return false;
+
+            string episodeName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumber);
+            string titleFix = string.Format("{0} - {1}x{2:D2} - {3}", 
+                showName, seasonNumber, episodeNumber, episodeName);
+
+            bool needProper = false;
+
+            if (   IsSeasonIgnored(showName, seasonNumber)
+                || !IsQualityWanted(showName, title)
+               )
+                return false;
+
+            if (Config.DownloadPropers && title.Contains("PROPER"))
+                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                    needProper = true;
+
+            foreach (var tvDir in Config.TvRootFolders)
+            {
+                string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber, tvDir);
+                string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber, tvDir);
+
+                if (needProper)
+                    DeleteForProper(dir, fileMask);
+
+                if (   IsOnDisk(dir, fileMask) 
+                    || IsOnDisk(dir, seasonNumber, episodeNumber)
+                   )
+                    return false;
+            }
+
+            if (   IsInQueue(title, titleFix, nzbId)
+                || InNzbArchive(title, titleFix)
+                || IsQueued(titleFix)
+               )
+                return false;
+
+            return true;
+        }
+
+        private bool IsEpWanted1x01(Match match, string title, string nzbId)
+        {
+            string showName = ShowAlias(Regex.Split(title, Pattern1x01)[0].Replace('.', ' ').TrimEnd());
+            int seasonNumber, episodeNumber;
+            int.TryParse(match.Groups["Season"].Value, out seasonNumber);
+            int.TryParse(match.Groups["Episode"].Value, out episodeNumber);
+            if (!IsShowWanted(showName))
+                return false;
+
+            string episodeName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumber);
+            string titleFix = string.Format("{0} - {1}x{2:D2} - {3}", 
+                showName, seasonNumber, episodeNumber, episodeName);
+
+            bool needProper = false;
+
+            if (   IsSeasonIgnored(showName, seasonNumber)
+                || !IsQualityWanted(showName, title)
+               )
+                return false;
+
+            if (Config.DownloadPropers && title.Contains("PROPER"))
+                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                    needProper = true;
+
+            foreach (var tvDir in Config.TvRootFolders)
+            {
+                string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber, tvDir);
+                string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber, tvDir);
+
+                if (needProper)
+                    DeleteForProper(dir, fileMask);
+
+                if (   IsOnDisk(dir, fileMask)
+                    || IsOnDisk(dir, seasonNumber, episodeNumber)
+                   )
+                    return false;
+            }
+
+            if (   IsInQueue(title, titleFix, nzbId)
+                || InNzbArchive(title, titleFix)
+                || IsQueued(titleFix)
+               )
+                return false;
+
+            return true;
+        }
+
+        private bool IsEpWantedDaily(Match match, string title, string nzbId)
+        {
+            string showName = ShowAlias(Regex.Split(title, PatternDaily)[0].Replace('.', ' ').TrimEnd());
+            int year, month, day;
+            int.TryParse(match.Groups["Year"].Value, out year);
+            int.TryParse(match.Groups["Month"].Value, out month);
+            int.TryParse(match.Groups["Day"].Value, out day);
+
+            if (!IsShowWanted(showName))
+                return false;
+
+            string episodeName = TvDb.CheckTvDb(showName, year, month, day);
+            string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2") + " - " + episodeName;
+
+            bool needProper = false;
+
+            if (!IsQualityWanted(showName, title))
+                return false;
+
+            if (Config.DownloadPropers && title.Contains("PROPER"))
+            {
+                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                    needProper = true;
+            }
+
+            foreach (var tvDir in Config.TvRootFolders)
+            {
+                string dir = GetEpisodeDir(showName, year, month, day, tvDir);
+                string fileMask = GetEpisodeFileMask(year, month, day, tvDir);
+
+                if (needProper)
+                    DeleteForProper(dir, fileMask);
+
+                if (IsOnDisk(dir, fileMask))
+                    return false;
+            }
+
+            if (IsInQueue(title, titleFix, nzbId))
+                return false;
+
+            if (InNzbArchive(title, titleFix))
+                return false;
+
+            if (IsQueued(titleFix))
+                return false;
+
+            return true;
+        }
+
         private bool IsEpisodeWanted(string title, string nzbId)
         {
             Log("----------------------------------------------------------------");
             Log("Verifying '{0}'", title);
-
             try
             {
-                string[] titleSplitX = null;
-
-                string patternMulti = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<EpisodeOne>(?:\d{1,2}))[Ee](?<EpisodeTwo>(?:\d{1,2}))";
-                string pattern = @"[Ss](?<Season>(?:\d{1,2}))[Ee](?<Episode>(?:\d{1,2}))";
-                string patternX = @"(?<Season>(?:\d{1,2}))[Xx](?<Episode>(?:\d{1,2}))";
-                string patternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
-
                 //Check for S01E01E02
-                Match titleMatchMulti = Regex.Match(title, patternMulti);
-
+                Match titleMatchMulti = Regex.Match(title, PatternS01E01E02);
                 if (titleMatchMulti.Success)
-                {
-                    string[] titleSplitMulti = Regex.Split(title, patternMulti);
-                    string showName = titleSplitMulti[0].Replace('.', ' ');
-                    showName = showName.TrimEnd();
-                    showName = ShowAlias(showName);
-
-                    int seasonNumber = 0;
-                    int episodeNumberOne = 0;
-                    int episodeNumberTwo = 0;
-
-                    Int32.TryParse(titleMatchMulti.Groups["Season"].Value, out seasonNumber);
-                    Int32.TryParse(titleMatchMulti.Groups["EpisodeOne"].Value, out episodeNumberOne);
-                    Int32.TryParse(titleMatchMulti.Groups["EpisodeTwo"].Value, out episodeNumberTwo);
-
-                    if (!IsShowWanted(showName))
-                        return false;
-
-                    if (IsSeasonIgnored(showName, seasonNumber))
-                        return false;
-
-                    if (!IsQualityWanted(showName, title))
-                        return false;
-
-                    string episodeOneName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumberOne);
-                    string episodeTwoName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumberTwo);
-                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumberOne.ToString("D2") + "-" + seasonNumber + "x" + episodeNumberTwo.ToString("D2") + " - " + episodeOneName + " & " + episodeTwoName;
-
-                    bool needProper = false;
-
-                    if (Config.DownloadPropers && title.Contains("PROPER"))
-                    {
-                        if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
-                            needProper = true;
-                    }
-
-
-                    foreach (var tvDir in Config.TvRootFolders)
-                    {
-                        string dir = GetEpisodeDir(showName, seasonNumber, episodeNumberOne, tvDir);
-                        string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumberOne, tvDir);
-
-                        if (needProper)
-                            DeleteForProper(dir, fileMask);
-
-                        if (IsOnDisk(dir, fileMask))
-                            return false;
-
-                        if (IsOnDisk(dir, seasonNumber, episodeNumberOne))
-                            return false;
-                    }
-
-                    if (IsInQueue(title, titleFix, nzbId))
-                        return false;
-
-                    if (InNzbArchive(title, titleFix))
-                        return false;
-
-                    if (IsQueued(titleFix))
-                        return false;
-
-                    return true;
-                }
+                    return IsEpWantedS01E01E02(titleMatchMulti, title, nzbId);
 
                 //Check for S01E01
-                Match titleMatch = Regex.Match(title, pattern);
-
+                Match titleMatch = Regex.Match(title, PatternS01E01);
                 if (titleMatch.Success)
-                {
-                    string[] titleSplit = Regex.Split(title, pattern);
-                    string showName = titleSplit[0].Replace('.', ' ');
-                    showName = showName.TrimEnd();
-                    showName = ShowAlias(showName);
-
-                    int seasonNumber = 0;
-                    int episodeNumber = 0;
-
-                    Int32.TryParse(titleMatch.Groups["Season"].Value, out seasonNumber);
-                    Int32.TryParse(titleMatch.Groups["Episode"].Value, out episodeNumber);
-
-                    if (!IsShowWanted(showName))
-                        return false;
-
-                    string episodeName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumber);
-                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
-
-                    bool needProper = false;
-
-                    if (IsSeasonIgnored(showName, seasonNumber))
-                        return false;
-
-                    if (!IsQualityWanted(showName, title))
-                        return false;
-
-                    if (Config.DownloadPropers && title.Contains("PROPER"))
-                    {
-                        if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
-                            needProper = true;
-                    }
-
-                    foreach (var tvDir in Config.TvRootFolders)
-                    {
-                        string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber, tvDir);
-                        string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber, tvDir);
-
-                        if (needProper)
-                            DeleteForProper(dir, fileMask);
-
-                        if (IsOnDisk(dir, fileMask))
-                            return false;
-
-                        if (IsOnDisk(dir, seasonNumber, episodeNumber))
-                            return false;
-                    }
-
-                    if (IsInQueue(title, titleFix, nzbId))
-                        return false;
-
-                    if (InNzbArchive(title, titleFix))
-                        return false;
-
-                    if (IsQueued(titleFix))
-                        return false;
-
-                    return true;
-                }
+                    return IsEpWantedS01E01(titleMatch, title, nzbId);
 
                 //Check for 1x01
-                Match titleMatchX = Regex.Match(title, patternX);
-
+                Match titleMatchX = Regex.Match(title, Pattern1x01);
                 if (titleMatchX.Success)
-                {
-                    titleSplitX = Regex.Split(title, patternX);
-                    string showName = titleSplitX[0].Replace('.', ' ');
-                    showName = showName.TrimEnd();
-                    showName = ShowAlias(showName);
-
-                    int seasonNumber = 0;
-                    int episodeNumber = 0;
-
-                    Int32.TryParse(titleMatchX.Groups["Season"].Value, out seasonNumber);
-                    Int32.TryParse(titleMatchX.Groups["Episode"].Value, out episodeNumber);
-
-                    if (!IsShowWanted(showName))
-                        return false;
-
-                    string episodeName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumber);
-                    string titleFix = showName + " - " + seasonNumber + "x" + episodeNumber.ToString("D2") + " - " + episodeName;
-
-                    bool needProper = false;
-
-                    if (IsSeasonIgnored(showName, seasonNumber))
-                        return false;
-
-                    if (!IsQualityWanted(showName, title))
-                        return false;
-
-                    if (Config.DownloadPropers && title.Contains("PROPER"))
-                    {
-                        if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
-                            needProper = true;
-                    }
-
-                    foreach (var tvDir in Config.TvRootFolders)
-                    {
-                        string dir = GetEpisodeDir(showName, seasonNumber, episodeNumber, tvDir);
-                        string fileMask = GetEpisodeFileMask(seasonNumber, episodeNumber, tvDir);
-
-                        if (needProper)
-                            DeleteForProper(dir, fileMask);
-
-                        if (IsOnDisk(dir, fileMask))
-                            return false;
-
-                        if (IsOnDisk(dir, seasonNumber, episodeNumber))
-                            return false;
-                    }
-
-                    if (IsInQueue(title, titleFix, nzbId))
-                        return false;
-
-                    if (InNzbArchive(title, titleFix))
-                        return false;
-
-                    if (IsQueued(titleFix))
-                        return false;
-
-                    return true;
-                }
+                    return IsEpWanted1x01(titleMatchX, title, nzbId);
 
                 //Daily Show Title Check
-                Match titleMatchDaily = Regex.Match(title, patternDaily);
-
+                Match titleMatchDaily = Regex.Match(title, PatternDaily);
                 if (titleMatchDaily.Success)
-                {
-                    string[] titleSplitDaily = Regex.Split(title, patternDaily);
-                    string showName = titleSplitDaily[0].Replace('.', ' ');
-                    showName = showName.TrimEnd();
-                    showName = ShowAlias(showName);
-
-                    int year = 0;
-                    int month = 0;
-                    int day = 0;
-
-                    Int32.TryParse(titleMatchDaily.Groups["Year"].Value, out year);
-                    Int32.TryParse(titleMatchDaily.Groups["Month"].Value, out month);
-                    Int32.TryParse(titleMatchDaily.Groups["Day"].Value, out day);
-
-                    if (!IsShowWanted(showName))
-                        return false;
-
-                    string episodeName = TvDb.CheckTvDb(showName, year, month, day);
-                    string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" + day.ToString("D2") + " - " + episodeName;
-
-                    bool needProper = false;
-
-                    if (!IsQualityWanted(showName, title))
-                        return false;
-
-                    if (Config.DownloadPropers && title.Contains("PROPER"))
-                    {
-                        if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
-                            needProper = true;
-                    }
-
-                    foreach (var tvDir in Config.TvRootFolders)
-                    {
-                        string dir = GetEpisodeDir(showName, year, month, day, tvDir);
-                        string fileMask = GetEpisodeFileMask(year, month, day, tvDir);
-
-                        if (needProper)
-                            DeleteForProper(dir, fileMask);
-
-                        if (IsOnDisk(dir, fileMask))
-                            return false;
-                    }
-
-                    if (IsInQueue(title, titleFix, nzbId))
-                        return false;
-
-                    if (InNzbArchive(title, titleFix))
-                        return false;
-
-                    if (IsQueued(titleFix))
-                        return false;
-
-                    return true;
-                }
+                    return IsEpWantedDaily(titleMatchDaily, title, nzbId);
             }
-
             catch (Exception e)
             {
                 Log("Unsupported Title: {0} - {1}", title, e);
                 return false;
             }
-
             Log("Unsupported Title: {0}", title);
             return false;
         }
