@@ -12,9 +12,15 @@ namespace SABSync
 {
     public class SyncJob
     {
-        private readonly Logger _logger = new Logger();
+        private static Logger logger = new Logger();
+        private Config Config { get; set; }
         private readonly List<string> Queued = new List<string>();
         private readonly List<string> Summary = new List<string>();
+
+        public SyncJob()
+        {
+            Config = new Config();
+        }
 
         public void Start()
         {
@@ -229,7 +235,7 @@ namespace SABSync
             return fileMask;
         } //Ends GetDailyShowNamingScheme
 
-        private static string CleanString(string name)
+        private string CleanString(string name)
         {
             string result = name;
             string[] badCharacters = { "\\", "/", "<", ">", "?", "*", ":", "|", "\"" };
@@ -1116,12 +1122,12 @@ namespace SABSync
 
         internal void Log(string message)
         {
-            _logger.Log(message);
+            logger.Log(message);
         }
 
         internal void Log(string message, params object[] para)
         {
-            _logger.Log(message, para);
+            logger.Log(message, para);
         }
 
         internal void Log(string message, bool showInSummary)
