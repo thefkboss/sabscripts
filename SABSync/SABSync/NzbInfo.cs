@@ -1,19 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace SABSync
 {
     public class NzbInfo
     {
-        public NzbInfo()
-        {
-            Qualities = Config.DownloadQuality;
-        }
+        public NzbInfo() : this(new Config()) {}
 
-        public NzbInfo(string[] qualities)
+        public NzbInfo(Config config)
         {
-            Qualities = qualities;
+            Config = config;
+            Qualities = Config.DownloadQuality;
         }
 
         public string Id { get; set; }
@@ -21,6 +18,8 @@ namespace SABSync
         public NzbSite Site { get; set; }
         public string Link { get; set; }
         private string[] Qualities { get; set; }
+
+        private Config Config { get; set; }
 
         public bool IsValidQuality()
         {

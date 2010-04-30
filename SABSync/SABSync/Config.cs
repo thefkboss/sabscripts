@@ -1,6 +1,4 @@
-﻿// TODO: add validation of app.config elements
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -8,63 +6,139 @@ using System.IO;
 
 namespace SABSync
 {
-    public static class Config
+    public class Config
     {
-        private static readonly Logger Log = new Logger();
-        private static readonly NameValueCollection Settings = ConfigurationManager.AppSettings;
+        private static Logger logger = new Logger();
+        private IList<FeedInfo> _feeds;
+        private IList<string> _myShows;
+        private DirectoryInfo _nzbDir;
+        private string _sabRequest;
+        private IList<ShowAlias> _showAliases;
+        private IList<ShowQuality> _showQualities;
+        private string _tvDailyTemplate;
+        private IList<DirectoryInfo> _tvRootFolders;
+        private string _tvTemplate;
 
-        static Config()
+        public Config() : this(ConfigurationManager.AppSettings) {}
+
+        public Config(NameValueCollection settings)
         {
-            Log.Log("Loading configuration...");
-            TvRootFolders = GetTvRootFolders();
-            VerboseLogging = Convert.ToBoolean(Settings["verboseLogging"]);
-            Feeds = GetFeeds();
-            SabRequest = GetSabRequest();
-            ShowAliases = GetShowAliases();
-            ShowQualities = GetShowQualities();
-            VideoExt = Settings["videoExt"].Trim(';', ' ').Split(';');
-            NzbDir = new DirectoryInfo(Settings["nzbDir"]);
-            DownloadPropers = Convert.ToBoolean(Settings["downloadPropers"]);
-            DownloadQuality = Settings["downloadQuality"].Trim(';', ' ').Split(';');
-            SabReplaceChars = Convert.ToBoolean(Settings["sabReplaceChars"]);
+            Settings = settings;
+
+            DownloadPropers = Convert.ToBoolean(Settings["downloadPropers"] ?? "false");
+            DownloadQuality = (Settings["downloadQuality"] ?? string.Empty).Trim(';', ' ').Split(';');
             IgnoreSeasons = Settings["ignoreSeasons"];
-            TvDailyTemplate = Settings["tvDailyTemplate"];
-            if (string.IsNullOrEmpty(TvDailyTemplate))
-                throw new ApplicationException("Configuration missing: tvDailyTemplate");
-            TvTemplate = ConfigurationManager.AppSettings["tvTemplate"];
-            if (string.IsNullOrEmpty(TvTemplate))
-                throw new ApplicationException("Configuration missing: tvTemplate");
-            MyShows = GetMyShows();
+            SabReplaceChars = Convert.ToBoolean(Settings["sabReplaceChars"] ?? "false");
+            VerboseLogging = Convert.ToBoolean(Settings["verboseLogging"] ?? "false");
+            VideoExt = (Settings["videoExt"] ?? string.Empty).Trim(';', ' ').Split(';');
         }
 
-        public static bool DownloadPropers { get; set; }
-        public static string[] DownloadQuality { get; set; }
-        public static IList<FeedInfo> Feeds { get; set; }
-        public static string IgnoreSeasons { get; set; }
-        public static IList<string> MyShows { get; set; }
-        public static DirectoryInfo NzbDir { get; set; }
-        public static string SabRequest { get; set; }
-        public static bool SabReplaceChars { get; set; }
-        public static IList<ShowAlias> ShowAliases { get; set; }
-        public static IList<ShowQuality> ShowQualities { get; set; }
-        public static string TvDailyTemplate { get; set; }
-        public static IList<DirectoryInfo> TvRootFolders { get; set; }
-        public static string TvTemplate { get; set; }
-        public static bool VerboseLogging { get; set; }
-        public static string[] VideoExt { get; set; }
+        public bool DownloadPropers { get; set; }
 
-        private static IList<string> GetMyShows()
+        public string[] DownloadQuality { get; set; }
+
+        public IList<FeedInfo> Feeds
+        {
+            get { return _feeds ?? (_feeds = GetFeeds()); }
+            set { _feeds = value; }
+        }
+
+        public string IgnoreSeasons { get; set; }
+
+        public IList<string> MyShows
+        {
+            get { return _myShows ?? (_myShows = GetMyShows()); }
+            set { _myShows = value; }
+        }
+
+        public DirectoryInfo NzbDir
+        {
+            get { return _nzbDir ?? (_nzbDir = GetNzbDir()); }
+            set { _nzbDir = value; }
+        }
+
+        public string SabRequest
+        {
+            get { return _sabRequest ?? (_sabRequest = GetSabRequest()); }
+            set { _sabRequest = value; }
+        }
+
+        public bool SabReplaceChars { get; set; }
+
+        public IList<ShowAlias> ShowAliases
+        {
+            get { return _showAliases ?? (_showAliases = GetShowAliases()); }
+            set { _showAliases = value; }
+        }
+
+        public IList<ShowQuality> ShowQualities
+        {
+            get { return _showQualities ?? (_showQualities = GetShowQualities()); }
+            set { _showQualities = value; }
+        }
+
+        public string TvDailyTemplate
+        {
+            get { return _tvDailyTemplate ?? (_tvDailyTemplate = GetTvDailyTemplate()); }
+            set { _tvDailyTemplate = value; }
+        }
+
+        public IList<DirectoryInfo> TvRootFolders
+        {
+            get { return _tvRootFolders ?? (_tvRootFolders = GetTvRootFolders()); }
+            set { _tvRootFolders = value; }
+        }
+
+        public string TvTemplate
+        {
+            get { return _tvTemplate ?? (_tvTemplate = GetTvTemplate()); }
+            set { _tvTemplate = value; }
+        }
+
+        public bool VerboseLogging { get; set; }
+
+        public string[] VideoExt { get; set; }
+
+        public NameValueCollection Settings { get; private set; }
+
+        private string GetTvTemplate()
+        {
+            if (string.IsNullOrEmpty(GetSetting("tvTemplate")))
+                throw new ApplicationException("Configuration missing: tvTemplate");
+            return GetSetting("tvTemplate");
+        }
+
+        private string GetTvDailyTemplate()
+        {
+            if (string.IsNullOrEmpty(GetSetting("tvDailyTemplate")))
+                throw new ApplicationException("Configuration missing: tvDailyTemplate");
+            return Settings["tvDailyTemplate"];
+        }
+
+        private DirectoryInfo GetNzbDir()
+        {
+            string path = Settings["nzbDir"];
+            if (string.IsNullOrEmpty(path)) return null;
+
+            var folder = new DirectoryInfo(path);
+            if (!folder.Exists)
+                throw new ApplicationException(string.Format("Configuration: Invalid nzbDir folder: {0}", folder));
+
+            return folder;
+        }
+
+        private IList<string> GetMyShows()
         {
             var list = new List<string>();
             foreach (DirectoryInfo rootFolder in TvRootFolders)
             {
                 if (VerboseLogging)
-                    Log.Log("TVRoot Directory: {0}", rootFolder);
+                    logger.Log("TVRoot Directory: {0}", rootFolder);
 
-                foreach (var show in rootFolder.GetDirectories())
+                foreach (DirectoryInfo show in rootFolder.GetDirectories())
                 {
                     if (VerboseLogging)
-                        Log.Log("Adding show to wanted shows list: " + show);
+                        logger.Log("Adding show to wanted shows list: " + show);
 
                     if (!list.Contains(show.ToString()))
                         list.Add(show.ToString());
@@ -73,23 +147,25 @@ namespace SABSync
             return list;
         }
 
-        private static string GetSabRequest()
+        private string GetSabRequest()
         {
-            string sabnzbdInfo = Settings["sabnzbdInfo"];
-            string priority = Settings["priority"];
-            string apiKey = Settings["apiKey"];
-            string username = Settings["username"];
-            string password = Settings["password"];
+            string sabnzbdInfo = GetSetting("sabnzbdInfo");
+            string priority = GetSetting("priority");
+            string apiKey = GetSetting("apiKey");
+            string username = GetSetting("username");
+            string password = GetSetting("password");
             return string.Format(
                 "http://{0}/api?$Action&priority={1}&apikey={2}&ma_username={3}&ma_password={4}",
                 sabnzbdInfo, priority, apiKey, username, password).Replace("$Action", "{0}");
         }
 
-        private static IList<ShowAlias> GetShowAliases()
+        private IList<ShowAlias> GetShowAliases()
         {
-            var aliasConfigFile = new FileInfo(Settings["alias"]);
-            if (!aliasConfigFile.Exists)
-                throw new ApplicationException("Invalid Alias file path. " + aliasConfigFile);
+            string path = Settings["alias"];
+            if (string.IsNullOrEmpty(path)) 
+                return new List<ShowAlias>();
+
+            var aliasConfigFile = GetValidFile(GetSetting("alias"), "Alias");
 
             var list = new List<ShowAlias>();
             int line = 0;
@@ -105,13 +181,11 @@ namespace SABSync
             return list;
         }
 
-        private static IList<FeedInfo> GetFeeds()
+        private IList<FeedInfo> GetFeeds()
         {
-            var rssConfigFile = new FileInfo(Settings["rss"]);
-            if (!rssConfigFile.Exists)
-                throw new ApplicationException("Invalid RSS file path. " + rssConfigFile);
+            var rssConfigFile = GetValidFile(GetSetting("rss"), "RSS");
 
-            Log.Log("Loading RSS feed list from {0}", rssConfigFile);
+            logger.Log("Loading RSS feed list from {0}", rssConfigFile);
 
             var list = new List<FeedInfo>();
             foreach (string line in File.ReadAllLines(rssConfigFile.FullName))
@@ -127,11 +201,21 @@ namespace SABSync
             return list;
         }
 
-        private static IList<ShowQuality> GetShowQualities()
+        private string GetSetting(string key)
         {
-            var qualityFile = new FileInfo(Settings["quality"]);
-            if (!qualityFile.Exists)
-                throw new ApplicationException("Invalid Quality file path. " + qualityFile);
+            string value = Settings[key];
+            if (value == null)
+                throw new ApplicationException("Configuration missing: " + key);
+            return value;
+        }
+
+        private IList<ShowQuality> GetShowQualities()
+        {
+            string path = Settings["quality"];
+            if (string.IsNullOrEmpty(path))
+                return new List<ShowQuality>();
+
+            FileInfo qualityFile = GetValidFile(path,"Quality");
 
             var list = new List<ShowQuality>();
             int line = 0;
@@ -146,15 +230,18 @@ namespace SABSync
             return list;
         }
 
-        private static IList<DirectoryInfo> GetTvRootFolders()
+        private static FileInfo GetValidFile(string path, string fileType) 
         {
-            const string tvRootKey = "tvRoot";
-            string tvRoot = Settings[tvRootKey];
-            if (tvRoot == null)
-                throw new ApplicationException("Configuration missing: " + tvRootKey);
+            var file = new FileInfo(path);
+            if (!file.Exists)
+                throw new ApplicationException(string.Format("Invalid {0} file path. {1}", fileType, path));
+            return file;
+        }
 
+        private IList<DirectoryInfo> GetTvRootFolders()
+        {
             var list = new List<DirectoryInfo>();
-            string[] paths = tvRoot.Trim(';').Split(';');
+            string[] paths = GetSetting("tvRoot").Trim(';').Split(';');
             foreach (string path in paths)
             {
                 var folder = new DirectoryInfo(path);

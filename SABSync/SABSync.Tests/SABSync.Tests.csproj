@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigTest.cs" />
     <Compile Include="NzbInfoTest.cs" />
     <Compile Include="NzbSiteTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -53,6 +54,21 @@
       <Project>{FF5EE3B6-913B-47CE-9CEB-11C51B4E1205}</Project>
       <Name>SABSync</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="RSS.fileuri.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Feed.xml" />
+    <Content Include="Feed.nzbmatrix.com.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TV2\" />
+    <Folder Include="TV\24\" />
+    <Folder Include="TV\The Mentalist\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

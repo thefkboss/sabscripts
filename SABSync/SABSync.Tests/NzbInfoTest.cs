@@ -26,11 +26,13 @@ namespace SABSync.Tests
             get { return _sites.Single(s => s.Name == "nzbmatrix"); }
         }
 
+        private Config Xvid = new Config { DownloadQuality = new[] { "xvid" } };
+        private Config Xvid720p = new Config { DownloadQuality = new[] { "xvid", "720p" } };
+
         [Test]
         public void IsValidQuality_SiteDoesNotUseQuality_ReturnsTrue()
         {
-            var qualities = new[] {"xvid"};
-            var nzb = new NzbInfo(qualities)
+            var nzb = new NzbInfo(Xvid)
             {
                 Site = NzbMatrixSite,
                 Title = "Show S01E01 Episode 720p",
@@ -42,8 +44,7 @@ namespace SABSync.Tests
         [Test]
         public void IsValidQuality_SiteNullInvalidQuality_ReturnsFalse()
         {
-            var qualities = new[] {"xvid"};
-            var nzb = new NzbInfo(qualities)
+            var nzb = new NzbInfo(Xvid)
             {
                 Site = null,
                 Title = "Show S01E01 Episode 720p",
@@ -55,8 +56,7 @@ namespace SABSync.Tests
         [Test]
         public void IsValidQuality_SiteNullValidQuality_ReturnsTrue()
         {
-            var qualities = new[] {"xvid"};
-            var nzb = new NzbInfo(qualities)
+            var nzb = new NzbInfo(Xvid)
             {
                 Site = null,
                 Title = "Show S01E01 Episode Xvid",
@@ -68,8 +68,7 @@ namespace SABSync.Tests
         [Test]
         public void IsValidQuality_SiteUsesQualityMultiQualityValidQuality_ReturnsTrue()
         {
-            var qualities = new[] {"xvid", "720p"};
-            var nzb = new NzbInfo(qualities)
+            var nzb = new NzbInfo(Xvid720p)
             {
                 Site = TvNzbSite,
                 Title = "Show S01E01 Episode 720p",
@@ -81,8 +80,7 @@ namespace SABSync.Tests
         [Test]
         public void IsValidQuality_SiteUsesQualityInvalidQuality_ReturnsFalse()
         {
-            var qualities = new[] {"xvid"};
-            var nzb = new NzbInfo(qualities)
+            var nzb = new NzbInfo(Xvid)
             {
                 Site = TvNzbSite,
                 Title = "Show S01E01 Episode 720p",
@@ -94,8 +92,7 @@ namespace SABSync.Tests
         [Test]
         public void IsValidQuality_SiteUsesQualityValidQuality_ReturnsTrue()
         {
-            var qualities = new[] {"xvid"};
-            var nzb = new NzbInfo(qualities)
+            var nzb = new NzbInfo(Xvid)
             {
                 Site = TvNzbSite,
                 Title = "Show S01E01 Episode Xvid",

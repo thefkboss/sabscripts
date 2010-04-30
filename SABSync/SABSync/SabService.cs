@@ -5,7 +5,14 @@ namespace SABSync
 {
     public class SabService
     {
-        private static readonly Logger logger = new Logger();
+        private static Logger logger = new Logger();
+
+        public SabService()
+        {
+            Config = new Config();
+        }
+
+        private Config Config { get; set; }
 
         public string AddByUrl(NzbInfo nzb)
         {
@@ -45,7 +52,7 @@ namespace SABSync
             return response;
         }
 
-        private static string CleanUrlString(string name)
+        private string CleanUrlString(string name)
         {
             string result = name;
             string[] badCharacters =
@@ -65,7 +72,7 @@ namespace SABSync
             return result.Trim();
         }
 
-        private static string CleanString(string name)
+        private string CleanString(string name)
         {
             string result = name;
             string[] badCharacters = {"\\", "/", "<", ">", "?", "*", ":", "|", "\""};
