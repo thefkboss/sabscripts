@@ -1,6 +1,5 @@
 #summary Acceptance tests for SABSync.
 
-= Acceptance Tests =
 _Work in progress_
 
 *My Shows*
@@ -27,4 +26,3 @@ _Work in progress_
   * Feed Shows in SAB History are excluded.  
   * Feed Shows in SAB Queue are excluded.
   * Feed Shows not excluded are added to SAB Queue.
-
