@@ -105,9 +105,9 @@ namespace SABSyncGUI
             this.groupBoxTest = new System.Windows.Forms.GroupBox();
             this.btnRunSabSync = new System.Windows.Forms.Button();
             this.txtOutput = new System.Windows.Forms.TextBox();
-            this.txtResult = new System.Windows.Forms.TextBox();
             this.groupBoxSchedule = new System.Windows.Forms.GroupBox();
             this.numMinutes = new System.Windows.Forms.NumericUpDown();
+            this.txtResult = new System.Windows.Forms.TextBox();
             this.btnCreateTask = new System.Windows.Forms.Button();
             this.txtWinPassword = new System.Windows.Forms.TextBox();
             this.lblRepeatTask = new System.Windows.Forms.Label();
@@ -993,15 +993,6 @@ namespace SABSyncGUI
             this.txtOutput.TabIndex = 9;
             this.txtOutput.WordWrap = false;
             // 
-            // txtResult
-            // 
-            this.txtResult.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtResult.Location = new System.Drawing.Point(6, 135);
-            this.txtResult.Multiline = true;
-            this.txtResult.Name = "txtResult";
-            this.txtResult.Size = new System.Drawing.Size(456, 50);
-            this.txtResult.TabIndex = 6;
-            // 
             // groupBoxSchedule
             // 
             this.groupBoxSchedule.Controls.Add(this.numMinutes);
@@ -1033,7 +1024,7 @@ namespace SABSyncGUI
             0});
             this.numMinutes.Location = new System.Drawing.Point(155, 26);
             this.numMinutes.Maximum = new decimal(new int[] {
-            1440,
+            60,
             0,
             0,
             0});
@@ -1043,7 +1034,7 @@ namespace SABSyncGUI
             0,
             0});
             this.numMinutes.Name = "numMinutes";
-            this.numMinutes.Size = new System.Drawing.Size(59, 22);
+            this.numMinutes.Size = new System.Drawing.Size(36, 22);
             this.numMinutes.TabIndex = 3;
             this.numMinutes.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numMinutes.Value = new decimal(new int[] {
@@ -1051,6 +1042,15 @@ namespace SABSyncGUI
             0,
             0,
             0});
+            // 
+            // txtResult
+            // 
+            this.txtResult.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtResult.Location = new System.Drawing.Point(6, 135);
+            this.txtResult.Multiline = true;
+            this.txtResult.Name = "txtResult";
+            this.txtResult.Size = new System.Drawing.Size(456, 50);
+            this.txtResult.TabIndex = 6;
             // 
             // btnCreateTask
             // 
@@ -1099,7 +1099,7 @@ namespace SABSyncGUI
             // 
             this.lblMinutes.AutoSize = true;
             this.lblMinutes.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMinutes.Location = new System.Drawing.Point(220, 28);
+            this.lblMinutes.Location = new System.Drawing.Point(197, 28);
             this.lblMinutes.Name = "lblMinutes";
             this.lblMinutes.Size = new System.Drawing.Size(54, 16);
             this.lblMinutes.TabIndex = 4;

@@ -571,10 +571,16 @@ namespace SABSyncGUI
             {
                 string user = null;
 
+                string computerName = localhost;
+                computerName = Environment.MachineName;
+
                 int time = Convert.ToInt32(numMinutes.Value);
 
                 if (time < 15)
                     time = 15;
+
+                if (time > 60)
+                    time = 60;
 
                 if (txtWinUsername.Text.Length == 0)
                     user = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
@@ -591,11 +597,11 @@ namespace SABSyncGUI
                     FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSync.exe");
 
                     if (majorVersion < 6)
-                        arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
-
+                        arguments = String.Format("/create /tn SABSync /tr \"\\\" {0} \\\"\" /sc MINUTE /mo {1} /st 00:00:00 /f /s {2} /ru {3} /rp {4}", location, time, computerName, user, password);
+                        
                     else
-                        arguments = "/create /v1 /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
-
+                        arguments = String.Format("/create /v1 /tn SABSync /tr \"\\\" {0} \\\"\" /sc MINUTE /mo {1} /st 00:00:00 /f /s {2} /ru {3} /rp {4}", location, time, computerName, user, password);
+                        
                     txtResult.Text = CreateTask(arguments);
                 }
 
@@ -604,10 +610,10 @@ namespace SABSyncGUI
                     FileInfo location = new FileInfo(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).Directory.FullName + "\\SABSyncHide.exe");
 
                     if (majorVersion < 6)
-                        arguments = "/create /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
+                        arguments = String.Format("/create /tn SABSync /tr \"\\\" {0} \\\"\" /sc MINUTE /mo {1} /st 00:00:00 /f /s {2} /ru {3} /rp {4}", location, time, computerName, user, password);
 
                     else
-                        arguments = "/create /v1 /tn SABSync /tr \"\\\"" + location + "\\\"\" /sc MINUTE /mo " + time + " /st 00:00:00 /f /s localhost /ru " + user + " /rp " + password;
+                        arguments = String.Format("/create /v1 /tn SABSync /tr \"\\\" {0} \\\"\" /sc MINUTE /mo {1} /st 00:00:00 /f /s {2} /ru {3} /rp {4}", location, time, computerName, user, password);
 
                     txtResult.Text = CreateTask(arguments);
                 }
