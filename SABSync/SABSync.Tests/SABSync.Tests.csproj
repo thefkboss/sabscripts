@@ -56,17 +56,18 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-    <None Include="RSS.fileuri.config">
-      <SubType>Designer</SubType>
-    </None>
+    <Content Include="Feed.newzbin.com.xml" />
+    <Content Include="RSS.fileuri.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ConfigSettings.txt" />
     <Content Include="Feed.xml" />
     <Content Include="Feed.nzbmatrix.com.xml" />
+    <Content Include="Notes.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="TV2\" />
+    <Folder Include="TV2\24\" />
+    <Folder Include="TV2\Bones\" />
     <Folder Include="TV\24\" />
     <Folder Include="TV\The Mentalist\" />
   </ItemGroup>

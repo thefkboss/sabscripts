@@ -1,0 +1,35 @@
+﻿ProcessRssItem
+  IsEpisodeWanted
+    episodeName = CheckTvDb 2 calls get SeriesId, then get episode
+  GetTitleFix
+    episodeName = CheckTvDb 2 calls get SeriesId, then get episode
+	
+NZBMatrix feed url components
+
+http://rss.nzbmatrix.com/rss.php?
+Link Type: (details|download)
+	page=download
+For Link Type download:
+	&username=
+	&apikey=
+Categories: TV: Divx/Xvid  (dot separated for multiple, i.e., 6.8)
+	&subcat=6  
+English/Unknown Only:
+	&english=1 
+Generate SSL Links:
+	&ssl=1
+Generate SSL Links:
+	&scenename=1
+
+RSS.config
+NZBMatrix|http://rss.nzbmatrix.com/rss.php?page=download&username=&apikey=&subcat=6&english=1&ssl=1&scenename=1
+
+
+http://thetvdb.com/api/GetSeries.php?seriesname=Fringe
+
+<?xml version="1.0" encoding="UTF-8"?><Data><Series><seriesid>82066</seriesid><language>en</language><SeriesName>Fringe</SeriesName><banner>graphical/82066-g20.jpg</banner><Overview>Fringe follows FBI Agent Olivia Dunham, Consultant Peter Bishop and science explorer extraordinaire Doctor Walter Bishop as they search for clues to the series of bizarre and horrific crimes inflicted on the world. The world that we  know. </Overview><FirstAired>2008-08-26</FirstAired><IMDB_ID>tt1119644</IMDB_ID><zap2it_id>SH1059103</zap2it_id><id>82066</id></Series></Data>
+
+
+http://thetvdb.com/api/5D2D188E86E07F4F/series/82066/default/2/19
+
+<?xml version="1.0" encoding="UTF-8"?><Data><Episode><id>1342441</id><seasonid>79101</seasonid><EpisodeNumber>19</EpisodeNumber><EpisodeName>The Man from the Other Side</EpisodeName><FirstAired>2010-04-22</FirstAired><GuestStars></GuestStars><Director></Director><Writer>J.J. Abrams|Alex Kurtzman|Roberto Orci</Writer><Overview>When two teenagers on a date turn up "dead" at an abandoned warehouse with the three puncture wounds to the soft palate — a trademark of the shape-shifters — the Fringe team investigates the evidence as well as the motives of mastermind Newton. Upon discovering a shape-shifting embryo, Walter returns to the lab to conduct further analysis, and Olivia and Peter head to Massive Dynamic for answers. Meanwhile, Peter reveals a family secret to Olivia as Walter struggles to recall what Newton knows about "building a door".</Overview><ProductionCode>FR-218</ProductionCode><lastupdated>1271433294</lastupdated><flagged>0</flagged><DVD_discid></DVD_discid><DVD_season></DVD_season><DVD_episodenumber></DVD_episodenumber><DVD_chapter></DVD_chapter><absolute_number></absolute_number><filename>episodes/82066/1342441.jpg</filename><seriesid>82066</seriesid><mirrorupdate>2010-04-16 08:54:54</mirrorupdate><IMDB_ID></IMDB_ID><EpImgFlag>2</EpImgFlag><Rating>8.3</Rating><SeasonNumber>2</SeasonNumber><Language>en</Language></Episode></Data>
