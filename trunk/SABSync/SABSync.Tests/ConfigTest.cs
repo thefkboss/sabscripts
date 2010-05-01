@@ -26,11 +26,11 @@ namespace SABSync.Tests
             {
                 new FeedInfo {Name = "NzbMatrix", Url = @"..\..\Feed.nzbmatrix.com.xml"},
                 new FeedInfo {Name = "Feed", Url = @"..\..\Feed.xml"},
+                new FeedInfo {Name = "UN-NAMED", Url = @"..\..\Feed.newzbin.com.xml"},
             };
 
             Expect(Config.Feeds, Is.EquivalentTo(feeds));
         }
-
 
         [Test]
         public void TvRootFolders()
@@ -42,6 +42,14 @@ namespace SABSync.Tests
             };
 
             Expect(Config.TvRootFolders, Is.EquivalentTo(folders));
+        }
+
+        [Test]
+        public void MyShows()
+        {
+            var shows = new [] {"24", "The Mentalist", "Bones"};
+
+            Expect(Config.MyShows, Is.EquivalentTo(shows));
         }
     }
 }

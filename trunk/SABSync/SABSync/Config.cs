@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 
 namespace SABSync
 {
     public class Config
     {
-        private static Logger logger = new Logger();
+        private static readonly Logger logger = new Logger();
         private IList<FeedInfo> _feeds;
         private IList<string> _myShows;
         private DirectoryInfo _nzbDir;
@@ -101,18 +102,32 @@ namespace SABSync
 
         public NameValueCollection Settings { get; private set; }
 
+        private string GetSabRequest()
+        {
+            string sabnzbdInfo = GetSetting("sabnzbdInfo");
+            string priority = GetSetting("priority");
+            string apiKey = GetSetting("apiKey");
+            string username = GetSetting("username");
+            string password = GetSetting("password");
+            return string.Format(
+                "http://{0}/api?$Action&priority={1}&apikey={2}&ma_username={3}&ma_password={4}",
+                sabnzbdInfo, priority, apiKey, username, password).Replace("$Action", "{0}");
+        }
+
         private string GetTvTemplate()
         {
-            if (string.IsNullOrEmpty(GetSetting("tvTemplate")))
+            string setting = GetSetting("tvTemplate");
+            if (string.IsNullOrEmpty(setting))
                 throw new ApplicationException("Configuration missing: tvTemplate");
-            return GetSetting("tvTemplate");
+            return setting;
         }
 
         private string GetTvDailyTemplate()
         {
-            if (string.IsNullOrEmpty(GetSetting("tvDailyTemplate")))
+            string setting = GetSetting("tvDailyTemplate");
+            if (string.IsNullOrEmpty(setting))
                 throw new ApplicationException("Configuration missing: tvDailyTemplate");
-            return Settings["tvDailyTemplate"];
+            return setting;
         }
 
         private DirectoryInfo GetNzbDir()
@@ -132,73 +147,68 @@ namespace SABSync
             var list = new List<string>();
             foreach (DirectoryInfo rootFolder in TvRootFolders)
             {
-                if (VerboseLogging)
-                    logger.Log("TVRoot Directory: {0}", rootFolder);
+                if (VerboseLogging) logger.Log("TVRoot Directory: {0}", rootFolder);
 
-                foreach (DirectoryInfo show in rootFolder.GetDirectories())
+                foreach (DirectoryInfo folder in rootFolder.GetDirectories())
                 {
-                    if (VerboseLogging)
-                        logger.Log("Adding show to wanted shows list: " + show);
+                    string show = folder.ToString();
 
-                    if (!list.Contains(show.ToString()))
-                        list.Add(show.ToString());
+                    if (IsExcluded(folder) || list.Contains(show))
+                        continue;
+
+                    if (VerboseLogging) logger.Log("Adding show to wanted shows list: {0}", show);
+                    list.Add(show);
                 }
             }
             return list;
         }
 
-        private string GetSabRequest()
+        private static bool IsExcluded(DirectoryInfo folder)
         {
-            string sabnzbdInfo = GetSetting("sabnzbdInfo");
-            string priority = GetSetting("priority");
-            string apiKey = GetSetting("apiKey");
-            string username = GetSetting("username");
-            string password = GetSetting("password");
-            return string.Format(
-                "http://{0}/api?$Action&priority={1}&apikey={2}&ma_username={3}&ma_password={4}",
-                sabnzbdInfo, priority, apiKey, username, password).Replace("$Action", "{0}");
+            bool isSystem = (folder.Attributes & FileAttributes.System) == FileAttributes.System;
+            bool isHidden = (folder.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden;
+            return isSystem || isHidden;
         }
 
-        private IList<ShowAlias> GetShowAliases()
+        private IList<DirectoryInfo> GetTvRootFolders()
         {
-            string path = Settings["alias"];
-            if (string.IsNullOrEmpty(path)) 
-                return new List<ShowAlias>();
-
-            var aliasConfigFile = GetValidFile(GetSetting("alias"), "Alias");
-
-            var list = new List<ShowAlias>();
-            int line = 0;
-            foreach (string aliasLine in File.ReadAllLines(aliasConfigFile.FullName))
-            {
-                line++;
-                string[] parts = aliasLine.Split('|');
-                if (parts.Length != 2)
-                    throw new ApplicationException(string.Format("Invalid Alias configuration at line {0}.", line));
-
-                list.Add(new ShowAlias {BadName = parts[0], Alias = parts[1]});
-            }
-            return list;
+            return (from path in GetSetting("tvRoot").Trim(';').Split(';')
+                    select new DirectoryInfo(path)
+                    into folder
+                    where folder.Exists
+                    select folder).ToList();
         }
 
         private IList<FeedInfo> GetFeeds()
         {
-            var rssConfigFile = GetValidFile(GetSetting("rss"), "RSS");
+            FileInfo configFile = GetConfigFile("rss");
+            logger.Log("Loading RSS feed list from {0}", configFile);
 
-            logger.Log("Loading RSS feed list from {0}", rssConfigFile);
+            return (from pair in GetPipeDelimitedPairs(configFile)
+                    let name = pair.Value == null ? "UN-NAMED" : pair.Key
+                    let url = pair.Value ?? pair.Key
+                    select new FeedInfo {Name = name, Url = url}).ToList();
+        }
 
-            var list = new List<FeedInfo>();
-            foreach (string line in File.ReadAllLines(rssConfigFile.FullName))
-            {
-                string[] part = line.Split('|');
-                bool isTwoPart = part.Length > 1;
-                list.Add(new FeedInfo
-                {
-                    Name = isTwoPart ? part[0] : "UN-NAMED",
-                    Url = isTwoPart ? part[1] : part[0]
-                });
-            }
-            return list;
+        private IList<ShowAlias> GetShowAliases()
+        {
+            return (from pair in GetPipeDelimitedPairs(GetConfigFile("alias"))
+                    select new ShowAlias {BadName = pair.Key, Alias = pair.Value}).ToList();
+        }
+
+        private IList<ShowQuality> GetShowQualities()
+        {
+            return (from pair in GetPipeDelimitedPairs(GetConfigFile("quality"))
+                    select new ShowQuality {Name = pair.Key, Quality = pair.Value}).ToList();
+        }
+
+        private FileInfo GetConfigFile(string key)
+        {
+            string path = GetSetting(key);
+            var file = new FileInfo(path);
+            if (!file.Exists)
+                throw new ApplicationException(string.Format("File not found. {0}", path));
+            return file;
         }
 
         private string GetSetting(string key)
@@ -209,47 +219,13 @@ namespace SABSync
             return value;
         }
 
-        private IList<ShowQuality> GetShowQualities()
+        private static IEnumerable<KeyValuePair<string, string>> GetPipeDelimitedPairs(FileInfo file)
         {
-            string path = Settings["quality"];
-            if (string.IsNullOrEmpty(path))
-                return new List<ShowQuality>();
-
-            FileInfo qualityFile = GetValidFile(path,"Quality");
-
-            var list = new List<ShowQuality>();
-            int line = 0;
-            foreach (string qualityLine in File.ReadAllLines(qualityFile.FullName))
-            {
-                line++;
-                string[] parts = qualityLine.Split('|');
-                if (parts.Length != 2)
-                    throw new ApplicationException(string.Format("Invalid Quality configuration at line {0}.", line));
-                list.Add(new ShowQuality {Name = parts[0], Quality = parts[1]});
-            }
-            return list;
-        }
-
-        private static FileInfo GetValidFile(string path, string fileType) 
-        {
-            var file = new FileInfo(path);
-            if (!file.Exists)
-                throw new ApplicationException(string.Format("Invalid {0} file path. {1}", fileType, path));
-            return file;
-        }
-
-        private IList<DirectoryInfo> GetTvRootFolders()
-        {
-            var list = new List<DirectoryInfo>();
-            string[] paths = GetSetting("tvRoot").Trim(';').Split(';');
-            foreach (string path in paths)
-            {
-                var folder = new DirectoryInfo(path);
-                if (!folder.Exists)
-                    throw new ApplicationException("Invalid TV Root folder: " + folder);
-                list.Add(folder);
-            }
-            return list;
+            return from line in File.ReadAllLines(file.FullName)
+                   let parts = line.Split('|')
+                   let key = parts[0]
+                   let value = parts.Length > 1 ? parts[1] : null
+                   select new KeyValuePair<string, string>(key, value);
         }
     }
 }
