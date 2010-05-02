@@ -3,9 +3,9 @@ using System.Xml;
 
 namespace SABSync
 {
-    class TvRage
+    internal class TvRage
     {
-        private static readonly Logger logger = new Logger();
+        private static readonly Logger Logger = new Logger();
 
         internal static string CheckTvRage(string showName, int seasonNumber, int episodeNumber)
         {
@@ -41,21 +41,21 @@ namespace SABSync
                 var tvRageRssDoc = new XmlDocument();
                 tvRageRssDoc.Load(tvRageRssReader);
 
-                var data = tvRageRssDoc.GetElementsByTagName(@"Results");
+                XmlNodeList data = tvRageRssDoc.GetElementsByTagName(@"Results");
 
                 if (data.Count != 0)
                 {
-                    var show = ((XmlElement)data[0]).GetElementsByTagName("show");
+                    XmlNodeList show = ((XmlElement) data[0]).GetElementsByTagName("show");
 
                     if (show.Count == 0)
                     {
-                        logger.Log("No Series Found");
+                        Logger.Log("No Series Found");
                         return showId;
                     }
 
-                    foreach (var s in show)
+                    foreach (object s in show)
                     {
-                        var tvRageElement = (XmlElement)s;
+                        var tvRageElement = (XmlElement) s;
 
                         string tvRageShowName = tvRageElement.GetElementsByTagName("SeriesName")[0].InnerText.ToLower();
 
@@ -65,14 +65,14 @@ namespace SABSync
                             return showId;
                         }
                     }
-                    var tvRageElementLast = (XmlElement)show.Item(0);
+                    var tvRageElementLast = (XmlElement) show.Item(0);
                     showId = tvRageElementLast.GetElementsByTagName("showid")[0].InnerText.ToLower();
                     return showId;
                 }
             }
             catch (Exception ex)
             {
-                logger.Log("An Error has occurred while get the Series ID: " + ex);
+                Logger.Log("An Error has occurred while get the Series ID: " + ex);
             }
             return null;
         }

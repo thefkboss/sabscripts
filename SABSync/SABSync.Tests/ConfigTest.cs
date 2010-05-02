@@ -15,7 +15,7 @@ namespace SABSync.Tests
             Config = new Config(new NameValueCollection
             {
                 {"tvroot", @"..\..\TV;..\..\TV2;"},
-                {"rss", @"..\..\rss.fileuri.config"},
+                {"rss", @"rss.fileuri.txt"},
             });
         }
 
@@ -24,9 +24,9 @@ namespace SABSync.Tests
         {
             IList<FeedInfo> feeds = new List<FeedInfo>
             {
-                new FeedInfo {Name = "NzbMatrix", Url = @"..\..\Feed.nzbmatrix.com.xml"},
-                new FeedInfo {Name = "Feed", Url = @"..\..\Feed.xml"},
-                new FeedInfo {Name = "UN-NAMED", Url = @"..\..\Feed.newzbin.com.xml"},
+                new FeedInfo(name: "NzbMatrix", url: @"Feed.nzbmatrix.com.xml"),
+                new FeedInfo(name: "Feed", url: @"Feed.xml"),
+                new FeedInfo(name: "UN-NAMED", url: @"Feed.newzbin.com.xml"),
             };
 
             Expect(Config.Feeds, Is.EquivalentTo(feeds));

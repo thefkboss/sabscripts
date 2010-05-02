@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Configuration;
 using System.IO;
-using System.Reflection;
 
 namespace SABSync
 {
     public class Logger
     {
+        private const string LogFolder = "log";
         private readonly string _logPath;
-        private bool _verboseLogging;
-        private readonly int _deleteLogs;
+        private readonly bool _loggingEnabled;
+        private readonly int _maxLogDays;
 
         public Logger()
         {
-            _verboseLogging = Convert.ToBoolean(ConfigurationManager.AppSettings["verboseLogging"]);
-            _deleteLogs = Convert.ToInt32(ConfigurationManager.AppSettings["deleteLogs"]);
+            _loggingEnabled = Convert.ToBoolean(ConfigurationManager.AppSettings["loggingEnabled"] ?? "true");
+            if (!_loggingEnabled) return;
 
-            var assembly = Assembly.GetExecutingAssembly();
-            _logPath = Path.Combine(Path.GetDirectoryName(assembly.Location), "log");
+            _maxLogDays = Convert.ToInt32(ConfigurationManager.AppSettings["deleteLogs"] ?? "0");
+
+            _logPath = Path.Combine(App.ExecutablePath, LogFolder);
 
             if (!Directory.Exists(_logPath))
                 Directory.CreateDirectory(_logPath);
@@ -26,14 +27,15 @@ namespace SABSync
         public void Log(string message)
         {
             Console.WriteLine(message);
+            if (!_loggingEnabled) return;
             try
             {
-                var fileName = string.Format("{0:MM.dd-HH-mm}.txt", DateTime.Now);
+                string fileName = string.Format("{0:MM.dd-HH-mm}.txt", DateTime.Now);
                 using (StreamWriter sw = File.AppendText(Path.Combine(_logPath, fileName)))
                 {
                     sw.WriteLine(message);
                 }
-            } 
+            }
             catch (Exception e)
             {
                 Console.WriteLine(e);
@@ -45,28 +47,21 @@ namespace SABSync
             Log(string.Format(message, args));
         }
 
-
-        // Delete log files older than _deleteLogs days.  Zero keeps forever.
         public void DeleteLogs()
         {
-            if (_deleteLogs <= 0) return;
+            if (!_loggingEnabled) return;
+            if (_maxLogDays <= 0) return;
 
-            int deletedCount = 0;
-
-            foreach (var logFileName in Directory.GetFiles(_logPath, "*.txt"))
+            foreach (string fileName in Directory.GetFiles(_logPath, "*.txt"))
             {
-                var logFileInfo = new FileInfo(logFileName);
-
-                if (logFileInfo.LastWriteTime < DateTime.Now.AddDays(-_deleteLogs))
+                var fileInfo = new FileInfo(fileName);
+                TimeSpan age = DateTime.Now - fileInfo.LastWriteTime;
+                if (age.Days > _maxLogDays)
                 {
-                    Log("Deleting Log File: " + Path.GetFileName(logFileName));
-                    File.Delete(logFileName);
-                    deletedCount++;
+                    Log("Deleting Log File: {0}", Path.GetFileName(fileName));
+                    fileInfo.Delete();
                 }
             }
-
-            if (deletedCount > 0)
-                Log(Environment.NewLine);
         }
     }
 }

@@ -1,4 +1,18 @@
-﻿ProcessRssItem
+﻿- verify title
+- check alias
+- get episode name
+- check quality 
+- check if watched
+- check on disk
+- check queue
+- check nzbs
+- get fixed title
+- check alias
+- get episode name
+- add to queue
+
+
+ProcessRssItem
   IsEpisodeWanted
     episodeName = CheckTvDb 2 calls get SeriesId, then get episode
   GetTitleFix
