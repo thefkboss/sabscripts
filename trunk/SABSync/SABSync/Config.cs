@@ -9,7 +9,7 @@ namespace SABSync
 {
     public class Config
     {
-        private static readonly Logger logger = new Logger();
+        private static readonly Logger Logger = new Logger();
         private IList<FeedInfo> _feeds;
         private IList<string> _myShows;
         private DirectoryInfo _nzbDir;
@@ -20,14 +20,16 @@ namespace SABSync
         private IList<DirectoryInfo> _tvRootFolders;
         private string _tvTemplate;
 
-        public Config() : this(ConfigurationManager.AppSettings) {}
+        public Config() : this(ConfigurationManager.AppSettings)
+        {
+        }
 
         public Config(NameValueCollection settings)
         {
             Settings = settings;
 
             DownloadPropers = Convert.ToBoolean(Settings["downloadPropers"] ?? "false");
-            DownloadQuality = (Settings["downloadQuality"] ?? string.Empty).Trim(';', ' ').Split(';');
+            DownloadQualities = (Settings["downloadQuality"] ?? string.Empty).Trim(';', ' ').Split(';');
             IgnoreSeasons = Settings["ignoreSeasons"];
             SabReplaceChars = Convert.ToBoolean(Settings["sabReplaceChars"] ?? "false");
             VerboseLogging = Convert.ToBoolean(Settings["verboseLogging"] ?? "false");
@@ -36,7 +38,7 @@ namespace SABSync
 
         public bool DownloadPropers { get; set; }
 
-        public string[] DownloadQuality { get; set; }
+        public string[] DownloadQualities { get; set; }
 
         public IList<FeedInfo> Feeds
         {
@@ -147,7 +149,7 @@ namespace SABSync
             var list = new List<string>();
             foreach (DirectoryInfo rootFolder in TvRootFolders)
             {
-                if (VerboseLogging) logger.Log("TVRoot Directory: {0}", rootFolder);
+                if (VerboseLogging) Logger.Log("TVRoot Directory: {0}", rootFolder);
 
                 foreach (DirectoryInfo folder in rootFolder.GetDirectories())
                 {
@@ -156,7 +158,7 @@ namespace SABSync
                     if (IsExcluded(folder) || list.Contains(show))
                         continue;
 
-                    if (VerboseLogging) logger.Log("Adding show to wanted shows list: {0}", show);
+                    if (VerboseLogging) Logger.Log("Adding show to wanted shows list: {0}", show);
                     list.Add(show);
                 }
             }
@@ -182,12 +184,12 @@ namespace SABSync
         private IList<FeedInfo> GetFeeds()
         {
             FileInfo configFile = GetConfigFile("rss");
-            logger.Log("Loading RSS feed list from {0}", configFile);
+            Logger.Log("Loading RSS feed list from {0}", configFile);
 
             return (from pair in GetPipeDelimitedPairs(configFile)
-                    let name = pair.Value == null ? "UN-NAMED" : pair.Key
+                    let name = pair.Value == null ? null : pair.Key
                     let url = pair.Value ?? pair.Key
-                    select new FeedInfo {Name = name, Url = url}).ToList();
+                    select new FeedInfo(name, url)).ToList();
         }
 
         private IList<ShowAlias> GetShowAliases()

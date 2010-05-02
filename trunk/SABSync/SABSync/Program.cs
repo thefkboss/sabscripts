@@ -1,42 +1,37 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 
 namespace SABSync
 {
-    class Program
+    internal class Program
     {
-        private static Logger logger = new Logger();
+        private static readonly Logger Logger = new Logger();
 
-        static void Main()
+        private static void Main()
         {
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                AssemblyName name = assembly.GetName();
 
-                logger.Log("=====================================================================");
-                logger.Log("Starting {0} v{1} - Build Date: {2:D}",
-                           name.Name, name.Version, File.GetLastWriteTime(assembly.Location));
-                logger.Log("Current System Time: {0}", DateTime.Now);
-                logger.Log("=====================================================================");
+                Logger.Log("=====================================================================");
+                Logger.Log("Starting {0} v{1} - Build Date: {2:D}", App.Name, App.Version, App.BuildDate);
+                Logger.Log("Current System Time: {0}", DateTime.Now);
+                Logger.Log("=====================================================================");
 
-                logger.DeleteLogs();
+                Logger.DeleteLogs();
 
                 var job = new SyncJob();
                 job.Start();
 
                 sw.Stop();
-                logger.Log("=====================================================================");
-                logger.Log("Process successfully completed. Duration {0:f1}s", sw.Elapsed.TotalSeconds);
-                logger.Log(DateTime.Now.ToString());
+                Logger.Log("=====================================================================");
+                Logger.Log("Process successfully completed. Duration {0:f1}s", sw.Elapsed.TotalSeconds);
+                Logger.Log("{0}", DateTime.Now);
             }
             catch (Exception e)
             {
-                logger.Log("Error: {0}", e.Message);
-                logger.Log(e.ToString());
+                Logger.Log("Error: {0}", e.Message);
+                Logger.Log(e.ToString());
             }
         }
     }

@@ -10,7 +10,7 @@ namespace SABSync
         public NzbInfo(Config config)
         {
             Config = config;
-            Qualities = Config.DownloadQuality;
+            Qualities = Config.DownloadQualities;
         }
 
         public string Id { get; set; }

@@ -6,7 +6,7 @@ namespace SABSync
     internal class TvDb
     {
         private const string TvDbApiKey = "5D2D188E86E07F4F";
-        private static readonly Logger logger = new Logger();
+        private static readonly Logger Logger = new Logger();
 
         internal static string CheckTvDb(string showName, int seasonNumber, int episodeNumber)
         {
@@ -48,7 +48,7 @@ namespace SABSync
 
                     if (series.Count == 0)
                     {
-                        logger.Log("No Series Found");
+                        Logger.Log("No Series Found");
                         return null;
                     }
 
@@ -71,7 +71,7 @@ namespace SABSync
             }
             catch (Exception ex)
             {
-                logger.Log("An Error has occurred while get the Series ID: " + ex);
+                Logger.Log("An Error has occurred while get the Series ID: " + ex);
             }
             return null;
         }
@@ -81,7 +81,7 @@ namespace SABSync
             try
             {
                 string url = string.Format("http://thetvdb.com/api/{0}/series/{1}/default/{2}/{3}",
-                                           TvDbApiKey, seriesId, seasonNumber, episodeNumber);
+                    TvDbApiKey, seriesId, seasonNumber, episodeNumber);
 
                 var tvDbRssReader = new XmlTextReader(url);
                 var tvDbRssDoc = new XmlDocument();
@@ -95,19 +95,19 @@ namespace SABSync
 
                     if (episode.Count == 0)
                     {
-                        logger.Log("Episode Not Found");
+                        Logger.Log("Episode Not Found");
                         return null;
                     }
 
                     var tvDbElement = (XmlElement) episode.Item(0);
                     string episodeName = tvDbElement.GetElementsByTagName("EpisodeName")[0].InnerText;
-                    logger.Log("Episode Name is: " + episodeName);
+                    Logger.Log("Episode Name is: " + episodeName);
                     return episodeName;
                 }
             }
             catch (Exception ex)
             {
-                logger.Log("An Error has occurred while get the Series ID: " + ex);
+                Logger.Log("An Error has occurred while get the Series ID: " + ex);
             }
 
             return null;
@@ -118,14 +118,14 @@ namespace SABSync
             try
             {
                 string url = string.Format("http://thetvdb.com/api/{0}/series/{1}/all/",
-                                           TvDbApiKey, seriesId);
+                    TvDbApiKey, seriesId);
 
                 var tvDbRssReader = new XmlTextReader(url);
                 var tvDbRssDoc = new XmlDocument();
                 tvDbRssDoc.Load(tvDbRssReader);
 
                 string rssAirDate = year.ToString("D4") + "-" + month.ToString("D2") + "-" +
-                                    day.ToString("D2");
+                    day.ToString("D2");
 
                 XmlNodeList data = tvDbRssDoc.GetElementsByTagName(@"Data");
 
@@ -135,7 +135,7 @@ namespace SABSync
 
                     if (episodes.Count == 0)
                     {
-                        logger.Log("Episode Not Found");
+                        Logger.Log("Episode Not Found");
                         return null;
                     }
 
@@ -153,7 +153,7 @@ namespace SABSync
             }
             catch (Exception ex)
             {
-                logger.Log("An Error has occurred while get the Series ID: " + ex);
+                Logger.Log("An Error has occurred while get the Series ID: " + ex);
             }
 
             return "unknown";

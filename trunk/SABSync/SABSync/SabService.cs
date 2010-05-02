@@ -5,7 +5,7 @@ namespace SABSync
 {
     public class SabService
     {
-        private static Logger logger = new Logger();
+        private static readonly Logger Logger = new Logger();
 
         public SabService()
         {
@@ -17,38 +17,38 @@ namespace SABSync
         public string AddByUrl(NzbInfo nzb)
         {
             // TODO: create an sab action type
-            string mode = "addurl";
+            const string mode = "addurl";
             string name = nzb.Link;
-            string cat = "tv";
+            const string cat = "tv";
             string nzbname = CleanUrlString(CleanString(nzb.Title));
             string action = string.Format("mode={0}&name={1}&cat={2}&nzbname={3}", mode, name, cat, nzbname);
 
             string request = string.Format(Config.SabRequest, action);
-            logger.Log("Adding report [{0}] to the queue.", nzb.Title);
+            Logger.Log("Adding report [{0}] to the queue.", nzb.Title);
 
             return SendRequest(request);
         }
 
         public string AddByNewzbinId(NzbInfo nzb)
         {
-            string mode = "addid";
+            const string mode = "addid";
             string name = Convert.ToInt64(nzb.Id).ToString();
             string action = string.Format("mode={0}&name={1}", mode, name);
 
             string request = string.Format(Config.SabRequest, action);
-            logger.Log("Adding report [{0}] to the queue.", name);
+            Logger.Log("Adding report [{0}] to the queue.", name);
 
             return SendRequest(request);
         }
 
         private static string SendRequest(string request)
         {
-            logger.Log("DEBUG: " + request);
+            Logger.Log("DEBUG: " + request);
 
             var webClient = new WebClient();
             string response = webClient.DownloadString(request).Replace("\n", string.Empty);
 
-            logger.Log("Queue Response: [{0}]", response);
+            Logger.Log("Queue Response: [{0}]", response);
             return response;
         }
 
