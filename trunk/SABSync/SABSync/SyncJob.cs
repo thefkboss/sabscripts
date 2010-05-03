@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
 using Rss;
 
 // TODO: using System.ServiceModel.Syndication;
@@ -19,19 +19,36 @@ namespace SABSync
         private const string PatternDaily = @"(?<Year>\d{4}).{1}(?<Month>\d{2}).{1}(?<Day>\d{2})";
 
         private static readonly Logger Logger = new Logger();
-        private readonly List<string> _queued = new List<string>();
-        private readonly List<string> _summary = new List<string>();
+        public int AcceptCount;
+        public int FeedItemCount;
+        public int MyFeedsCount;
+        public int MyShowsCount;
+        public int MyShowsInFeedCount;
+        public int RejectDownloadQualityCount;
+        public int RejectIgnoredSeasonCount;
+        public int RejectOnDiskCount;
+        public int RejectPasswordedCount;
+        public int RejectShowQualityCount;
+        public int RejectInNzbArchive;
 
-        public SyncJob() : this(new Config())
+        public SyncJob() : this(new Config(), new SabService(), new TvDbService())
         {
         }
 
-        public SyncJob(Config config)
+        public SyncJob(Config config, ISabService sabService, ITvDbService tvDbService)
         {
+            Summary = new List<string>();
+            Queued = new List<string>();
             Config = config;
+            Sab = sabService;
+            TvDb = tvDbService;
         }
 
         private Config Config { get; set; }
+        private ISabService Sab { get; set; }
+        private ITvDbService TvDb { get; set; }
+        private List<string> Queued { get; set; }
+        private List<string> Summary { get; set; }
 
         public void Start()
         {
@@ -40,30 +57,38 @@ namespace SABSync
 
             foreach (FeedInfo feedInfo in Config.Feeds)
             {
-                Log("Downloading feed {0} from {1}", feedInfo.Name, feedInfo.Url);
-
-                RssFeed feed = RssFeed.Read(feedInfo.Url);
-                foreach (RssItem item in feed.Channels[0].Items)
+                MyFeedsCount++;
+                foreach (RssItem item in GetFeedItems(feedInfo))
                 {
-                    NzbInfo nzb = ParseNzbInfo(feed, item);
-
-                    if (nzb.IsPassworded())
-                    {
-                        Log("Skipping Passworded Report {0}", nzb.Title);
-                        continue;
-                    }
-
-                    if (!nzb.IsValidQuality())
-                        continue;
-
+                    FeedItemCount++;
+                    NzbInfo nzb = ParseNzbInfo(feedInfo, item);
                     QueueIfWanted(nzb);
                 }
             }
 
+            MyShowsCount = Config.MyShows.Count;
             LogSummary();
         }
 
-        private static NzbInfo ParseNzbInfo(RssFeed feed, RssItem item)
+        private IEnumerable<RssItem> GetFeedItems(FeedInfo feedInfo)
+        {
+            RssFeed feed = null;
+            try
+            {
+                Log("INFO: Downloading feed {0} from {1}", feedInfo.Name, feedInfo.Url);
+                feed = RssFeed.Read(feedInfo.Url);
+            }
+            catch (Exception e)
+            {
+                Logger.Log("ERROR: Could not download feed {0} from {1}", feedInfo.Name, feedInfo.Url);
+                Logger.Log("ERROR: {0}", e);
+            }
+            if (feed == null || feed.Channels == null || feed.Channels.Count == 0)
+                return Enumerable.Empty<RssItem>();
+            return feed.Channels[0].Items.Cast<RssItem>();
+        }
+
+        private static NzbInfo ParseNzbInfo(FeedInfo feed, RssItem item)
         {
             NzbSite site = NzbSite.Parse(feed.Url.ToLower());
             return new NzbInfo
@@ -71,52 +96,59 @@ namespace SABSync
                 Id = site.ParseId(item.Link.ToString()),
                 Title = item.Title,
                 Site = site,
-                Link = item.Link.ToString().Replace("&", "%26")
+                Link = item.Link,
             };
         }
 
         private void QueueIfWanted(NzbInfo nzb)
         {
-            var sab = new SabService();
+            if (nzb.IsPassworded())
+            {
+                RejectPasswordedCount++;
+                Log("Skipping Passworded Report {0}", nzb.Title);
+                return;
+            }
+
             string queueResponse;
 
             if (nzb.Site.Name == "newzbin")
             {
                 if (!IsEpisodeWanted(nzb.Title, Convert.ToInt64(nzb.Id)))
                     return;
-                queueResponse = sab.AddByNewzbinId(nzb);
+                queueResponse = Sab.AddByNewzbinId(nzb);
             }
             else
             {
                 if (!IsEpisodeWanted(nzb.Title, nzb.Id))
                     return;
                 nzb.Title = GetTitleFix(nzb.Title);
-                queueResponse = sab.AddByUrl(nzb);
+                queueResponse = Sab.AddByUrl(nzb);
             }
 
             // TODO: check if Queued.Add need unfixed Title (was previously)
-            _queued.Add(string.Format("{0}: {1}", nzb.Title, queueResponse));
+            AcceptCount++;
+            Queued.Add(string.Format("{0}: {1}", nzb.Title, queueResponse));
         }
 
         private void LogSummary()
         {
-            foreach (string logItem in _summary)
+            foreach (string logItem in Summary)
             {
                 Log(logItem);
             }
 
-            if (_summary.Count != 0)
+            if (Summary.Count != 0)
                 Log(Environment.NewLine);
 
-            foreach (string item in _queued)
+            foreach (string item in Queued)
             {
                 Log("Queued for download: " + item);
             }
 
-            if (_queued.Count != 0)
+            if (Queued.Count != 0)
                 Log(Environment.NewLine);
 
-            Log("Number of reports added to the queue: " + _queued.Count);
+            Log("Number of reports added to the queue: " + Queued.Count);
         }
 
         private string GetEpisodeDir(string showName, int seasonNumber, int episodeNumber, DirectoryInfo tvDir)
@@ -271,6 +303,7 @@ namespace SABSync
                 if (string.Equals(di, CleanString(showName),
                     StringComparison.InvariantCultureIgnoreCase))
                 {
+                    MyShowsInFeedCount++;
                     Log("'{0}' is being watched.", showName);
                     return true;
                 }
@@ -323,7 +356,7 @@ namespace SABSync
                     if (IsSeasonIgnored(showName, seasonNumber))
                         return false;
 
-                    if (IsInQueue(title, reportId))
+                    if (Sab.IsInQueue(title, reportId))
                         return false;
 
                     if (InNzbArchive(title))
@@ -381,7 +414,7 @@ namespace SABSync
                     if (IsSeasonIgnored(showName, seasonNumber))
                         return false;
 
-                    if (IsInQueue(title, reportId))
+                    if (Sab.IsInQueue(title, reportId))
                         return false;
 
                     if (InNzbArchive(title))
@@ -418,7 +451,7 @@ namespace SABSync
                             return false;
                     }
 
-                    if (IsInQueue(title, reportId))
+                    if (Sab.IsInQueue(title, reportId))
                         return false;
 
                     if (InNzbArchive(title))
@@ -473,7 +506,7 @@ namespace SABSync
 
             if (Config.DownloadPropers && title.Contains("PROPER"))
             {
-                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                if (!Sab.IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                     needProper = true;
             }
 
@@ -493,7 +526,7 @@ namespace SABSync
                     return false;
             }
 
-            if (IsInQueue(title, titleFix, nzbId))
+            if (Sab.IsInQueue(title, titleFix, nzbId))
                 return false;
 
             if (InNzbArchive(title, titleFix))
@@ -527,7 +560,7 @@ namespace SABSync
                 return false;
 
             if (Config.DownloadPropers && title.Contains("PROPER"))
-                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                if (!Sab.IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                     needProper = true;
 
             foreach (DirectoryInfo tvDir in Config.TvRootFolders)
@@ -544,7 +577,7 @@ namespace SABSync
                     return false;
             }
 
-            if (IsInQueue(title, titleFix, nzbId)
+            if (Sab.IsInQueue(title, titleFix, nzbId)
                 || InNzbArchive(title, titleFix)
                     || IsQueued(titleFix)
                 )
@@ -574,7 +607,7 @@ namespace SABSync
                 return false;
 
             if (Config.DownloadPropers && title.Contains("PROPER"))
-                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                if (!Sab.IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                     needProper = true;
 
             foreach (DirectoryInfo tvDir in Config.TvRootFolders)
@@ -591,7 +624,7 @@ namespace SABSync
                     return false;
             }
 
-            if (IsInQueue(title, titleFix, nzbId)
+            if (Sab.IsInQueue(title, titleFix, nzbId)
                 || InNzbArchive(title, titleFix)
                     || IsQueued(titleFix)
                 )
@@ -622,7 +655,7 @@ namespace SABSync
 
             if (Config.DownloadPropers && title.Contains("PROPER"))
             {
-                if (!IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
+                if (!Sab.IsInQueue(title, titleFix, nzbId) && !InNzbArchive(title, titleFix))
                     needProper = true;
             }
 
@@ -638,7 +671,7 @@ namespace SABSync
                     return false;
             }
 
-            if (IsInQueue(title, titleFix, nzbId))
+            if (Sab.IsInQueue(title, titleFix, nzbId))
                 return false;
 
             if (InNzbArchive(title, titleFix))
@@ -698,6 +731,7 @@ namespace SABSync
 
                 if (matchingFiles.Length != 0)
                 {
+                    RejectOnDiskCount++;
                     Log("Episode on disk. '{0}'", true, matchingFiles[0]);
                     return true;
                 }
@@ -729,6 +763,7 @@ namespace SABSync
 
                     if (matchingFiles.Length != 0)
                     {
+                        RejectOnDiskCount++;
                         Log("Episode on disk. '{0}'", true, matchingFiles[0]);
                         return true;
                     }
@@ -755,6 +790,7 @@ namespace SABSync
                     {
                         if (seasonNumber <= seasonIgnore)
                         {
+                            RejectIgnoredSeasonCount++;
                             Log("Ignoring '{0}' Season '{1}'  ", showName, seasonNumber);
                             return true;
                         } //End if seasonNumber Less than or Equal to seasonIgnore
@@ -777,6 +813,8 @@ namespace SABSync
                         Log("Quality -{0}- is wanted for: {1}.", q.Quality, showName);
                         return true;
                     }
+                    RejectShowQualityCount++;
+                    Log("Quality is not wanted");
                     return false;
                 }
             }
@@ -789,125 +827,16 @@ namespace SABSync
                     return true;
                 }
             }
+            RejectDownloadQualityCount++;
             Log("Quality is not wanted");
             return false;
         }
-
-        private bool IsInQueue(string rssTitle, Int64 reportId)
-        {
-            try
-            {
-                string queueRssUrl = String.Format(Config.SabRequest, "mode=queue&output=xml");
-                string fetchName = String.Format("fetching msgid {0} from www.newzbin.com", reportId);
-
-                var queueRssReader = new XmlTextReader(queueRssUrl);
-                var queueRssDoc = new XmlDocument();
-                queueRssDoc.Load(queueRssReader);
-
-
-                XmlNodeList queue = queueRssDoc.GetElementsByTagName(@"queue");
-                XmlNodeList error = queueRssDoc.GetElementsByTagName(@"error");
-                if (error.Count != 0)
-                {
-                    Log("Sab Queue Error: {0}", true, error[0].InnerText);
-                }
-
-                else if (queue.Count != 0)
-                {
-                    XmlNodeList slot = ((XmlElement) queue[0]).GetElementsByTagName("slot");
-
-                    foreach (object s in slot)
-                    {
-                        var queueElement = (XmlElement) s;
-
-                        //Queue is empty
-                        if (String.IsNullOrEmpty(queueElement.InnerText))
-                            return false;
-
-                        string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
-
-                        if (Config.VerboseLogging)
-                            Log("Checking Queue Item for match: " + fileName);
-
-                        if (fileName.ToLower() == CleanString(rssTitle).ToLower() || fileName == fetchName)
-                        {
-                            Log("Episode in queue - '{0}'", true, rssTitle);
-                            return true;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log("An Error has occurred while checking the queue. {0}", true, ex);
-            }
-
-            return false;
-        }
-
-        //Ends IsInQueue
-
-        private bool IsInQueue(string rssTitle, string rssTitleFix, string nzbId)
-        {
-            try
-            {
-                Log("Checking Queue for: [{0}] or [{1}]", rssTitle, rssTitleFix);
-
-                string queueRssUrl = String.Format(Config.SabRequest, "mode=queue&output=xml");
-
-                var queueRssReader = new XmlTextReader(queueRssUrl);
-                var queueRssDoc = new XmlDocument();
-                queueRssDoc.Load(queueRssReader);
-
-                XmlNodeList queue = queueRssDoc.GetElementsByTagName(@"queue");
-                XmlNodeList error = queueRssDoc.GetElementsByTagName(@"error");
-                if (error.Count != 0)
-                {
-                    Log("Sab Queue Error: {0}", true, error[0].InnerText);
-                }
-
-                else if (queue.Count != 0)
-                {
-                    XmlNodeList slot = ((XmlElement) queue[0]).GetElementsByTagName("slot");
-
-                    foreach (object s in slot)
-                    {
-                        var queueElement = (XmlElement) s;
-
-                        //Queue is empty
-                        if (String.IsNullOrEmpty(queueElement.InnerText))
-                            return false;
-
-                        string fileName = queueElement.GetElementsByTagName("filename")[0].InnerText.ToLower();
-
-                        if (Config.VerboseLogging)
-                            Log("Checking Queue Item for match: " + fileName);
-
-                        if (fileName.ToLower() == CleanString(rssTitle).ToLower() ||
-                            fileName.ToLower() == CleanString(rssTitleFix).ToLower() ||
-                                fileName.ToLower().Contains(nzbId))
-                        {
-                            Log("Episode in queue - '{0}'", true, rssTitle);
-                            return true;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Log("An Error has occurred while checking the queue. {0}", true, ex);
-            }
-
-            return false;
-        }
-
-        //Ends IsInQueue (Non-Newzbin)
 
         private bool IsQueued(string rssTitleFix)
         {
             //Checks Queued List for "Fixed" name, resolves issue when Item is added, but not properly renamed and it is found at another source.
 
-            if (_queued.Contains(rssTitleFix + ": ok"))
+            if (Queued.Contains(rssTitleFix + ": ok"))
                 return true;
 
             return false;
@@ -923,6 +852,7 @@ namespace SABSync
 
             if (File.Exists(Config.NzbDir + "\\" + nzbFileName + ".nzb.gz"))
             {
+                RejectInNzbArchive++;
                 Log("Episode in archive: " + nzbFileName + ".nzb.gz", true);
                 return true;
             }
@@ -960,6 +890,7 @@ namespace SABSync
 
             if (File.Exists(Config.NzbDir + "\\" + nzbFileNameFix + ".nzb.gz"))
             {
+                RejectInNzbArchive++;
                 Log("Episode in archive: " + nzbFileName + ".nzb.gz", true);
                 return true;
             }
@@ -1134,7 +1065,7 @@ namespace SABSync
 
         internal void Log(string message, bool showInSummary)
         {
-            if (showInSummary) _summary.Add(message);
+            if (showInSummary) Summary.Add(message);
             Log(message);
         }
 

@@ -60,7 +60,7 @@
     <Compile Include="ShowQuality.cs" />
     <Compile Include="SyncJob.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="TvDb.cs" />
+    <Compile Include="TvDbService.cs" />
     <Compile Include="TvRage.cs" />
   </ItemGroup>
   <ItemGroup>

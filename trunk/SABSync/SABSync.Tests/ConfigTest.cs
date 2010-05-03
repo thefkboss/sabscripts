@@ -15,7 +15,7 @@ namespace SABSync.Tests
             Config = new Config(new NameValueCollection
             {
                 {"tvroot", @"..\..\TV;..\..\TV2;"},
-                {"rss", @"rss.fileuri.txt"},
+                {"rss", @"rss.config.txt"},
             });
         }
 
@@ -47,7 +47,7 @@ namespace SABSync.Tests
         [Test]
         public void MyShows()
         {
-            var shows = new [] {"24", "The Mentalist", "Bones"};
+            var shows = new [] {"24", "The Mentalist", "Bones", "CSI"};
 
             Expect(Config.MyShows, Is.EquivalentTo(shows));
         }

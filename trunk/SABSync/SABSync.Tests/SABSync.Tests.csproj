@@ -61,12 +61,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Alias.config.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Feed.newzbin.com.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="RSS.fileuri.txt">
+    <Content Include="Quality.config.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="RSS.config.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TV\The Mentalist\2x19 - Blood Money.avi" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="ConfigSettings.txt" />
@@ -81,13 +88,15 @@
   <ItemGroup>
     <Folder Include="TV2\24\" />
     <Folder Include="TV2\Bones\" />
+    <Folder Include="TV2\The Daily Show\" />
     <Folder Include="TV\24\" />
-    <Folder Include="TV\The Mentalist\" />
+    <Folder Include="TV\CSI\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="NzbBackup\The Daily Show 2010 04 22 Zoe Saldana HDTV XviD FQM.nzb.gz" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
