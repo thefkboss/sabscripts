@@ -59,8 +59,8 @@ Seasons to Ignore
 
 Download Quality
 	The default download quality for all shows (except those defined in 
-	Quality.config), used if you want some shows in a HD and all others in 
-	another SD (or vice-versa)
+	Quality.config), used if you want some shows in HD and all others in 
+	SD (or vice-versa)
 	
 Replace Characters
 	Check this if you have SABnzbd replacing characters (otherwise leave 

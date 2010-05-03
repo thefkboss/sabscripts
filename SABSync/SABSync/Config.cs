@@ -30,7 +30,7 @@ namespace SABSync
 
             DownloadPropers = Convert.ToBoolean(Settings["downloadPropers"] ?? "false");
             DownloadQualities = (Settings["downloadQuality"] ?? string.Empty).Trim(';', ' ').Split(';');
-            IgnoreSeasons = Settings["ignoreSeasons"];
+            IgnoreSeasons = Settings["ignoreSeasons"] ?? string.Empty;
             SabReplaceChars = Convert.ToBoolean(Settings["sabReplaceChars"] ?? "false");
             VerboseLogging = Convert.ToBoolean(Settings["verboseLogging"] ?? "false");
             VideoExt = (Settings["videoExt"] ?? string.Empty).Trim(';', ' ').Split(';');
@@ -224,6 +224,7 @@ namespace SABSync
         private static IEnumerable<KeyValuePair<string, string>> GetPipeDelimitedPairs(FileInfo file)
         {
             return from line in File.ReadAllLines(file.FullName)
+                   where !line.StartsWith(";")
                    let parts = line.Split('|')
                    let key = parts[0]
                    let value = parts.Length > 1 ? parts[1] : null

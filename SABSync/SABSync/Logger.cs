@@ -26,8 +26,8 @@ namespace SABSync
 
         public void Log(string message)
         {
-            Console.WriteLine(message);
             if (!_loggingEnabled) return;
+            Console.WriteLine(message);
             try
             {
                 string fileName = string.Format("{0:MM.dd-HH-mm}.txt", DateTime.Now);
