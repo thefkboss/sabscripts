@@ -70,6 +70,7 @@
   <ItemGroup>
     <None Include="Alias.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </None>
     <None Include="App.config" />
     <None Include="Quality.config">

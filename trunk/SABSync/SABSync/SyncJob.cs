@@ -121,7 +121,7 @@ namespace SABSync
             {
                 if (!IsEpisodeWanted(nzb.Title, nzb.Id))
                     return;
-                nzb.Title = GetTitleFix(nzb.Title);
+                nzb.Title = GetTitleFix(nzb.Title).TrimEnd(' ', '-');
                 queueResponse = Sab.AddByUrl(nzb);
             }
 
@@ -502,6 +502,8 @@ namespace SABSync
             string titleFix = showName + " - " + seasonNumber + "x" + episodeNumberOne.ToString("D2") + "-" +
                 seasonNumber + "x" + episodeNumberTwo.ToString("D2") + " - " + episodeOneName + " & " + episodeTwoName;
 
+            titleFix = titleFix.TrimEnd(' ', '-');
+
             bool needProper = false;
 
             if (Config.DownloadPropers && title.Contains("PROPER"))
@@ -550,7 +552,7 @@ namespace SABSync
 
             string episodeName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumber);
             string titleFix = string.Format("{0} - {1}x{2:D2} - {3}",
-                showName, seasonNumber, episodeNumber, episodeName);
+                showName, seasonNumber, episodeNumber, episodeName).TrimEnd(' ', '-');
 
             bool needProper = false;
 
@@ -597,7 +599,7 @@ namespace SABSync
 
             string episodeName = TvDb.CheckTvDb(showName, seasonNumber, episodeNumber);
             string titleFix = string.Format("{0} - {1}x{2:D2} - {3}",
-                showName, seasonNumber, episodeNumber, episodeName);
+                showName, seasonNumber, episodeNumber, episodeName).TrimEnd(' ', '-');
 
             bool needProper = false;
 
@@ -647,6 +649,8 @@ namespace SABSync
             string episodeName = TvDb.CheckTvDb(showName, year, month, day);
             string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" +
                 day.ToString("D2") + " - " + episodeName;
+
+            titleFix = titleFix.TrimEnd(' ', '-');
 
             bool needProper = false;
 
