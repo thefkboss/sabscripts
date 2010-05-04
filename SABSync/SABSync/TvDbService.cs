@@ -18,7 +18,7 @@ namespace SABSync
 
         public string CheckTvDb(string showName, int seasonNumber, int episodeNumber)
         {
-            string episodeName = "unknown";
+            string episodeName = null;
             string seriesId = GetSeriesId(showName);
 
             if (seriesId != null)
@@ -29,7 +29,7 @@ namespace SABSync
 
         public string CheckTvDb(string showName, int year, int month, int day)
         {
-            string episodeName = "unknown";
+            string episodeName = null;
             string seriesId = GetSeriesId(showName);
 
             if (seriesId != null)
