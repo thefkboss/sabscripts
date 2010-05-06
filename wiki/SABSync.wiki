@@ -36,7 +36,7 @@ SABnzbd 0.5+ is required to use SABSync, due to the way the Queue Check is being
 Feed Name|Feed URL - Name/URL, separated by a '|' (Pipe)
 
 == Alias.Config ==
-Show Name from RSS Feed|Show Name on TheTVDB.com/On D - RSS Feed Show Name/TheTVDb Show Name, separated by a '|' (Pipe)
+Show Name from RSS Feed|Show Name on TheTVDB.com/On Disk
 
 == Quality.Config ==
 Show Name|Download Quality - Show Name/Download Quality (xvid or 720p), separated by a '|' (Pipe)
