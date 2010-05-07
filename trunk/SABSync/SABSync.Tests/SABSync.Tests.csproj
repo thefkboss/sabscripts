@@ -53,6 +53,7 @@
     <Compile Include="NzbSiteTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SyncJobTest.cs" />
+    <Compile Include="TvDbServiceTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SABSync\SABSync.csproj">

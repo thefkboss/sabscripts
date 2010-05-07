@@ -26,10 +26,10 @@ namespace SABSync
         public int MyShowsInFeedCount;
         public int RejectDownloadQualityCount;
         public int RejectIgnoredSeasonCount;
+        public int RejectInNzbArchive;
         public int RejectOnDiskCount;
         public int RejectPasswordedCount;
         public int RejectShowQualityCount;
-        public int RejectInNzbArchive;
 
         public SyncJob() : this(new Config(), new SabService(), new TvDbService())
         {
@@ -213,10 +213,11 @@ namespace SABSync
             return fileMask;
         }
 
-        private string GetEpisodeDir(string showName, int year, int month, int day, DirectoryInfo tvDir)
+        private string GetEpisodeDir(string showName, DateTime firstAired, DirectoryInfo tvDir)
         {
             if (Config.VerboseLogging)
                 Log("Building string for Episode Dir");
+            //int year, month, day;
 
             string path = Path.GetDirectoryName(tvDir + "\\" + Config.TvDailyTemplate);
 
@@ -225,11 +226,11 @@ namespace SABSync
             string tReplace = showName;
             string dotTReplace = showName.Replace(' ', '.');
             string underTReplace = showName.Replace(' ', '_');
-            string yearReplace = Convert.ToString(year);
-            string zeroMReplace = String.Format("{0:00}", month);
-            string mReplace = Convert.ToString(month);
-            string zeroDReplace = String.Format("{0:00}", day);
-            string dReplace = Convert.ToString(day);
+            string yearReplace = Convert.ToString(firstAired.Year);
+            string zeroMReplace = String.Format("{0:00}", firstAired.Month);
+            string mReplace = Convert.ToString(firstAired.Month);
+            string zeroDReplace = String.Format("{0:00}", firstAired.Day);
+            string dReplace = Convert.ToString(firstAired.Day);
 
             path = path.Replace(".%ext", "");
             path = path.Replace("%t", tReplace);
@@ -246,18 +247,18 @@ namespace SABSync
 
         //Ends GetDailyShowNamingScheme
 
-        private string GetEpisodeFileMask(int year, int month, int day, DirectoryInfo tvDir)
+        private string GetEpisodeFileMask(DateTime firstAired, DirectoryInfo tvDir)
         {
             if (Config.VerboseLogging)
                 Log("Building string for Episode File Mask");
 
             string fileMask = Path.GetFileName(tvDir + "\\" + Config.TvDailyTemplate);
 
-            string yearReplace = Convert.ToString(year);
-            string zeroMReplace = String.Format("{0:00}", month);
-            string mReplace = Convert.ToString(month);
-            string zeroDReplace = String.Format("{0:00}", day);
-            string dReplace = Convert.ToString(day);
+            string yearReplace = Convert.ToString(firstAired.Year);
+            string zeroMReplace = String.Format("{0:00}", firstAired.Month);
+            string mReplace = Convert.ToString(firstAired.Month);
+            string zeroDReplace = String.Format("{0:00}", firstAired.Day);
+            string dReplace = Convert.ToString(firstAired.Day);
 
             fileMask = fileMask.Replace(".%ext", "*");
             fileMask = fileMask.Replace("%desc", "*");
@@ -431,21 +432,18 @@ namespace SABSync
                 if (titleArray.Length == 5)
                 {
                     string showName = titleArray[0].Trim();
-                    int year;
-                    int month;
-                    int day;
-
-                    Int32.TryParse(titleArray[1], out year);
-                    Int32.TryParse(titleArray[2], out month);
-                    Int32.TryParse(titleArray[3], out day);
+                    DateTime firstAired = DateTime.Parse(
+                        titleArray[1] + "-" +
+                            titleArray[2] + "-" +
+                                titleArray[3]);
 
                     if (!IsShowWanted(showName))
                         return false;
 
                     foreach (DirectoryInfo tvDir in Config.TvRootFolders)
                     {
-                        string dir = GetEpisodeDir(showName, year, month, day, tvDir);
-                        string fileMask = GetEpisodeFileMask(year, month, day, tvDir);
+                        string dir = GetEpisodeDir(showName, firstAired, tvDir);
+                        string fileMask = GetEpisodeFileMask(firstAired, tvDir);
 
                         if (IsOnDisk(dir, fileMask))
                             return false;
@@ -638,17 +636,17 @@ namespace SABSync
         private bool IsEpWantedDaily(Match match, string title, string nzbId)
         {
             string showName = ShowAlias(Regex.Split(title, PatternDaily)[0].Replace('.', ' ').TrimEnd());
-            int year, month, day;
-            int.TryParse(match.Groups["Year"].Value, out year);
-            int.TryParse(match.Groups["Month"].Value, out month);
-            int.TryParse(match.Groups["Day"].Value, out day);
+
+            DateTime firstAired = DateTime.Parse(
+                match.Groups["Year"].Value + "-" +
+                    match.Groups["Month"].Value + "-" +
+                        match.Groups["Day"].Value);
 
             if (!IsShowWanted(showName))
                 return false;
 
-            string episodeName = TvDb.CheckTvDb(showName, year, month, day);
-            string titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" +
-                day.ToString("D2") + " - " + episodeName;
+            string episodeName = TvDb.CheckTvDb(showName, firstAired);
+            string titleFix = showName + " - " + firstAired.ToString("yyyy-MM-dd") + " - " + episodeName;
 
             titleFix = titleFix.TrimEnd(' ', '-');
 
@@ -665,8 +663,8 @@ namespace SABSync
 
             foreach (DirectoryInfo tvDir in Config.TvRootFolders)
             {
-                string dir = GetEpisodeDir(showName, year, month, day, tvDir);
-                string fileMask = GetEpisodeFileMask(year, month, day, tvDir);
+                string dir = GetEpisodeDir(showName, firstAired, tvDir);
+                string fileMask = GetEpisodeFileMask(firstAired, tvDir);
 
                 if (needProper)
                     DeleteForProper(dir, fileMask);
@@ -1016,17 +1014,13 @@ namespace SABSync
                 showName = showName.TrimEnd();
                 showName = ShowAlias(showName);
 
-                int year;
-                int month;
-                int day;
+                DateTime firstAired = DateTime.Parse(
+                    titleMatchDaily.Groups["Year"].Value + "-" +
+                        titleMatchDaily.Groups["Month"].Value + "-" +
+                            titleMatchDaily.Groups["Day"].Value);
 
-                Int32.TryParse(titleMatchDaily.Groups["Year"].Value, out year);
-                Int32.TryParse(titleMatchDaily.Groups["Month"].Value, out month);
-                Int32.TryParse(titleMatchDaily.Groups["Day"].Value, out day);
-
-                string episodeName = TvDb.CheckTvDb(showName, year, month, day);
-                titleFix = showName + " - " + year.ToString("D4") + "-" + month.ToString("D2") + "-" +
-                    day.ToString("D2") + " - " + episodeName;
+                string episodeName = TvDb.CheckTvDb(showName, firstAired);
+                titleFix = showName + " - " + firstAired.ToString("yyyy-MM-dd") + " - " + episodeName;
             }
             if (Config.VerboseLogging)
                 Log("Title Fix is: " + titleFix);
