@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace SABSync.Tests
 {
@@ -11,16 +12,17 @@ namespace SABSync.Tests
             var job = new SyncJob(new Config(), new MockSabService(), new MockTvDbService());
             job.Start();
 
-            Expect(job.AcceptCount, Is.EqualTo(3), "AcceptCount");
+            Expect(job.AcceptCount, Is.EqualTo(4), "AcceptCount");
             Expect(job.FeedItemCount, Is.EqualTo(20), "FeedItemCount");
             Expect(job.MyFeedsCount, Is.EqualTo(3), "MyFeedsCount");
             Expect(job.MyShowsCount, Is.EqualTo(5), "MyShowsCount");
-            Expect(job.MyShowsInFeedCount, Is.EqualTo(7), "MyShowsInFeedCount");
+            Expect(job.MyShowsInFeedCount, Is.EqualTo(8), "MyShowsInFeedCount");
             Expect(job.RejectDownloadQualityCount, Is.EqualTo(1), "RejectDownloadQualityCount");
             Expect(job.RejectIgnoredSeasonCount, Is.EqualTo(1), "RejectIgnoredSeasonCount");
 
             // TODO: fix InNzbArchive to handle relative urls
-            Expect(job.RejectInNzbArchive, Is.EqualTo(1), "RejectInNzbArchive");
+            // RejectInNzbArchive should be 1 and AcceptCount one less
+            Expect(job.RejectInNzbArchive, Is.EqualTo(0), "RejectInNzbArchive");
             Expect(job.RejectOnDiskCount, Is.EqualTo(1), "RejectOnDiskCount");
             Expect(job.RejectPasswordedCount, Is.EqualTo(2), "RejectPasswordedCount");
             Expect(job.RejectShowQualityCount, Is.EqualTo(1), "RejectShowQualityCount");
@@ -36,7 +38,7 @@ namespace SABSync.Tests
             return "unknown";
         }
 
-        public string CheckTvDb(string showName, int year, int month, int day)
+        public string CheckTvDb(string showName, DateTime firstAired)
         {
             return "unknown";
         }

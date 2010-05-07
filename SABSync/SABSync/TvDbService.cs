@@ -6,22 +6,18 @@ namespace SABSync
     public interface ITvDbService
     {
         string CheckTvDb(string showName, int seasonNumber, int episodeNumber);
-        string CheckTvDb(string showName, int year, int month, int day);
-        string GetSeriesId(string seriesName);
-        string GetEpisodeName(string seriesId, int seasonNumber, int episodeNumber);
+        string CheckTvDb(string showName, DateTime firstAired);
     }
 
     public class TvDbService : ITvDbService
     {
         private const string TvDbApiKey = "5D2D188E86E07F4F";
         private static readonly Logger Logger = new Logger();
-        private int _lastDay;
         private string _lastEpisodeName;
         private int _lastEpisodeNumber;
-        private int _lastMonth;
+        private DateTime _lastFirstAired;
         private int _lastSeasonNumber;
         private string _lastShowName;
-        private int _lastYear;
 
         #region ITvDbService Members
 
@@ -45,28 +41,26 @@ namespace SABSync
             return episodeName;
         }
 
-        public string CheckTvDb(string showName, int year, int month, int day)
+        public string CheckTvDb(string showName, DateTime firstAired)
         {
             if (showName == _lastShowName &&
-                year == _lastYear && month == _lastMonth && day == _lastDay)
+                firstAired == _lastFirstAired)
                 return _lastEpisodeName;
 
             string episodeName = null;
             string seriesId = GetSeriesId(showName);
 
             if (seriesId != null)
-                episodeName = GetEpisodeName(seriesId, year, month, day);
+                episodeName = GetEpisodeName(seriesId, firstAired);
 
             _lastShowName = showName;
-            _lastYear = year;
-            _lastMonth = month;
-            _lastDay = day;
+            _lastFirstAired = firstAired;
             _lastEpisodeName = episodeName;
 
             return episodeName;
         }
 
-        public string GetSeriesId(string seriesName)
+        private static string GetSeriesId(string seriesName)
         {
             try
             {
@@ -112,7 +106,7 @@ namespace SABSync
             return null;
         }
 
-        public string GetEpisodeName(string seriesId, int seasonNumber, int episodeNumber)
+        private static string GetEpisodeName(string seriesId, int seasonNumber, int episodeNumber)
         {
             try
             {
@@ -151,7 +145,7 @@ namespace SABSync
 
         #endregion
 
-        private static string GetEpisodeName(string seriesId, int year, int month, int day)
+        private static string GetEpisodeName(string seriesId, DateTime firstAired)
         {
             try
             {
@@ -161,9 +155,6 @@ namespace SABSync
                 var tvDbRssReader = new XmlTextReader(url);
                 var tvDbRssDoc = new XmlDocument();
                 tvDbRssDoc.Load(tvDbRssReader);
-
-                string rssAirDate = year.ToString("D4") + "-" + month.ToString("D2") + "-" +
-                    day.ToString("D2");
 
                 XmlNodeList data = tvDbRssDoc.GetElementsByTagName(@"Data");
 
@@ -177,15 +168,14 @@ namespace SABSync
                         return null;
                     }
 
-                    foreach (object e in episodes)
-                    {
-                        var tvDbElement = (XmlElement) e;
-                        string tvDbAirDate = tvDbElement.GetElementsByTagName("FirstAired")[0].InnerText;
+                    var myFirstAired = firstAired.ToString("yyyy-MM-dd");
 
-                        if (tvDbAirDate == rssAirDate)
-                        {
-                            return tvDbElement.GetElementsByTagName("EpisodeName")[0].InnerText;
-                        }
+                    foreach (XmlElement e in episodes)
+                    {
+                        string dbFirstAired = e.GetElementsByTagName("FirstAired")[0].InnerText;
+
+                        if (dbFirstAired == myFirstAired)
+                            return e.GetElementsByTagName("EpisodeName")[0].InnerText;
                     }
                 }
             }
