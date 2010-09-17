@@ -1,0 +1,103 @@
+﻿TV Root
+	Folder or Folders where your TV shows are located. 
+	For Example D:\TV or D:\TV;X:\TV
+
+TV Template
+	This is the sorting template from SABnzbd's sorting configuration
+
+TV Daily Template
+	Sorting template from SABnzbd for Daily shows
+
+Video Extensions
+	Extensions that you would like SABnzbd to consider as a TV show 
+	(Default: .mkv;.avi;.wmv)
+	
+SABnzbd Settings:
+
+	Hostname
+		IP Address or Host Name of SABnzbd 
+		(use localhost or 127.0.0.1 for SABnzbd running on this computer)
+
+	Port
+		Port for SABnzbd, default SABnzbd port is: 8080
+
+	Username
+		Username for the WebGUI of SABnzbd
+
+	Password
+		Password for the WebGUI of SABnzbd
+
+	API Key
+		APIKey for SABnzbd, available in SABnzbd General Settings
+
+	NZB Directory
+		.nzb Backup Folder from SABnzbd Folder Settings
+
+Priority
+	Priority that .nzbs should be added to the queue for download 
+	(High, Normal, Low)
+
+RSS Config File
+    Filename of the file that will contain the RSS Feed URL(s) 
+	- Can be left as RSS.config
+
+Alias Config File
+	Filename of the file that will contain aliases for TV Shows 
+	(Feed name differs from TheTVDb name, see Alias.config for details) 
+	- Can be left as Alias.config
+
+Quality Config File
+	Filename of the file that will contain show names and the quality you want
+	that show to be downloaded in (if different from the default download 
+	quality)
+	- Can be left as Quality.config
+
+Seasons to Ignore
+	Show Name (as seen on disk) and season number that you want to ignore 
+	(Season numbers below the number specified number will also be ignored.
+	For Example "Show Name=3" will ignore seasons 1,2 and 3)
+
+Download Quality
+	The default download quality for all shows (except those defined in 
+	Quality.config), used if you want some shows in HD and all others in 
+	SD (or vice-versa)
+	
+Replace Characters
+	Check this if you have SABnzbd replacing characters (otherwise leave 
+	unchecked if SABnzbd is set to remove illegal characters from NZB names)
+
+Download PROPERs
+	Check if you want PROPERs to be downloaded, this will replace episodes 
+	already downloaded (only if it hasn't already downloaded the PROPER)
+
+Verbose Logging
+	Enable additional logging for troubleshooting issues, should be disabled 
+	unless required for troubleshooting
+Delete Logs
+	Delete old log files after X days, set to zero to keep log files until 
+	manually deleted
+
+RSS.config:
+	Name|URL
+	NZBMatrix-Xvid|http://rss.nzbmatrix.com/rss.php?subcat=6&english=1
+	- Name can be anything you want to call it, 
+	- URL is the URL to the RSS feed containing content you want SABSync 
+		to look at
+	
+Alias.config:
+	Show Name in Feed|Show Name on TheTVDB.com & On Disk 
+	The Office|The Office (US)
+	- If the show name in the RSS feed is: 
+		"The Office", it should be found as 
+		"The Office (US)" on TheTVDb.com and on disk
+	CSI|CSI: Crime Scene Investigation
+	- If the show name in the RSS feed is: 
+		"CSI" it should be found as 
+		"CSI: Crime Scene Investigation" on TheTVDB.com and on disk
+	
+Quality.config
+	Show Name|Wanted Quality (xvid or 720p)
+	30 Rock|xvid
+	- 30 Rock is wanted as a XviD only
+	CSI: Crime Scene Investigation|720p
+	- CSI: Crime Scene Investigation is wanted in 720p only
